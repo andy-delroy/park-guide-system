@@ -26,6 +26,7 @@ return new class extends Migration
             $table->text('highlights')->nullable();
             $table->text('cautions')->nullable();
             $table->text('seasonal_notes')->nullable();
+            $table->timestamps(); 
         });
     }
 

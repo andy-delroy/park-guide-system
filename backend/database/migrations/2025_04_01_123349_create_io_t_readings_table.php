@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('battery_level', 5, 2)->nullable();
             $table->json('other_sensor_data_json')->nullable();
             $table->boolean('alert_triggered')->default(false);
+            $table->timestamps(); 
         });
     }
 

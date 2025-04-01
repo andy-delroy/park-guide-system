@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('requirements')->nullable();
             $table->string('image_url')->nullable();
             $table->string('availability', 50)->default('year-round');
+            $table->timestamps(); 
         });
     }
 

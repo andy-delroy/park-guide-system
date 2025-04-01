@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('resolved_by')->nullable()->constrained('users');
             $table->timestamp('resolution_timestamp')->nullable();
             $table->text('resolution_notes')->nullable();
+            $table->timestamps(); 
         });
     }
 

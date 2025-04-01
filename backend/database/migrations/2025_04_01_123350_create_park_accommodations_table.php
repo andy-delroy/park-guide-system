@@ -24,6 +24,7 @@ return new class extends Migration
             $table->json('coordinates')->nullable();
             $table->string('image_url')->nullable();
             $table->string('status', 20)->default('available');
+            $table->timestamps(); 
         });
     }
 

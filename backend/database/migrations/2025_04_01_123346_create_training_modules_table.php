@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('learning_objectives')->nullable();
             $table->decimal('pass_threshold', 5, 2)->nullable();
             $table->string('content_type', 50)->nullable();
+            $table->timestamps();
         });
     }
 

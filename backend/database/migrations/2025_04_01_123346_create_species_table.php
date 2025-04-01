@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('is_endangered')->default(false);
             $table->boolean('is_protected')->default(false);
             $table->text('notes')->nullable();
+            $table->timestamps(); // ← add this
         });
     }
 

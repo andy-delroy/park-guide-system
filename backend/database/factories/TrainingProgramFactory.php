@@ -18,8 +18,8 @@ class TrainingProgramFactory extends Factory
             'duration_hours' => $this->faker->numberBetween(4, 40),
             'prerequisite_program_id' => null, // Optional, can be updated later
             'created_by' => User::factory(),
-            'created_date' => now(),
-            'updated_date' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
             'status' => 'active',
             'required_for_certification' => $this->faker->boolean(80)
         ];

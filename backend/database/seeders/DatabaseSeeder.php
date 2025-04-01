@@ -2,29 +2,53 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Trainings;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-        // User::factory(10)->create();
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
 
-        User::factory()->create([
-            'name' => 'Ann',
-            'email' => 'ann@example.com',
-            'password' => bcrypt('password123'),
-            'email_verified_at' => time()
+            // Parks & Environment
+            ParkSeeder::class,
+            ParkAttractionSeeder::class,
+            ParkRouteSeeder::class,
+            ParkActivitySeeder::class,
+            ParkAccommodationSeeder::class,
+
+            // Species & Observations
+            SpeciesSeeder::class,
+            SpeciesObservationSeeder::class,
+
+            // Training Programs
+            TrainingProgramSeeder::class,
+            TrainingModuleSeeder::class,
+            ModuleContentSeeder::class,
+            TrainingSessionSeeder::class,
+
+            // Guide Lifecycle
+            GuideEnrollmentSeeder::class,
+            GuideModuleProgressSeeder::class,
+            GuideCertificationSeeder::class,
+            GuideFeedbackSeeder::class,
+            GuidePerformanceMetricSeeder::class,
+            LicenseSeeder::class,
+
+            // IoT Systems
+            IoTDeviceSeeder::class,
+            IoTReadingSeeder::class,
+            IoTAlertSeeder::class,
+
+            // AI & Media
+            AIIdentificationLogSeeder::class,
+            MediaLibrarySeeder::class,
+
+            // System Events
+            NotificationSeeder::class,
+            SystemLogSeeder::class,
         ]);
-
-        Trainings::factory()
-        ->count(10)
-        ->create();
     }
 }

@@ -2,16 +2,20 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\IoTAlert;
+use App\Models\IoTDevice;
 
 class IoTAlertSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        $devices = IoTDevice::all();
+
+        foreach ($devices as $device) {
+            IoTAlert::factory()->count(2)->create([
+                'device_id' => $device->id
+            ]);
+        }
     }
 }

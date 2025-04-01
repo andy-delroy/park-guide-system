@@ -24,10 +24,9 @@ return new class extends Migration
                   ->nullOnDelete();
         
             $table->foreignId('created_by')->constrained('users');
-            $table->timestamp('created_date')->useCurrent();
-            $table->timestamp('updated_date')->nullable();
             $table->string('status', 20)->default('active');
             $table->boolean('required_for_certification')->default(false);
+            $table->timestamps();
         });
         
     }

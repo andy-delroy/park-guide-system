@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('is_public')->default(false);
             $table->string('status', 20)->default('pending');
             $table->foreignId('park_id')->nullable()->constrained('parks');
+            $table->timestamps(); 
         });
     }
 

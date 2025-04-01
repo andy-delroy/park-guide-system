@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('renewal_reminder_sent')->default(false);
             $table->foreignId('park_id')->nullable()->constrained('parks');
             $table->string('license_file_url')->nullable();
+            $table->timestamps();
         });
     }
 

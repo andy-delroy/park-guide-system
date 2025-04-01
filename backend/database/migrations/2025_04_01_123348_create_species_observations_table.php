@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->foreignId('confirmed_by')->nullable()->constrained('users');
             $table->string('confirmation_status', 20)->default('pending');
+            $table->timestamps(); // Add this line
         });
     }
 

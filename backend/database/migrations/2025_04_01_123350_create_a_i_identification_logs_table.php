@@ -21,6 +21,7 @@ return new class extends Migration
             $table->json('alternative_identifications_json')->nullable();
             $table->boolean('feedback_provided')->default(false);
             $table->text('user_feedback')->nullable();
+            $table->timestamps(); 
         });
     }
 

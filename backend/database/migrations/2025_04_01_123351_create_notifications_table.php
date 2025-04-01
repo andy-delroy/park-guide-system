@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamp('expiry_date')->nullable();
             $table->string('action_url')->nullable();
             $table->string('priority_level', 20)->default('medium');
+            $table->timestamps(); 
         });
     }
 

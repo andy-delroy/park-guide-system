@@ -27,6 +27,7 @@ return new class extends Migration
             $table->text('requirements_description')->nullable();
             $table->integer('validity_period_months')->nullable();
             $table->text('renewal_requirements')->nullable();
+            $table->timestamps(); 
         });
     }
 

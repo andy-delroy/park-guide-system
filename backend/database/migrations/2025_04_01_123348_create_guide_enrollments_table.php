@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('completion_date')->nullable();
             $table->text('notes')->nullable();
             $table->unique(['guide_id', 'session_id']);
+            $table->timestamps();
         });
     }
 

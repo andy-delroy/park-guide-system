@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('instructor_id')->constrained('users');
             $table->text('description')->nullable();
             $table->string('status', 20)->default('scheduled');
+            $table->timestamps();
         });
     }
 

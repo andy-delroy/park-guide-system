@@ -25,7 +25,8 @@ return new class extends Migration
             $table->unique(
                 ['guide_id', 'module_id', 'enrollment_id', 'attempt_number'],
                 'gmp_progress_unique'
-            );            
+            );      
+            $table->timestamps();      
         });
     }
 
