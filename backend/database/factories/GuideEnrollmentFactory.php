@@ -2,22 +2,24 @@
 
 namespace Database\Factories;
 
+use App\Models\GuideEnrollment;
+use App\Models\User;
+use App\Models\TrainingSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\GuideEnrollment>
- */
 class GuideEnrollmentFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = GuideEnrollment::class;
+
+    public function definition()
     {
         return [
-            //
+            'guide_id' => User::factory(),
+            'session_id' => TrainingSession::factory(),
+            'enrollment_date' => now(),
+            'completion_status' => $this->faker->randomElement(['enrolled', 'in-progress', 'completed', 'dropped']),
+            'completion_date' => null,
+            'notes' => $this->faker->sentence()
         ];
     }
 }
