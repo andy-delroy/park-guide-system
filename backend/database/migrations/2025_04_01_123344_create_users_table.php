@@ -13,11 +13,34 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->string('username', 50)->unique();
+            $table->string('password_hash');
+            $table->string('email', 100)->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
             $table->rememberToken();
+            
+            $table->string('phone_number', 20)->nullable();
+            $table->string('full_name', 100);
+            $table->date('date_of_birth')->nullable();
+            $table->string('gender', 20)->nullable();
+            $table->text('address')->nullable();
+            $table->foreignId('role_id')->constrained('roles');
+            $table->timestamp('registration_date')->useCurrent();
+            $table->timestamp('last_login')->nullable();
+            $table->string('status', 20)->default('active');
+            $table->string('profile_image_url')->nullable();
+            $table->string('reset_token')->nullable();
+            $table->timestamp('reset_token_expiry')->nullable();
+            
+            // Park Guide-specific
+            $table->string('identification_number', 50)->nullable();
+            $table->string('emergency_contact', 100)->nullable();
+            $table->text('biography')->nullable();
+            $table->text('languages_spoken')->nullable();
+            $table->integer('years_of_experience')->nullable();
+            $table->text('specializations')->nullable();
+            $table->string('employment_status', 50)->nullable();
+        
             $table->timestamps();
         });
 
