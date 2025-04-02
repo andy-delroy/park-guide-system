@@ -10,7 +10,8 @@ innovation project
 6. copy the contents of .env.example into .env(create tis file if it doesn't exist)
 7. Generate your application key with `php artisan key:generate`
 8. `php artisan migrate` to migrate all the changes to the temporary sqlite database
-9. After all that, open two terminal windows. In one terminal, run `npm run dev` to start serving the front end. In another terminal, run `php artisan serve` to serve the backend as localhost.
+9. After you have confirmed your database is working, you can seed your database with mock data by running `php artisan migrate:fresh --seed`. Confirm it with your preferred database monitoring tool or godforbid a terminal interface.
+10. After all that, open two terminal windows. In one terminal, run `npm run dev` to start serving the front end. In another terminal, run `php artisan serve` to serve the backend as localhost.
 ## Reference Video
 Refer to the following video as a guide while you code. 
 [Video](https://www.youtube.com/watch?v=VrQRa-afCAk&t=1561s)
