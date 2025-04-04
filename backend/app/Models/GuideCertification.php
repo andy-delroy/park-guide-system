@@ -27,4 +27,8 @@ class GuideCertification extends Model
     {
         return $this->belongsTo(User::class, 'issued_by');
     }
+
+    public function program(){
+        return $this->belongsTo(TrainingProgram::class);
+    }
 }

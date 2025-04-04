@@ -2,28 +2,22 @@
 
 namespace Database\Factories;
 
-use App\Models\TrainingSession;
 use App\Models\TrainingProgram;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TrainingSessionFactory extends Factory
 {
-    protected $model = TrainingSession::class;
-
-    public function definition()
+    public function definition(): array
     {
-        $start = $this->faker->dateTimeBetween('now', '+1 week');
+        $startDate = $this->faker->dateTimeBetween('-1 year', 'now');
         return [
             'program_id' => TrainingProgram::factory(),
-            'session_name' => $this->faker->words(2, true),
-            'start_date' => $start,
-            'end_date' => (clone $start)->modify('+3 days'),
-            'location' => $this->faker->address(),
-            'capacity' => $this->faker->numberBetween(10, 30),
+            'session_name' => $this->faker->word(),
+            'start_date' => $startDate,
+            'end_date' => $this->faker->dateTimeBetween($startDate, '+3 months'),
+            'location' => $this->faker->city(),
             'instructor_id' => User::factory(),
-            'description' => $this->faker->sentence(),
-            'status' => 'scheduled'
         ];
     }
 }

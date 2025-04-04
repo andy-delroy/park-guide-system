@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Trainings extends Model
 {
-    /** @use HasFactory<\Database\Factories\TrainingsFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'category',
+        'duration',
+        'description',
+        'created_by',
+    ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, SoftDeletes;
     protected $fillable = [
-        'username', 'password_hash', 'email', 'phone_number', 'full_name',
+        'username', 'password', 'email', 'phone_number', 'full_name',
         'date_of_birth', 'gender', 'address', 'role_id', 'profile_image_url',
         'identification_number', 'emergency_contact', 'biography',
         'languages_spoken', 'years_of_experience', 'specializations',

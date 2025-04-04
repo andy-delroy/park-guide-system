@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\GuideCertification;
+use App\Models\TrainingProgram;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -18,6 +19,7 @@ class GuideCertificationFactory extends Factory
             'guide_id' => User::factory(),
             'certification_name' => $this->faker->word() . ' Certificate',
             'description' => $this->faker->sentence(),
+            'program_id' => TrainingProgram::factory(),
             'issue_date' => $issueDate,
             'expiry_date' => (clone $issueDate)->modify('+1 year'),
             'certificate_number' => strtoupper(Str::random(10)),

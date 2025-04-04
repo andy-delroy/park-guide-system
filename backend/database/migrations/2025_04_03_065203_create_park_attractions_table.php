@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('park_accommodations', function (Blueprint $table) {
+        Schema::create('park_attractions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('park_id')->constrained('parks');
-            $table->string('name');
-            $table->string('type', 50); // camping/hostel/lodge/etc
+            $table->string('attraction_name');
             $table->text('description')->nullable();
-            $table->integer('capacity')->nullable();
-            $table->string('price_range')->nullable();
-            $table->text('amenities')->nullable();
-            $table->text('booking_info')->nullable();
             $table->json('coordinates')->nullable();
             $table->string('image_url')->nullable();
-            $table->string('status', 20)->default('available');
+            $table->string('type', 20); // natural/cultural/historical
+            $table->text('accessibility_info')->nullable();
+            $table->string('best_visit_time')->nullable();
+            $table->foreignId('created_by')->constrained('users');
+            $table->timestamp('last_updated')->useCurrent();
             $table->timestamps(); 
         });
     }
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('park_accommodations');
+        Schema::dropIfExists('park_attractions');
     }
 };
