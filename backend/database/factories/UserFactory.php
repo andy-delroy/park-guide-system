@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash; // ✅ Add this
 
 class UserFactory extends Factory
 {
@@ -13,9 +14,13 @@ class UserFactory extends Factory
 
     public function definition()
     {
+        $hashedPassword = Hash::make('password'); // or bcrypt('password');
+
         return [
             'username' => $this->faker->unique()->userName(),
-            'password_hash' => bcrypt('password'),
+            'name' => $this->faker->name, // ✅ Required for seeding
+            'password_hash' => $hashedPassword,  // ✅ using same hash
+            'password' => $hashedPassword,       // ✅ Laravel uses this
             'email' => $this->faker->unique()->safeEmail(),
             'phone_number' => $this->faker->phoneNumber(),
             'full_name' => $this->faker->name(),

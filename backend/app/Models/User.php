@@ -15,7 +15,8 @@ class User extends Authenticatable
         'date_of_birth', 'gender', 'address', 'role_id', 'profile_image_url',
         'identification_number', 'emergency_contact', 'biography',
         'languages_spoken', 'years_of_experience', 'specializations',
-        'employment_status', 'status', 'registration_date', 'last_login'
+        'employment_status', 'status', 'registration_date', 'last_login','password',
+        'remember_token', 'name', 'is_admin'
     ];
 
     /** ----------------------------
@@ -126,5 +127,18 @@ class User extends Authenticatable
     public function systemLogs(): HasMany
     {
         return $this->hasMany(SystemLog::class);
+    }
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array
+     */
+    
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

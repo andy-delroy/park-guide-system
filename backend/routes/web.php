@@ -4,7 +4,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NotificationController;
+
+
 use Inertia\Inertia;
+
+
+use App\Http\Controllers\PostController;
 
 //default laravel render page
 // Route::get('/', function () {
@@ -35,3 +41,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+
+Route::get('/notification-test', function () {
+    return Inertia::render('NotificationTest', [
+        'testProp' => 'This is a test', // Optional: Add props to verify
+    ]);
+});
+
+Route::get('/notification-page', fn () => Inertia\Inertia::render('NotificationPage'))->name('notification.page');
+Route::post('/send-notification', [NotificationController::class, 'send'])->name('notification.send');
