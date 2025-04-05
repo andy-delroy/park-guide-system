@@ -2,16 +2,17 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Role;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        Role::insert([
+            ['role_name' => 'Admin', 'description' => 'System administrator'],
+            ['role_name' => 'ParkGuide', 'description' => 'Certified park guide'],
+            ['role_name' => 'Visitor', 'description' => 'Public user']
+        ]);
     }
 }

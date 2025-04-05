@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('training_sessions', function (Blueprint $table) {
+        Schema::create('training_modules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('program_id')->constrained('training_programs');
-            $table->string('session_name');
-            $table->timestamp('start_date');
-            $table->timestamp('end_date');
-            $table->text('location')->nullable();
-            $table->integer('capacity')->nullable();
-            $table->foreignId('instructor_id')->constrained('users');
+            $table->string('module_name');
             $table->text('description')->nullable();
-            $table->string('status', 20)->default('scheduled');
+            $table->integer('duration_hours')->nullable();
+            $table->integer('sequence_number')->nullable();
+            $table->text('learning_objectives')->nullable();
+            $table->decimal('pass_threshold', 5, 2)->nullable();
+            $table->string('content_type', 50)->nullable();
+            $table->timestamps();
         });
     }
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('training_sessions');
+        Schema::dropIfExists('training_modules');
     }
 };

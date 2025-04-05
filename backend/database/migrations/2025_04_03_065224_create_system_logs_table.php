@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('status', 20);
             $table->string('affected_entity_type', 50)->nullable();
             $table->integer('affected_entity_id')->nullable();
+            $table->timestamps(); 
         });
     }
 

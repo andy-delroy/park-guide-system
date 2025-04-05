@@ -2,16 +2,20 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\IoTReading;
+use App\Models\IoTDevice;
 
 class IoTReadingSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        $devices = IoTDevice::all();
+
+        foreach ($devices as $device) {
+            IoTReading::factory()->count(10)->create([
+                'device_id' => $device->id
+            ]);
+        }
     }
 }

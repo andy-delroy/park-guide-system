@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('module_content', function (Blueprint $table) {
+        Schema::create('module_contents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('module_id')->constrained('training_modules');
             $table->string('content_title');
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('duration_minutes')->nullable();
             $table->integer('sequence_number')->nullable();
             $table->boolean('is_required')->default(true);
+            $table->timestamps();
         });
     }
 

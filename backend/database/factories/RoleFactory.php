@@ -4,20 +4,17 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
- */
 class RoleFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'role_name' => $this->faker->jobTitle(),
+            'description' => $this->faker->sentence(),
+            'permissions_json' => json_encode([
+                'can_edit' => $this->faker->boolean(),
+                'can_delete' => $this->faker->boolean(),
+            ]),
         ];
     }
 }

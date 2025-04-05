@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\TrainingProgram;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TrainingSession>
- */
 class TrainingSessionFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $startDate = $this->faker->dateTimeBetween('-1 year', 'now');
         return [
-            //
+            'program_id' => TrainingProgram::factory(),
+            'session_name' => $this->faker->word(),
+            'start_date' => $startDate,
+            'end_date' => $this->faker->dateTimeBetween($startDate, '+3 months'),
+            'location' => $this->faker->city(),
+            'instructor_id' => User::factory(),
         ];
     }
 }

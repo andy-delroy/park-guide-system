@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('media_library', function (Blueprint $table) {
+        Schema::create('media_libraries', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('species_id')->nullable()->constrained('species');
             $table->boolean('is_public')->default(false);
             $table->string('approval_status', 20)->default('pending');
+            $table->timestamps(); 
         });
     }
 

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('best_visit_time')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamp('last_updated')->useCurrent();
+            $table->timestamps(); 
         });
     }
 

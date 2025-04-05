@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('firmware_version')->nullable();
             $table->foreignId('park_id')->nullable()->constrained('parks');
             $table->foreignId('monitored_species_id')->nullable()->constrained('species');
+            $table->timestamps(); 
         });
     }
 

@@ -2,22 +2,26 @@
 
 namespace Database\Factories;
 
+use App\Models\SystemLog;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SystemLog>
- */
 class SystemLogFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = SystemLog::class;
+
+    public function definition()
     {
         return [
-            //
+            'user_id' => User::factory(),
+            'action' => 'viewed_dashboard',
+            'action_timestamp' => now(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
+            'action_details' => 'Accessed main dashboard',
+            'status' => 'success',
+            'affected_entity_type' => 'dashboard',
+            'affected_entity_id' => null
         ];
     }
 }

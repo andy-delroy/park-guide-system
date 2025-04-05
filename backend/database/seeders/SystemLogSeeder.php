@@ -2,16 +2,20 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\SystemLog;
+use App\Models\User;
 
 class SystemLogSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        $users = User::all();
+
+        foreach ($users as $user) {
+            SystemLog::factory()->count(2)->create([
+                'user_id' => $user->id
+            ]);
+        }
     }
 }

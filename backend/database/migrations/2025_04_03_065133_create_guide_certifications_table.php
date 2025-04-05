@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('guide_certifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('guide_id')->constrained('users');
+            $table->foreignId('program_id')->nullable()->constrained('training_programs');
             $table->string('certification_name');
             $table->text('description')->nullable();
             $table->timestamp('issue_date');
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->text('requirements_description')->nullable();
             $table->integer('validity_period_months')->nullable();
             $table->text('renewal_requirements')->nullable();
+            $table->timestamps(); 
         });
     }
 

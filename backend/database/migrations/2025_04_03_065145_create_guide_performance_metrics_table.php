@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('overall_score', 4, 2)->nullable();
             $table->text('comments')->nullable();
             $table->text('improvement_plan')->nullable();
+            $table->timestamps();
         });
     }
 
