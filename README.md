@@ -15,3 +15,11 @@ innovation project
 ## Reference Video
 Refer to the following video as a guide while you code. 
 [Video](https://www.youtube.com/watch?v=VrQRa-afCAk&t=1561s)
+
+
+
+##AN's PILL##
+
+Before we start, `cp .env.example .env`
+
+
