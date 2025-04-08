@@ -23,23 +23,24 @@ Refer to the following video as a guide while you code.
 Before we start, `cp .env.example .env` DO NOT FORGET THIS BEFORE INSTALLING OTHER THINGS
 
 `composer install`
+
 `npm install`
+
 `php artisan key:generate`
+
 `php artisan install:broadcasting`
+
 `composer require laravel/reverb`
+
 `php artisan reverb:install`
+
 `npm install --save-dev laravel-echo`
 
 copy and paste this code into ur .env
-
 SESSION_DRIVER=cookie
-
 SESSION_DOMAIN=127.0.0.1
-
 SANCTUM_STATEFUL_DOMAINS=127.0.0.1:8000,localhost:8000,localhost:5173,127.0.0.1:5173,localhost:3
-
 000,127.0.0.1:3000
-
 SANCTUM_COOKIE="XSRF-TOKEN"
 
 
