@@ -21,12 +21,19 @@ Refer to the following video as a guide while you code.
 ##AN's PILL##
 
 Before we start, `cp .env.example .env`
+
 `composer install`
+
 `npm install`
+
 `php artisan key:generate`
+
 `php artisan install:broadcasting`
+
 `composer require laravel/reverb`
+
 `php artisan reverb:install`
+
 `npm install --save-dev laravel-echo`
 
 copy and paste this code into ur .env
