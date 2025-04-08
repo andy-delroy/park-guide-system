@@ -14,14 +14,16 @@ class TrainingsController extends Controller
      */
     public function index()
     {
-        //it's not recommended to pass the entire list of data with Inertia
         $query = Trainings::query();
-        //load the data here and pass it to render
         $trainings = $query->paginate(10)->onEachSide(1);
 
+        // If you're using Inertia (full-stack Laravel+React/Vue):
         return inertia("Trainings/Index", [
             "trainings" => TrainingsResource::collection($trainings),
         ]);
+
+        // If you're returning JSON only (for React API frontend), use this instead:
+        // return TrainingsResource::collection($trainings);
     }
 
     /**
@@ -29,7 +31,7 @@ class TrainingsController extends Controller
      */
     public function create()
     {
-        //
+        // Not needed for API 
     }
 
     /**
@@ -37,7 +39,8 @@ class TrainingsController extends Controller
      */
     public function store(StoreTrainingsRequest $request)
     {
-        //
+        $training = Trainings::create($request->validated());
+        return new TrainingsResource($training);
     }
 
     /**
@@ -45,7 +48,7 @@ class TrainingsController extends Controller
      */
     public function show(Trainings $trainings)
     {
-        //
+        return new TrainingsResource($trainings);
     }
 
     /**
@@ -53,7 +56,7 @@ class TrainingsController extends Controller
      */
     public function edit(Trainings $trainings)
     {
-        //
+        // Not needed for API 
     }
 
     /**
@@ -61,7 +64,8 @@ class TrainingsController extends Controller
      */
     public function update(UpdateTrainingsRequest $request, Trainings $trainings)
     {
-        //
+        $trainings->update($request->validated());
+        return new TrainingsResource($trainings);
     }
 
     /**
@@ -69,6 +73,7 @@ class TrainingsController extends Controller
      */
     public function destroy(Trainings $trainings)
     {
-        //
+        $trainings->delete();
+        return response()->json(['message' => 'Training deleted']);
     }
 }
