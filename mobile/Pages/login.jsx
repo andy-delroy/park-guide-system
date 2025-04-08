@@ -15,6 +15,7 @@ import {
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'; // optional for secure token storage
 import API_BASE_URL from '../api.config';
+import styles from '../Styles/styles';
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -44,11 +45,15 @@ const Login = ({ navigation }) => {
         // ✅ Save token securely (optional)
         await SecureStore.setItemAsync('userToken', String(token));
         await SecureStore.setItemAsync('userName', String(user.username));
+        await SecureStore.setItemAsync('userRole', String(user.role_name)); // Save user role if needed
 
-        Alert.alert('Success', `Welcome ${user.username}!`);
+        Alert.alert('Success', `Welcome ${user.username} with role ${user.role_name}!`);
 
-        // TODO: Navigate to home/dashboard if using React Navigation
-        // navigation.replace('Home');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+        
       } else {
         Alert.alert('Login Failed', 'Unexpected response format.');
       }
@@ -65,13 +70,24 @@ const Login = ({ navigation }) => {
     navigation.navigate('Register');
   };  
 
+  const handleContinueAsGuest = async () => {
+    // Set the role as 'guest' when the user chooses to continue as guest
+    await SecureStore.setItemAsync('userRole', 'guest');
+    await SecureStore.setItemAsync('userName', 'Guest');
+  
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    });
+  };  
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
         <Image
-        source={require('../assets/logo.jpg')} // Adjust the path as needed
+        source={require('../assets/sfc_logo.jpg')} // Adjust the path as needed
         style={styles.logo}
           />
           
@@ -97,10 +113,12 @@ const Login = ({ navigation }) => {
         placeholderTextColor="#aaa"
       />
 
-      <View style={styles.rememberContainer}>
+      <TouchableOpacity style={styles.rememberContainer} onPress={() => setRemember(!remember)}>
+        <View style={styles.checkbox}>
+          {remember && <Text style={styles.checkmark}>✓</Text>}
+        </View>
         <Text style={styles.rememberText}>Remember Me</Text>
-        <Switch value={remember} onValueChange={setRemember} />
-      </View>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
@@ -121,71 +139,12 @@ const Login = ({ navigation }) => {
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={handleContinueAsGuest}>
+        <Text style={styles.bottomText}>Continue as Guest</Text>
+      </TouchableOpacity>
+
     </KeyboardAvoidingView>
   );
 };
 
 export default Login;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  logo: {
-    width: 150,  // Adjust size of logo as needed
-    height: 150,
-    alignSelf: 'center',
-    marginBottom: 40,  // Add spacing below the logo
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#2f3640',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#718093',
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  input: {
-    height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    borderColor: '#dcdde1',
-    borderWidth: 1,
-  },
-  rememberContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  rememberText: {
-    fontSize: 16,
-    color: '#2f3640',
-  },
-  button: {
-    backgroundColor: '#273c75',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  registerButton: {
-    marginTop: 10,
-    backgroundColor: '#4cd137',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
-  },
-});

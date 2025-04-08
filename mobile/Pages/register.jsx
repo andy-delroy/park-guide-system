@@ -10,10 +10,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'; // optional for secure token storage
 import API_BASE_URL from '../api.config'; // Make sure this imports your API base URL
+import styles from '../Styles/styles'; // Adjust the import path as needed
 
 const Register = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -78,6 +80,11 @@ const Register = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
+      <Image
+        source={require('../assets/sfc_logo.jpg')} // Adjust the path as needed
+        style={styles.logo}
+      />
+      
       <Text style={styles.title}>Create Account</Text>
       <Text style={styles.subtitle}>Register to get started</Text>
 
@@ -130,73 +137,16 @@ const Register = ({ navigation }) => {
         )}
       </TouchableOpacity>
       
-      <Text style={styles.loginText}>
+      <Text style={styles.bottomText}>
         Already has an account? Click 
         <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.linkText}> here </Text>
         </TouchableOpacity> 
-        to log in
+        to log in.
       </Text>
-
         
     </KeyboardAvoidingView>
   );
 };
 
 export default Register;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#2f3640',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#718093',
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  input: {
-    height: 50,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    borderColor: '#dcdde1',
-    borderWidth: 1,
-  },
-  button: {
-    backgroundColor: '#273c75',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
-    },
-  loginText: {
-    color: '#273c75',
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-
-  linkText: {
-    color: '#273c75',  // Make it stand out as a link color
-    fontWeight: '600',
-    textDecorationLine: 'underline', // Underline to indicate it's clickable
-    },
-});
