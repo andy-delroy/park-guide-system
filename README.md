@@ -37,6 +37,8 @@ Before we start, `cp .env.example .env` DO NOT FORGET THIS BEFORE INSTALLING OTH
 `npm install --save-dev laravel-echo`
 
 copy and paste this code into ur .env
+
+
 SESSION_DRIVER=cookie
 SESSION_DOMAIN=127.0.0.1
 SANCTUM_STATEFUL_DOMAINS=127.0.0.1:8000,localhost:8000,localhost:5173,127.0.0.1:5173,localhost:3
