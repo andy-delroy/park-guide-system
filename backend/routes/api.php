@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RoleController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -16,5 +17,7 @@ Route::prefix('auth')->group(function () {
         Route::patch('update', [AuthController::class, 'update']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::delete('destroy', [AuthController::class, 'destroy']);
+
+        Route::get('roles', [RoleController::class, 'getAllRoles']);
     });
 });
