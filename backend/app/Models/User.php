@@ -2,47 +2,131 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use HasApiTokens, HasFactory, SoftDeletes;
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'username', 'password', 'email', 'phone_number', 'full_name',
+        'date_of_birth', 'gender', 'address', 'role_id', 'profile_image_url',
+        'identification_number', 'emergency_contact', 'biography',
+        'languages_spoken', 'years_of_experience', 'specializations',
+        'employment_status', 'status', 'registration_date', 'last_login'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    /** ----------------------------
+     *        Relationships
+     *  ---------------------------- */
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // ROLE: Each user belongs to a role
+    public function role(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Role::class);
+    }
+
+    // CERTIFICATIONS: A guide can have many certifications
+    public function certifications(): HasMany
+    {
+        return $this->hasMany(GuideCertification::class, 'guide_id');
+    }
+
+    // LICENSES: A guide can have many licenses
+    public function licenses(): HasMany
+    {
+        return $this->hasMany(License::class, 'guide_id');
+    }
+
+    // TRAINING ENROLLMENTS
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(GuideEnrollment::class, 'guide_id');
+    }
+
+    // TRAINING PROGRESS
+    public function moduleProgress(): HasMany
+    {
+        return $this->hasMany(GuideModuleProgress::class, 'guide_id');
+    }
+
+    // TRAINING SESSIONS: A user may be an instructor
+    public function instructedSessions(): HasMany
+    {
+        return $this->hasMany(TrainingSession::class, 'instructor_id');
+    }
+
+    // FEEDBACK: Guides receive feedback
+    public function feedbackReceived(): HasMany
+    {
+        return $this->hasMany(GuideFeedback::class, 'guide_id');
+    }
+
+    // FEEDBACK: Visitors submit feedback
+    public function feedbackGiven(): HasMany
+    {
+        return $this->hasMany(GuideFeedback::class, 'visitor_id');
+    }
+
+    // PERFORMANCE ASSESSMENTS
+    public function performanceMetrics(): HasMany
+    {
+        return $this->hasMany(GuidePerformanceMetric::class, 'guide_id');
+    }
+
+    public function assessedMetrics(): HasMany
+    {
+        return $this->hasMany(GuidePerformanceMetric::class, 'assessor_id');
+    }
+
+    // SPECIES OBSERVED
+    public function observations(): HasMany
+    {
+        return $this->hasMany(SpeciesObservation::class, 'observer_id');
+    }
+
+    public function confirmedObservations(): HasMany
+    {
+        return $this->hasMany(SpeciesObservation::class, 'confirmed_by');
+    }
+
+    // ALERTS RESOLVED
+    public function resolvedAlerts(): HasMany
+    {
+        return $this->hasMany(IoTAlert::class, 'resolved_by');
+    }
+
+    // CREATED PARK ATTRACTIONS
+    public function createdAttractions(): HasMany
+    {
+        return $this->hasMany(ParkAttraction::class, 'created_by');
+    }
+
+    // AI IDENTIFICATIONS
+    public function identifications(): HasMany
+    {
+        return $this->hasMany(AIIdentificationLog::class, 'guide_id');
+    }
+
+    // MEDIA
+    public function uploadedMedia(): HasMany
+    {
+        return $this->hasMany(MediaLibrary::class, 'uploaded_by');
+    }
+
+    // NOTIFICATIONS
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    // LOGS
+    public function systemLogs(): HasMany
+    {
+        return $this->hasMany(SystemLog::class);
     }
 }

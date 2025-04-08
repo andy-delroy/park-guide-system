@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('companies', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email');
-            $table->string('address')->nullable();
-            $table->string('website')->nullable();
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id('id');
+            $table->string('role_name', 100);
+            $table->text('description')->nullable();
+            $table->json('permissions_json')->nullable();
             $table->timestamps();
-        });
+        });        
     }
 
     /**
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('companies');
+        Schema::dropIfExists('roles');
     }
 };
