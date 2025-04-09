@@ -44,14 +44,15 @@ SESSION_DOMAIN=127.0.0.1
 SANCTUM_STATEFUL_DOMAINS=127.0.0.1:8000,localhost:8000,localhost:5173,127.0.0.1:5173,localhost:3000,127.0.0.1:3000
 SANCTUM_COOKIE="XSRF-TOKEN"
 
-# HOW TO RUN THE WEB AND MOBILE
-## WEB
+## HOW TO RUN THE WEB AND MOBILE
+### WEB
 You need three terminals and make sure to do `cd backend` for all three.
 1. `npm run dev`
 2. `php artisan serve --host=0.0.0.0 --port=8000`
 3. `php artisan reverb:start`
-## MOBILE
+### MOBILE
 `cd mobile`
+
 `npx expo start -c`
 
   
