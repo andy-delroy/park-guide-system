@@ -20,7 +20,8 @@ Refer to the following video as a guide while you code.
 
 ## BEFORE START
 
-Before we start, `cp .env.example .env` DO NOT FORGET THIS BEFORE INSTALLING OTHER THINGS
+Before we start, 
+`cp .env.example .env` you need to use this first before installation
 
 `composer install`
 
