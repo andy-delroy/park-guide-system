@@ -35,18 +35,8 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      {/* Background video */}
-      <Video
-        source={require('../assets/flag.mp4')} // Path to your video file
-        style={styles.backgroundVideo}
-        isLooping={true} // Loop the video
-        isMuted={true} // Mute the video if needed
-        resizeMode="cover" // Make sure it covers the entire background
-        shouldPlay={true} // Auto-play the video
-      />
-
       <Text style={styles.title}>Welcome, {username}!</Text>
-      <Text style={styles.subtitle}>This is your home screen.</Text>
+      <Text style={styles.subtitle}>Wander through the ancient caves and emerald forests that whisper the story of Sarawak.</Text>
 
       {/* Image Slideshow using Swiper */}
       <Swiper
