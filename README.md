@@ -18,7 +18,7 @@ Refer to the following video as a guide while you code.
 
 
 
-##AN's PILL
+## BEFORE START
 
 Before we start, `cp .env.example .env` DO NOT FORGET THIS BEFORE INSTALLING OTHER THINGS
 
