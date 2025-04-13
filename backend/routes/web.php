@@ -19,13 +19,13 @@ use Inertia\Inertia;
 Route::redirect('/', '/dashboard');
 
 
-
 Route::middleware(['auth', 'verified'])->group(function() {
    Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard'); 
 
    //what are resouces?
-   Route::resource('trainings', TrainingsController::class);
+    Route::resource('trainings', TrainingsController::class);
 //    Route::resouce('user', ::class);
+    Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
 });
 
 Route::middleware('auth')->group(function () {

@@ -54,6 +54,13 @@ class User extends Authenticatable
         return $this->hasMany(GuideModuleProgress::class, 'guide_id');
     }
 
+    // TRAINING SESSIONS: A user may be a participant
+    public function trainings()
+    {
+        return $this->belongsToMany(Trainings::class, 'training_user', 'user_id', 'training_id')->withTimestamps();
+    }
+
+
     // TRAINING SESSIONS: A user may be an instructor
     public function instructedSessions(): HasMany
     {
