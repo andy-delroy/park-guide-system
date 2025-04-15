@@ -4,8 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TrainingsController;
-use App\Http\Controllers\Api\RoleController;
+// use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
 

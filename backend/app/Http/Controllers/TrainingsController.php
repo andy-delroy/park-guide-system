@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTrainingsRequest;
 use App\Http\Requests\UpdateTrainingsRequest;
 use App\Http\Resources\TrainingsResource;
 use App\Services\IcsService;
+use Illuminate\Support\Facades\Auth;
 
 class TrainingsController extends Controller
 {
