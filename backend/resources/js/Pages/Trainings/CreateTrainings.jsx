@@ -1,8 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
-//passes all the data as props inside the function
-export default function Index({auth, trainings}) //trainings should have been passed from the function invoked during routing
+export default function Index({auth, trainings})
 {
     return (
         <AuthenticatedLayout

@@ -19,8 +19,9 @@ use Inertia\Inertia;
 Route::redirect('/', '/dashboard');
 
 
-
+//Route::middleware applies the middlewares in this group, in this case authed and verified users only can access the routes in this group  
 Route::middleware(['auth', 'verified'])->group(function() {
+    // Inertia:: render looks for files under resources/js/Pages
    Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard'); 
 
    //what are resouces?
@@ -38,5 +39,5 @@ require __DIR__.'/auth.php';
 
 
 
-Route::redirect('/nigga', '/dashboard');
-Route::redirect('/nigga', '/thehood');
+// Route::redirect('/nigga', '/dashboard');
+// Route::redirect('/nigga', '/thehood');

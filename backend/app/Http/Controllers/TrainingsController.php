@@ -30,6 +30,9 @@ class TrainingsController extends Controller
     public function create()
     {
         //
+        return inertia("Trainings/CreateTrainings", [
+            "word" => "nigga",
+        ]);
     }
 
     /**
