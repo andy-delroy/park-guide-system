@@ -6,35 +6,32 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-//default laravel render page
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
-
+// Redirect root to dashboard
 Route::redirect('/', '/dashboard');
 
+// Public gallery — everyone can view
+Route::get('/media', fn () => Inertia::render('Media/Index'))->name('media.index');
+Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+// Authenticated routes (only for logged-in users)
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
 
-//Route::middleware applies the middlewares in this group, in this case authed and verified users only can access the routes in this group  
-Route::middleware(['auth', 'verified'])->group(function() {
-    // Inertia:: render looks for files under resources/js/Pages
-   Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard'); 
+    // Training management
+    Route::resource('trainings', TrainingsController::class);
 
-   //what are resouces?
-   Route::resource('trainings', TrainingsController::class);
-//    Route::resouce('user', ::class);
+    // ✅ Media Upload page (no role check)
+   // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
 });
 
+// User profile routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 
 
