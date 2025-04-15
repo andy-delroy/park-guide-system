@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
@@ -20,6 +21,11 @@ Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::delete('destroy', [AuthController::class, 'destroy']);
 
+        // Trainings routes
+        Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
+        Route::apiResource('trainings', TrainingsController::class);
+
+        // Roles route
         Route::get('roles', [RoleController::class, 'getAllRoles']);
     });
 });

@@ -17,8 +17,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
 
-    // Training management
+
+Route::middleware(['auth', 'verified'])->group(function() {
+   Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard'); 
+
+   //what are resouces?
     Route::resource('trainings', TrainingsController::class);
+//    Route::resouce('user', ::class);
+    Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
+    // old Training management
+    //Route::resource('trainings', TrainingsController::class);
 
     // ✅ Media Upload page (no role check)
    // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');

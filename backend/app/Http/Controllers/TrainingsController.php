@@ -6,22 +6,49 @@ use App\Models\Trainings;
 use App\Http\Requests\StoreTrainingsRequest;
 use App\Http\Requests\UpdateTrainingsRequest;
 use App\Http\Resources\TrainingsResource;
+use App\Services\IcsService;
 
 class TrainingsController extends Controller
 {
+    public function enroll($id)
+    {
+        $user = Auth::user();
+        $training = Trainings::findOrFail($id);
+
+        if ($training->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Already enrolled.'], 409);
+        }
+
+        if ($training->users()->count() >= $training->capacity) {
+            return response()->json(['message' => 'Training is full.'], 403);
+        }
+
+        $training->users()->attach($user->id);
+
+        $icsService = new IcsService();
+        $icsContent = $icsService->generateTrainingIcs($training);
+
+        return response($icsContent, 200, [
+            'Content-Type' => 'text/calendar',
+            'Content-Disposition' => 'attachment; filename="training.ics"',
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //it's not recommended to pass the entire list of data with Inertia
         $query = Trainings::query();
-        //load the data here and pass it to render
         $trainings = $query->paginate(10)->onEachSide(1);
 
+        // If you're using Inertia (full-stack Laravel+React/Vue):
         return inertia("Trainings/Index", [
             "trainings" => TrainingsResource::collection($trainings),
         ]);
+
+        // If you're returning JSON only (for React API frontend), use this instead:
+        // return TrainingsResource::collection($trainings);
     }
 
     /**
@@ -29,15 +56,26 @@ class TrainingsController extends Controller
      */
     public function create()
     {
-        //
+        // Not needed for API 
     }
+
+    public function myTrainings()
+{
+    $user = auth()->user();
+    $trainings = $user->trainings()->paginate(10)->onEachSide(1);
+
+    return inertia('Trainings/MyTrainings', [
+        'trainings' => TrainingsResource::collection($trainings),
+    ]);
+}
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreTrainingsRequest $request)
     {
-        //
+        $training = Trainings::create($request->validated());
+        return new TrainingsResource($training);
     }
 
     /**
@@ -45,7 +83,7 @@ class TrainingsController extends Controller
      */
     public function show(Trainings $trainings)
     {
-        //
+        return new TrainingsResource($trainings);
     }
 
     /**
@@ -53,7 +91,7 @@ class TrainingsController extends Controller
      */
     public function edit(Trainings $trainings)
     {
-        //
+        // Not needed for API 
     }
 
     /**
@@ -61,7 +99,8 @@ class TrainingsController extends Controller
      */
     public function update(UpdateTrainingsRequest $request, Trainings $trainings)
     {
-        //
+        $trainings->update($request->validated());
+        return new TrainingsResource($trainings);
     }
 
     /**
@@ -69,6 +108,7 @@ class TrainingsController extends Controller
      */
     public function destroy(Trainings $trainings)
     {
-        //
+        $trainings->delete();
+        return response()->json(['message' => 'Training deleted']);
     }
 }
