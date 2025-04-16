@@ -21,10 +21,69 @@ class DatabaseSeeder extends Seeder
         $guideRole = Role::factory()->create(['role_name' => 'guide']);
         $visitorRole = Role::factory()->create(['role_name' => 'visitor']);
 
-        // Users
-        $admins = User::factory()->count(2)->create(['role_id' => $adminRole->id]);
-        $guides = User::factory()->count(10)->create(['role_id' => $guideRole->id]);
-        $visitors = User::factory()->count(20)->create(['role_id' => $visitorRole->id]);
+        // Specific test users for admins
+        $admins = [
+            User::factory()->create([
+                'username' => 'admin1',
+                'password' => bcrypt('adminpass1'),
+                'email' => 'admin1@example.com',
+                'role_id' => $adminRole->id,
+            ]),
+            User::factory()->create([
+                'username' => 'admin2',
+                'password' => bcrypt('adminpass2'),
+                'email' => 'admin2@example.com',
+                'role_id' => $adminRole->id,
+            ]),
+        ];
+
+        // Specific test users for guides
+        $guides = [
+            User::factory()->create([
+                'username' => 'guide1',
+                'password' => bcrypt('guidepass1'),
+                'email' => 'guide1@example.com',
+                'role_id' => $guideRole->id,
+            ]),
+            User::factory()->create([
+                'username' => 'guide2',
+                'password' => bcrypt('guidepass2'),
+                'email' => 'guide2@example.com',
+                'role_id' => $guideRole->id,
+            ]),
+            User::factory()->create([
+                'username' => 'guide3',
+                'password' => bcrypt('guidepass3'),
+                'email' => 'guide3@example.com',
+                'role_id' => $guideRole->id,
+            ]),
+        ];
+
+        // Specific test users for visitors
+        $visitors = [
+            User::factory()->create([
+                'username' => 'visitor1',
+                'password' => bcrypt('visitorpass1'),
+                'email' => 'visitor1@example.com',
+                'role_id' => $visitorRole->id,
+            ]),
+            User::factory()->create([
+                'username' => 'visitor2',
+                'password' => bcrypt('visitorpass2'),
+                'email' => 'visitor2@example.com',
+                'role_id' => $visitorRole->id,
+            ]),
+            User::factory()->create([
+                'username' => 'visitor3',
+                'password' => bcrypt('visitorpass3'),
+                'email' => 'visitor3@example.com',
+                'role_id' => $visitorRole->id,
+            ]),
+        ];
+
+        // Optional: Add more random users if needed for testing
+        // $extraGuides = User::factory()->count(2)->create(['role_id' => $guideRole->id]);
+        // $extraVisitors = User::factory()->count(2)->create(['role_id' => $visitorRole->id]);
 
         // Parks
         $parks = Park::factory()->count(5)->create();
@@ -54,7 +113,7 @@ class DatabaseSeeder extends Seeder
 
         // Training Programs + Modules + Content
         $programs = TrainingProgram::factory()->count(3)->create([
-            'created_by' => $admins->random()->id
+            'created_by' => $admins[array_rand($admins)]->id
         ]);
 
         foreach ($programs as $program) {
@@ -67,7 +126,7 @@ class DatabaseSeeder extends Seeder
         // Sessions + Enrollments + Progress
         $sessions = TrainingSession::factory()->count(5)->create([
             'program_id' => $programs->random()->id,
-            'instructor_id' => $admins->random()->id,
+            'instructor_id' => $admins[array_rand($admins)]->id,
         ]);
 
         foreach ($guides as $guide) {
@@ -77,7 +136,6 @@ class DatabaseSeeder extends Seeder
                 'session_id' => $session->id
             ]);
 
-            // Progress on all modules from the program
             $relatedModules = $session->program->modules ?? [];
             foreach ($relatedModules as $module) {
                 GuideModuleProgress::factory()->create([
@@ -86,7 +144,6 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            // Certification
             GuideCertification::factory()->create([
                 'guide_id' => $guide->id,
                 'program_id' => $session->program->id
@@ -97,7 +154,7 @@ class DatabaseSeeder extends Seeder
         foreach ($guides as $guide) {
             GuideFeedback::factory()->create([
                 'guide_id' => $guide->id,
-                'visitor_id' => $visitors->random()->id,
+                'visitor_id' => $visitors[array_rand($visitors)]->id,
                 'park_id' => $parks->random()->id
             ]);
         }
@@ -106,7 +163,7 @@ class DatabaseSeeder extends Seeder
         foreach ($guides as $guide) {
             GuidePerformanceMetric::factory()->create([
                 'guide_id' => $guide->id,
-                'assessor_id' => $admins->random()->id
+                'assessor_id' => $admins[array_rand($admins)]->id
             ]);
         }
 
@@ -114,7 +171,7 @@ class DatabaseSeeder extends Seeder
         foreach ($guides as $guide) {
             License::factory()->create([
                 'guide_id' => $guide->id,
-                'issued_by' => $admins->random()->id,
+                'issued_by' => $admins[array_rand($admins)]->id,
                 'park_id' => $parks->random()->id
             ]);
         }
@@ -144,5 +201,9 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info('All data seeded successfully with relational integrity! 🌱');
+        $this->command->info('Test accounts created:');
+        $this->command->info('Admins: admin1/adminpass1, admin2/adminpass2');
+        $this->command->info('Guides: guide1/guidepass1, guide2/guidepass2, guide3/guidepass3');
+        $this->command->info('Visitors: visitor1/visitorpass1, visitor2/visitorpass2, visitor3/visitorpass3');
     }
 }

@@ -9,7 +9,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'role_name' => $this->faker->jobTitle(),
+            'role_name' => $this->faker->randomElement(['admin', 'guide', 'visitor']),
             'description' => $this->faker->sentence(),
             'permissions_json' => json_encode([
                 'can_edit' => $this->faker->boolean(),
