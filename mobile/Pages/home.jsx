@@ -10,9 +10,10 @@ const Home = () => {
 
   // List of local images from the assets folder
   const images = [
-    require('../assets/salute.jpeg'), // Replace with your actual image paths
-    require('../assets/salute.jpeg'),
-    require('../assets/salute.jpeg'),
+    require('../assets/slide1.jpg'), // Replace with your actual image paths
+    require('../assets/slide2.jpg'),
+    require('../assets/slide3.jpg'),
+    require('../assets/slide4.jpg'),
   ];
 
   useEffect(() => {
