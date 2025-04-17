@@ -19,6 +19,7 @@ export default function GuideScanner() {
   const [submitting, setSubmitting] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [startScanning, setStartScanning] = useState(false);
 
   useEffect(() => {
     if (!permission) requestPermission();
@@ -167,6 +168,7 @@ export default function GuideScanner() {
                   setGuideDetails(null);
                   setError(null);
                   setShowRatingForm(false);
+                  setStartScanning(false);
                 }}
               >
                 <Text style={styles.backButtonText}>Back to Camera</Text>
@@ -268,24 +270,37 @@ export default function GuideScanner() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      {showGuideDetails ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
+        {showGuideDetails ? (
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+            <View style={styles.container}>
+              {renderGuideDetails()}
+            </View>
+          </ScrollView>
+        ) : startScanning ? (
           <View style={styles.container}>
-            {renderGuideDetails()}
+            {renderCamera()}
           </View>
-        </ScrollView>
-      ) : (
-        <View style={styles.container}>
-          {renderCamera()}
-        </View>
-      )}
+        ) : (
+          <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 }]}>
+            <Text style={styles.instructionText}>
+              Please click the button below to scan the QR code of the park guide to provide feedback.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={() => setStartScanning(true)}
+            >
+              <Text style={styles.scanButtonText}>Scan Guide QR</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-  );  
+  );   
 }
 
 const styles = StyleSheet.create({
@@ -404,4 +419,24 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
+  scanButton: {
+    backgroundColor: '#00693D',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  
+  scanButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  instructionText: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  
 });
