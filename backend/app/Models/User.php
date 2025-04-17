@@ -20,9 +20,16 @@ class User extends Authenticatable
         'employment_status', 'status', 'registration_date', 'last_login'
     ];
 
+    protected $appends = ['role_name'];
+
     /** ----------------------------
      *        Relationships
      *  ---------------------------- */
+
+    public function getRoleNameAttribute(): string
+    {
+        return $this->role ? $this->role->role_name : 'Unknown';
+    }
 
     // ROLE: Each user belongs to a role
     public function role(): BelongsTo

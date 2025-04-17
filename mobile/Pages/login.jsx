@@ -47,7 +47,7 @@ const Login = ({ navigation }) => {
         await SecureStore.setItemAsync('userName', String(user.username));
         await SecureStore.setItemAsync('userRole', String(user.role_name)); // Save user role if needed
 
-        Alert.alert('Success', `Welcome ${user.username} with role ${user.role_name}!`);
+        // Alert.alert('Success', `Welcome ${user.username} with role ${user.role_name}!`);
 
         navigation.reset({
           index: 0,
@@ -72,8 +72,9 @@ const Login = ({ navigation }) => {
 
   const handleContinueAsGuest = async () => {
     // Set the role as 'guest' when the user chooses to continue as guest
-    await SecureStore.setItemAsync('userRole', 'guest');
-    await SecureStore.setItemAsync('userName', 'Guest');
+    await SecureStore.setItemAsync('userToken', 'dummy-guest-token');
+    await SecureStore.setItemAsync('userName', 'Distinguished Guest');
+    await SecureStore.setItemAsync('userRole', 'visitor');
   
     navigation.reset({
       index: 0,

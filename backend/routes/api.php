@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TrainingsController;
-// use App\Http\Controllers\Api\RoleController;
+// use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\GuideFeedbackController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
 
@@ -28,8 +30,17 @@ Route::prefix('auth')->group(function () {
 
         // Roles route
         Route::get('roles', [RoleController::class, 'getAllRoles']);
+
+        Route::get('guides', [UserController::class, 'fetchGuides']);
+        Route::get('profile', [UserController::class, 'getProfile']);
+        Route::put('profile/update', [UserController::class, 'updateProfile']);
     });
 });
+
+Route::get('/guides/{username}', [UserController::class, 'getGuide']);
+Route::post('/guides/{username}/feedback', [GuideFeedbackController::class, 'store']);
+Route::get('/guides/{username}/feedbacks', [GuideFeedbackController::class, 'showFeedbacks']);
+
 
 
 

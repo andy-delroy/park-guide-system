@@ -17,7 +17,8 @@ const fonts = {
   regular: 'Roboto',               // Clean, legible font (can be changed to any other font)
   bold: 'Roboto-Bold',             // Bold version for headings, buttons, etc.
   fontSizeSmall: 14,               // Small font size for minor text
-  fontSizeMedium: 16,              // Regular font size for general text
+  fontSizeMedium: 16,             // Regular font size for general text
+  fontSizeMediumLarge: 24,
   fontSizeLarge: 28,               // Large font size for headings
 };
 
