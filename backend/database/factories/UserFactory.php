@@ -13,6 +13,7 @@ class UserFactory extends Factory
 
     public function definition()
     {
+        $role = Role::inRandomOrder()->first() ?? Role::factory()->create(['role_name' => 'visitor']);
         return [
             'username' => $this->faker->unique()->userName(),
             'password' => bcrypt('password'),
@@ -22,7 +23,7 @@ class UserFactory extends Factory
             'date_of_birth' => $this->faker->date(),
             'gender' => $this->faker->randomElement(['male', 'female']),
             'address' => $this->faker->address(),
-            'role_id' => Role::factory(),
+            'role_id' => $role->id,
             'registration_date' => now(),
             'last_login' => now(),
             'status' => 'active',

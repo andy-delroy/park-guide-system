@@ -20,11 +20,26 @@ class User extends Authenticatable
         'employment_status', 'status', 'registration_date', 'last_login'
     ];
 
+    protected $appends = ['role_name'];
+
     /** ----------------------------
      *        Relationships
      *  ---------------------------- */
 
+    public function getRoleNameAttribute(): string
+    {
+        return $this->role ? $this->role->role_name : 'Unknown';
+    }
+
     // ROLE: Each user belongs to a role
+
+    protected $appends = ['role_name'];
+
+    public function getRoleNameAttribute(): string
+    {
+        return $this->role ? $this->role->role_name : 'Unknown';
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -53,6 +68,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(GuideModuleProgress::class, 'guide_id');
     }
+
+    // TRAINING SESSIONS: A user may be a participant
+    public function trainings()
+    {
+        return $this->belongsToMany(Trainings::class, 'training_user', 'user_id', 'training_id')->withTimestamps();
+    }
+
 
     // TRAINING SESSIONS: A user may be an instructor
     public function instructedSessions(): HasMany
@@ -128,5 +150,10 @@ class User extends Authenticatable
     public function systemLogs(): HasMany
     {
         return $this->hasMany(SystemLog::class);
+    }
+
+    public function getRoleName(): string
+    {
+        return $this->role ? $this->role->role_name : 'Unknown';
     }
 }

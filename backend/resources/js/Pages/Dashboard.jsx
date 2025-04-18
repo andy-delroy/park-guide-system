@@ -8,6 +8,7 @@ export default function Dashboard({auth}) {
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Dashboard
+                    User: {auth.user.role_name}
                 </h2>
             }
         >
@@ -18,7 +19,12 @@ export default function Dashboard({auth}) {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             You're logged in!
+                            <div className="mb-4">
+                                <p className="text-lg">Welcome, {auth.user.full_name}!</p>
+                                <p>You are logged in as </p>
+                            </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>

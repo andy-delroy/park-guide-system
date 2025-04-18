@@ -1,41 +1,55 @@
 <?php
 
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-//default laravel render page
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
-
+// Redirect root to dashboard
 Route::redirect('/', '/dashboard');
 
-
-
-Route::middleware(['auth', 'verified'])->group(function() {
-   Route::get('/dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard'); 
+// Public gallery — everyone can view
+Route::get('/media', fn () => Inertia::render('Media/Index'))->name('media.index');
+Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+// Authenticated routes (only for logged-in users)
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
 
    //what are resouces?
-   Route::resource('trainings', TrainingsController::class);
+    Route::resource('trainings', TrainingsController::class);
 //    Route::resouce('user', ::class);
+    Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
+    // old Training management
+    //Route::resource('trainings', TrainingsController::class);
+
+    // ✅ Media Upload page (no role check)
+   // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+
+
+   //guides management
+   Route::resource('guides', GuideController::class);
 });
 
+// User profile routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+<<<<<<< HEAD
 Route::get('/map', function () {
     return Inertia::render('Map/parkmap'); // This loads resources/js/Pages/parkmap.jsx
 });
 
+=======
+// Laravel Breeze auth routes
+>>>>>>> main
 require __DIR__.'/auth.php';
+
+
+// Route::redirect('/nigga', '/dashboard');
+// Route::redirect('/nigga', '/thehood');
