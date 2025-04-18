@@ -24,7 +24,7 @@ class AuthController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 1, // Or set a default role here
+            'role_id' => 3, // Or set a default role here
         ]);
 
         return response()->json([
@@ -52,6 +52,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => $user,
+            'role_name' => $user->role->role_name,
             'token' => $user->createToken('mobile')->plainTextToken,
         ]);
     }

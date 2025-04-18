@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
 use Illuminate\Foundation\Application;
@@ -26,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ✅ Media Upload page (no role check)
    // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+
+
+   //guides management
+   Route::resource('guides', GuideController::class);
 });
 
 // User profile routes
