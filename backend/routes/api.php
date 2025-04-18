@@ -26,6 +26,7 @@ Route::prefix('auth')->group(function () {
 
         // Trainings routes
         Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
+        Route::post('/test-enroll', fn() => response()->json(['message' => 'its working']));
         Route::apiResource('trainings', TrainingsController::class);
 
         // Roles route

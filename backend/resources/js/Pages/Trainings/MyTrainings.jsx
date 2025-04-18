@@ -14,13 +14,24 @@ export default function MyTrainings({ auth, trainings }) {
             <Head title="My Trainings" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
+                            {/* 🟦 Download Schedule Button */}
+                            <div className="flex justify-end mb-4">
+                                <a
+                                    href={route("my-trainings.download")}
+                                    className="inline-block px-4 py-2 bg-blue-600 text-white font-semibold text-sm rounded shadow hover:bg-blue-700 transition"
+                                >
+                                    Download Schedule (ICS)
+                                </a>
+                            </div>
+
+                            {/* Training Table */}
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b-2 border-gray-500">
-                                    <tr>
-                                        <th className="px-3 py-2">Title</th>
+                                    <tr className="text-nowrap">
+                                        <th className="px-3 py-2">Name of Training</th>
                                         <th className="px-3 py-2">Start Date</th>
                                         <th className="px-3 py-2">End Date</th>
                                         <th className="px-3 py-2">Location</th>

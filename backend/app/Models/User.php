@@ -22,14 +22,15 @@ class User extends Authenticatable
 
     protected $appends = ['role_name'];
 
-    /** ----------------------------
-     *        Relationships
-     *  ---------------------------- */
-
     public function getRoleNameAttribute(): string
     {
         return $this->role ? $this->role->role_name : 'Unknown';
     }
+
+    /** ----------------------------
+     *        Relationships
+     *  ---------------------------- */
+
 
     // ROLE: Each user belongs to a role
 
