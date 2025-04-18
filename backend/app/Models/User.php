@@ -33,13 +33,6 @@ class User extends Authenticatable
 
     // ROLE: Each user belongs to a role
 
-    protected $appends = ['role_name'];
-
-    public function getRoleNameAttribute(): string
-    {
-        return $this->role ? $this->role->role_name : 'Unknown';
-    }
-
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
