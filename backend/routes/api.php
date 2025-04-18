@@ -5,15 +5,12 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\RoleController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\TrainingsController;
 // use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuideFeedbackController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
->>>>>>> main
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
