@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/map', function () {
+    return Inertia::render('Map/parkmap'); // This loads resources/js/Pages/parkmap.jsx
+});
+
 // Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 

@@ -25,6 +25,8 @@
         "vite": "^6.0.11"
     },
     "dependencies": {
+        "@react-google-maps/api": "^2.20.6",
+        "react-360-viewer": "^0.1.0",
         "@inertiajs/inertia": "^0.11.1",
         "bootstrap": "^5.3.5",
         "react-countup": "^6.5.3",
