@@ -15,6 +15,7 @@ class TrainingsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $user = $request->user(); 
         // return parent::toArray($request);
         return [
             'id' => $this->id,
@@ -24,6 +25,7 @@ class TrainingsResource extends JsonResource
             'end_date' => (new Carbon($this->end_date))->format('Y-m-d'),
             'location' => $this->location,
             'capacity' => $this->capacity,
+            'is_enrolled' => $user ? $this->users->contains($user->id) : false,
         ];
     }
 }

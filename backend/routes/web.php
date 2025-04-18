@@ -20,7 +20,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);
 //    Route::resouce('user', ::class);
+    Route::get('/trainings/create', [TrainingsController::class, 'create'])->name('trainings.create');
     Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
+    Route::get('/my-trainings/download', [TrainingsController::class, 'downloadSchedule'])->name('my-trainings.download');
+
     // old Training management
     //Route::resource('trainings', TrainingsController::class);
 
