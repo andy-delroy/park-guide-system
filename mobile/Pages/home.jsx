@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import Swiper from 'react-native-swiper';
-import { Video } from 'expo-av'; // Import the video component from expo-av
+import API_BASE_URL from '../api.config';
 
 const Home = () => {
-  const [username, setUsername] = useState('');
+  const [fullname, setFullName] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // List of local images from the assets folder
-  const images = [
-    require('../assets/slide1.jpg'), // Replace with your actual image paths
-    require('../assets/slide2.jpg'),
-    require('../assets/slide3.jpg'),
-    require('../assets/slide4.jpg'),
-  ];
+  // List of filenames stored in your Laravel backend
+  const imageFilenames = ['slide1.jpg', 'slide2.jpg', 'slide3.jpg', 'slide4.jpg'];
+
+  // Generate full URLs
+  const images = imageFilenames.map(filename => `${API_BASE_URL}/mobile/media/${filename}`);
 
   useEffect(() => {
     const loadUser = async () => {
-      const storedName = await SecureStore.getItemAsync('userName');
-      setUsername(storedName || 'Guest');
+      const storedName = await SecureStore.getItemAsync('fullName');
+      setFullName(storedName || 'Distinguished Guest');
       setLoading(false);
     };
 
@@ -35,27 +33,52 @@ const Home = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {username}!</Text>
-      <Text style={styles.subtitle}>Wander through the ancient caves and emerald forests that whisper the story of Sarawak.</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Welcome, {fullname}!</Text>
+      <Text style={styles.subtitle}>Sarawak Forestry Corporation (SFC) is a statutory body of the Sarawak Government formed under Sarawak Forestry Corporation Ordinance, 1995. {"\n\n"}Our main functions are to manage Totally Protected Areas (TPAs) and to conserve Biodiversity of Sarawak. We have been entrusted to protect the wildlife of Sarawak, particularly the totally protected and protected species. In doing this, we are governed by National Parks and Nature Reserves Ordinance 1998 and Wild Life Protection Ordinance, 1998.</Text>
 
       {/* Image Slideshow using Swiper */}
       <Swiper
         style={styles.wrapper}
         showsButtons={false} // Disable manual navigation buttons
         autoplay={true} // Enable automatic sliding
-        autoplayTimeout={3} // Time between slides in seconds
+        autoplayTimeout={5} // Time between slides in seconds
         loop={true} // Loop the slideshow
         dotColor='transparent'
-        activeDotColor='transparent' // Hide the dots
+        activeDotColor='transparent'
+        scrollEnabled={false}
       >
-        {images.map((image, index) => (
+        {images.map((imageUrl, index) => (
           <View key={index} style={styles.slide}>
-            <Image source={image} style={styles.image} />
+            <Image source={{ uri: imageUrl }} style={styles.image} />
           </View>
         ))}
       </Swiper>
-    </View>
+
+      {/* Text Slideshow */}
+      <Swiper
+        style={styles.textWrapper}
+        showsButtons={false}
+        autoplay={true}
+        autoplayTimeout={5}
+        loop={true}
+        dotColor="transparent"
+        activeDotColor="transparent"
+        scrollEnabled={false}
+      >
+        {[
+          `"To be an agency of excellence in the conservation of Sarawak's wildlife and its totally protected areas for all people, for all time." - Our Vision`,
+          `"To create, maintain totally protected areas and to conserve wildlife through innovation and best practices for the equitable benefits for all." - Our Mission`,
+          `"Integrity, Kind and Caring, Professionalism, Sense of Urgency and Ownership, Team Spirit & Result-Oriented." - Our Values`,
+          `"New Frontier in Biodiversity Conservation." - Our Tagline`
+        ].map((quote, index) => (
+          <View key={index} style={styles.textSlide}>
+            <Text style={styles.quote}>{quote}</Text>
+          </View>
+        ))}
+      </Swiper>
+
+    </ScrollView>
   );
 };
 
@@ -63,12 +86,12 @@ export default Home;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#f5f6fa',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
-    paddingTop: 70,
+    paddingTop: 50,
     position: 'relative', // Ensure the video stays as background
   },
   centered: {
@@ -80,21 +103,22 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#2f3640',
-    marginBottom: 8,
-    textAlign: 'center',
-    zIndex: 1, // Make sure the text appears above the video
+    marginBottom: 20,
+    textAlign: 'left',
+    paddingHorizontal: 20, // Add padding for better line breaks
+    lineHeight: 40, // Improve readability
   },
   subtitle: {
     fontSize: 16,
     color: '#718093',
     marginBottom: 32,
-    textAlign: 'center',
-    zIndex: 1, // Ensure subtitle appears above the video
+    textAlign: 'justify',
+    paddingHorizontal: 20, // Add padding for better line breaks
+    lineHeight: 24, // Add line height for readability
   },
   wrapper: {
-    height: 100, // Adjust the height of the slideshow
+    height: 200, // Adjust the height of the slideshow
     marginBottom: 20,
-    zIndex: 1, // Ensure the slideshow is above the video
   },
   slide: {
     justifyContent: 'center',
@@ -106,11 +130,25 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     borderRadius: 10,
   },
-  backgroundVideo: {
-    position: 'absolute', // Position it behind the content
-    width: '100%',
-    height: '100%',
-    zIndex: 0, // Ensure the video is behind other components
-    resizeMode: 'contain', // Cover the entire screen
+  textWrapper: {
+    height: 100,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    alignItems: 'center', // Center swiper itself
+    zIndex: 1,
   },
+  textSlide: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+  quote: {
+    fontSize: 16,
+    color: '#2f3640',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: 22,
+  },
+  
+  
 });

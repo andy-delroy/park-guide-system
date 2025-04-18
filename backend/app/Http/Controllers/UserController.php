@@ -70,7 +70,7 @@ class UserController extends Controller
             'languages_spoken' => 'nullable|string',
             'years_of_experience' => 'nullable|integer|min:0',
             'specializations' => 'nullable|string',
-            'employment_status' => 'nullable|string|in:employed,unemployed,freelance,contract',
+            'employment_status' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

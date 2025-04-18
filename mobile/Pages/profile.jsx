@@ -24,6 +24,7 @@ const Profile = ({ navigation }) => {
       const token = await SecureStore.getItemAsync('userToken');
       const role = await SecureStore.getItemAsync('userRole');
       const name = await SecureStore.getItemAsync('userName');
+      const fullName = await SecureStore.getItemAsync('fullName');
 
       if (!token) {
         setLoading(false);
@@ -34,7 +35,7 @@ const Profile = ({ navigation }) => {
       if (role === 'visitor') {
         // Don't fetch from API for visitors
         setUser({
-          full_name: name || 'Guest',
+          full_name: fullName || 'Guest',
           role: role,
           username: 'guest',
         });
@@ -93,10 +94,14 @@ const Profile = ({ navigation }) => {
         setUser(data.user);
         setEditable(false);
       } else {
-        Alert.alert('Error', data.message || 'Failed to update profile');
+        const errors = data.errors
+        ? Object.values(data.errors).flat().join('\n')
+        : data.message || 'Failed to update profile';
+        Alert.alert('Update Failed', errors);
       }
     } catch (error) {
-      Alert.alert('Error', 'Unable to update profile');
+      console.error('Error during update:', error);
+      Alert.alert('Network Error', error.message || 'Unable to update profile');
     } finally {
       setUpdating(false);
     }
@@ -111,6 +116,7 @@ const Profile = ({ navigation }) => {
           await SecureStore.deleteItemAsync('userToken');
           await SecureStore.deleteItemAsync('userName');
           await SecureStore.deleteItemAsync('userRole');
+          await SecureStore.deleteItemAsync('fullName');
 
           navigation.reset({
             index: 0,
@@ -163,6 +169,7 @@ const Profile = ({ navigation }) => {
             await SecureStore.deleteItemAsync('userToken');
             await SecureStore.deleteItemAsync('userRole');
             await SecureStore.deleteItemAsync('userName');
+            await SecureStore.deleteItemAsync('fullName');
             
             navigation.reset({
               index: 0,
@@ -180,7 +187,7 @@ const Profile = ({ navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileHeader}>
         <Image
-          source={{ uri: user.profile_image_url || 'https://via.placeholder.com/120' }}
+          source={{ uri: user.profile_image_url || `${API_BASE_URL}/mobile/assets/placeholder.jpg` }}
           style={styles.profileImage}
         />
         <Text style={styles.title}>{user.full_name || user.username}</Text>

@@ -28,12 +28,14 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('adminpass1'),
                 'email' => 'admin1@example.com',
                 'role_id' => $adminRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
             User::factory()->create([
                 'username' => 'admin2',
                 'password' => bcrypt('adminpass2'),
                 'email' => 'admin2@example.com',
                 'role_id' => $adminRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
         ];
 
@@ -44,18 +46,21 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('guidepass1'),
                 'email' => 'guide1@example.com',
                 'role_id' => $guideRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
             User::factory()->create([
                 'username' => 'guide2',
                 'password' => bcrypt('guidepass2'),
                 'email' => 'guide2@example.com',
                 'role_id' => $guideRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
             User::factory()->create([
                 'username' => 'guide3',
                 'password' => bcrypt('guidepass3'),
                 'email' => 'guide3@example.com',
                 'role_id' => $guideRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
         ];
 
@@ -66,18 +71,21 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('visitorpass1'),
                 'email' => 'visitor1@example.com',
                 'role_id' => $visitorRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
             User::factory()->create([
                 'username' => 'visitor2',
                 'password' => bcrypt('visitorpass2'),
                 'email' => 'visitor2@example.com',
                 'role_id' => $visitorRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
             User::factory()->create([
                 'username' => 'visitor3',
                 'password' => bcrypt('visitorpass3'),
                 'email' => 'visitor3@example.com',
                 'role_id' => $visitorRole->id,
+                'profile_image_url' => 'http://172.17.0.156:8000/mobile/assets/placeholder.jpg',
             ]),
         ];
 
