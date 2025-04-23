@@ -15,6 +15,7 @@ const CustomDrawerContent = ({ navigation, role }) => {
           await SecureStore.deleteItemAsync('userToken');
           await SecureStore.deleteItemAsync('userName');
           await SecureStore.deleteItemAsync('userRole');
+          await SecureStore.deleteItemAsync('fullName');
           navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
         },
       },

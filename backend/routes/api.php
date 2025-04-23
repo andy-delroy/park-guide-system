@@ -32,12 +32,16 @@ Route::prefix('auth')->group(function () {
         // Roles route
         Route::get('roles', [RoleController::class, 'getAllRoles']);
 
+        // Manage Guides for admin
         Route::get('guides', [UserController::class, 'fetchGuides']);
+
+        // Profile routes for admin and guide
         Route::get('profile', [UserController::class, 'getProfile']);
-        Route::put('profile/update', [UserController::class, 'updateProfile']);
+        Route::post('profile/update', [UserController::class, 'updateProfile']);
     });
 });
 
+// Feedback routes
 Route::get('/guides/{username}', [UserController::class, 'getGuide']);
 Route::post('/guides/{username}/feedback', [GuideFeedbackController::class, 'store']);
 Route::get('/guides/{username}/feedbacks', [GuideFeedbackController::class, 'showFeedbacks']);
