@@ -5,7 +5,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Events\TestEvent;
 use Inertia\Inertia;
+use App\Models\Notification;
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
@@ -34,6 +37,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
    //guides management
    Route::resource('guides', GuideController::class);
+});
+
+
+//notification part
+// Route::get('/broadcast', function () {
+//     broadcast(new TestEvent());
+//     return 'Broadcast sent';
+// });
+
+Route::get('/broadcast/test', function () {
+    $user = Auth::user();
+
+    $role = $user?->role_name ?? 'guest';
+    $name = $user?->full_name ?? 'Anonymous';
+
+    $message = "Notification from {$name} ({$role})";
+
+    Notification::create([
+        'user_id' => $user?->id,
+        'role' => $role,
+        'message' => $message,
+        'type' => 'info',
+    ]);
+
+    broadcast(new TestEvent($message, $role));
+
+    return response()->json(['status' => 'sent']);
+});
+
+Route::get('/notifications', function () {
+    $user = Auth::user();
+    $role = $user?->role_name ?? 'guest'; 
+
+    return Inertia::render('Notifications/List', [
+        'auth' => ['user' => $user],
+        'notifications' => Notification::where('role', $role)
+            ->latest()
+            ->take(50)
+            ->get(),
+    ]);
+})->middleware('auth');
+
+use App\Http\Controllers\NotificationController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+
+    Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
+    Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
 });
 
 // User profile routes

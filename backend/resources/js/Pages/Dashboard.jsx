@@ -1,7 +1,37 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import React, { useEffect } from 'react';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 
 export default function Dashboard({auth}) {
+    const role = auth?.user?.role_name ?? 'guest';
+    
+      useEffect(() => {
+        const channelName = `notifications.${role}`;
+        console.log(`👂 Subscribing to ${channelName}...`);
+    
+        const channel = window.Echo.channel(channelName);
+    
+        channel.listen('.test', (event) => {
+          console.log('📡 Received broadcast:', event.message);
+    
+          Toastify({
+            text: event.message || "🔔 New notification received",
+            duration: 5000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#4fbe87",
+          }).showToast();
+        });
+    
+        return () => {
+          window.Echo.leave(channelName);
+        };
+      }, [role]);
+    
+    
     return (
         <AuthenticatedLayout
             user={auth.user}
