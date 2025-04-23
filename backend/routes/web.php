@@ -3,6 +3,7 @@
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
+use App\Http\Controllers\CertificationController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,6 +18,7 @@ Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('med
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::resource('certification', CertificationController::class);
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);

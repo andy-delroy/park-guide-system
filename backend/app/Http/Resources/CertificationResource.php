@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
+
+class CertificationResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return[
+        'id' => $this->id,
+        'guide_id' => $this->guide_id,
+        'program_id' => $this->program_id,
+        'certification_name' => $this->certification_name,
+        'description' => $this->description,
+        'issue_date' => Carbon::parse($this->issue_date)->format('Y-m-d'),
+        'expiry_date' => $this->expiry_date ? Carbon::parse($this->expiry_date)->format('Y-m-d') : null,
+        'certificate_number' => $this->certificate_number,
+        'issued_by' => $this->issued_by,
+        'renewal_count' => $this->renewal_count,
+        'status' => $this->status,
+        'certificate_file_url' => $this->certificate_file_url,
+        'verification_code' => $this->verification_code,
+        'requirements_description' => $this->requirements_description,
+        'validity_period_months' => $this->validity_period_months,
+        'renewal_requirements' => $this->renewal_requirements,
+        'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
+        'updated_at' => Carbon::parse($this->updated_at)->format('Y-m-d'),
+        ];
+    }
+}
