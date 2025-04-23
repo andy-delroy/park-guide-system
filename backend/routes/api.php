@@ -36,7 +36,7 @@ Route::prefix('auth')->group(function () {
 
         // Profile routes for admin and guide
         Route::get('profile', [UserController::class, 'getProfile']);
-        Route::put('profile/update', [UserController::class, 'updateProfile']);
+        Route::post('profile/update', [UserController::class, 'updateProfile']);
     });
 });
 

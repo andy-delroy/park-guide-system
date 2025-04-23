@@ -12,12 +12,15 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import API_BASE_URL from '../api.config';
+import * as ImagePicker from 'expo-image-picker';
+import styles from '../Styles/styles'; // Import your styles
 
 const Profile = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editable, setEditable] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -70,42 +73,97 @@ const Profile = ({ navigation }) => {
     fetchProfile();
   }, []);
 
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (!permission.granted) {
+      Alert.alert("Permission required", "Camera roll access is needed.");
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+  
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0]); // save selected image
+      handleChange('profile_image_url', result.assets[0].uri); // preview in UI
+    }
+  };
+
+  const getMimeType = (uri) => {
+    const extension = uri.split('.').pop().toLowerCase();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
+    }
+  };  
+
   const handleChange = (key, value) => {
     setUser(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
-    setUpdating(true);
     const token = await SecureStore.getItemAsync('userToken');
+  
+    const formData = new FormData();
+  
+    Object.entries(user).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+  
+    if (selectedImage) {
+      const fileUri = selectedImage.uri;
+      const fileName = fileUri.split('/').pop();
+      const mimeType = getMimeType(fileUri);
+
+      formData.append('profile_image', {
+        uri: fileUri,
+        name: fileName,
+        type: mimeType,
+      });
+    }
+  
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/profile/update`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(user),
+        body: formData,
       });
-
+  
       const data = await response.json();
+  
       if (response.ok) {
-        Alert.alert('Success', 'Profile updated successfully.');
-        setUser(data.user);
+        setUser(data.user); // update state with latest
         setEditable(false);
+        Alert.alert("Success", "Profile updated successfully.");
       } else {
-        const errors = data.errors
-        ? Object.values(data.errors).flat().join('\n')
-        : data.message || 'Failed to update profile';
-        Alert.alert('Update Failed', errors);
+        console.error('Validation failed', data);
+        Alert.alert("Error", data.message || "Update failed");
       }
     } catch (error) {
-      console.error('Error during update:', error);
-      Alert.alert('Network Error', error.message || 'Unable to update profile');
-    } finally {
-      setUpdating(false);
+      console.error('Update error', error);
+      Alert.alert("Error", "Could not update profile.");
     }
-  };
+  };  
 
   const handleLogout = async () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -129,22 +187,22 @@ const Profile = ({ navigation }) => {
 
   const renderInput = (label, value, key) => (
     <View style={{ marginBottom: 12 }}>
-      <Text style={styles.detail}>{label}</Text>
+      <Text style={styles.profileDetail}>{label}</Text>
       {editable ? (
         <TextInput
-          style={styles.input}
+          style={styles.profileInput}
           value={value}
           onChangeText={(text) => handleChange(key, text)}
         />
       ) : (
-        <Text style={styles.detailValue}>{value || 'N/A'}</Text>
+        <Text style={styles.profileDetailValue}>{value || 'N/A'}</Text>
       )}
     </View>
   );
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.profileCentered}>
         <ActivityIndicator size="large" color="#273c75" />
       </View>
     );
@@ -152,7 +210,7 @@ const Profile = ({ navigation }) => {
   
   if (!user) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.profileCentered}>
         <Text style={{ color: '#c23616', fontSize: 16 }}>Failed to load user data</Text>
       </View>
     );
@@ -160,10 +218,10 @@ const Profile = ({ navigation }) => {
   
   if (user.role === 'visitor') {
     return (
-      <View style={styles.centered}>
+      <View style={styles.profileCentered}>
         <Text style={{ fontSize: 18, marginBottom: 20 }}>Please login to view your profile.</Text>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: '#273c75' }]}
+          style={[styles.profileButton, { backgroundColor: '#273c75' }]}
           onPress={async () => {
             // Clear guest session data
             await SecureStore.deleteItemAsync('userToken');
@@ -177,27 +235,29 @@ const Profile = ({ navigation }) => {
             });
           }}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.profileButtonText}>Login</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.profileContainer}>
       <View style={styles.profileHeader}>
+      <TouchableOpacity onPress={editable ? pickImage : null}>
         <Image
-          source={{ uri: user.profile_image_url || `${API_BASE_URL}/mobile/assets/placeholder.jpg` }}
+          source={{ uri: selectedImage?.uri || user.profile_image_url || `${API_BASE_URL}/mobile/assets/placeholder.jpg` }}
           style={styles.profileImage}
         />
-        <Text style={styles.title}>{user.full_name || user.username}</Text>
-        <Text style={styles.role}>
+        {editable && <Text style={{ textAlign: 'center', color: '#273c75' }}>Tap to change</Text>}
+      </TouchableOpacity>
+        <Text style={styles.profileTitle}>{user.full_name || user.username}</Text>
+        <Text style={styles.profileRole}>
           {user.role_name ? user.role_name.charAt(0).toUpperCase() + user.role_name.slice(1) : 'User'}
         </Text>
       </View>
 
-      <View style={styles.detailsContainer}>
-        <Text style={styles.detailTitle}>Personal Details</Text>
+      <View style={styles.profileDetailsContainer}>
         {renderInput('Full Name', user.full_name, 'full_name')}
         {renderInput('Username', user.username, 'username')}
         {renderInput('Email', user.email, 'email')}
@@ -210,95 +270,17 @@ const Profile = ({ navigation }) => {
         {renderInput('Employment Status', user.employment_status, 'employment_status')}
       </View>
 
-      <TouchableOpacity style={[styles.button, { backgroundColor: editable ? '#44bd32' : '#273c75' }]} onPress={() => editable ? handleSave() : setEditable(true)}>
-        <Text style={styles.buttonText}>{editable ? (updating ? 'Saving...' : 'Save') : 'Edit Profile'}</Text>
-      </TouchableOpacity>
+      <View style={styles.profileButtonRow}>
+        <TouchableOpacity style={[styles.profileEditButton, editable && styles.profileSaveButton]} onPress={() => editable ? handleSave() : setEditable(true)}>
+          <Text style={styles.profileButtonText}>{editable ? (updating ? 'Saving...' : 'Save') : 'Edit Profile'}</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, { backgroundColor: '#e84118' }]} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.profileCancelButton} onPress={() => editable ? setEditable(false) : handleLogout()}>
+          <Text style={styles.profileButtonText}>{editable ? 'Back' : 'Logout'}</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    backgroundColor: '#f5f6fa',
-    padding: 20,
-  },
-  profileHeader: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#2f3640',
-  },
-  role: {
-    fontSize: 16,
-    color: '#718093',
-    marginTop: 4,
-  },
-  detailsContainer: {
-    backgroundColor: '#ffffff',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  detailTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2f3640',
-    marginBottom: 12,
-  },
-  detail: {
-    fontSize: 15,
-    color: '#718093',
-    marginBottom: 6,
-  },
-  button: {
-    backgroundColor: '#e84118',
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 30,
-    alignSelf: 'center',
-    width: '60%',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    fontSize: 15,
-    color: '#2f3640',
-  },
-  detailValue: {
-    fontSize: 15,
-    color: '#718093',
-  },
-});
 
 export default Profile;

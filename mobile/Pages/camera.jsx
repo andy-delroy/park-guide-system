@@ -5,6 +5,7 @@ import axios from 'axios';
 import API_BASE_URL from '../api.config';
 import { AirbnbRating } from '@rneui/themed';
 import { TextInput } from 'react-native';
+import styles from '../Styles/styles'; // Import your styles
 
 export default function GuideScanner() {
   const [facing, setFacing] = useState('back');
@@ -29,8 +30,8 @@ export default function GuideScanner() {
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
+      <View style={styles.cameraMainContainer}>
+        <Text style={styles.cameraMessage}>We need your permission to show the camera</Text>
         <Button onPress={requestPermission} title="Grant Permission" />
       </View>
     );
@@ -73,9 +74,9 @@ export default function GuideScanner() {
         }}
         onBarcodeScanned={handleBarcodeScanned}
       >
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => setFacing(f => (f === 'back' ? 'front' : 'back'))}>
-            <Text style={styles.text}>Flip Camera</Text>
+        <View style={styles.cameraButtonContainer}>
+          <TouchableOpacity style={styles.cameraButton} onPress={() => setFacing(f => (f === 'back' ? 'front' : 'back'))}>
+            <Text style={styles.cameraText}>Flip Camera</Text>
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -93,36 +94,36 @@ export default function GuideScanner() {
 
   const renderGuideDetails = () => (
     <ScrollView
-      contentContainerStyle={styles.scrollContainer}
+      contentContainerStyle={styles.cameraScrollContainer}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode='on-drag'
     >
-      <View style={styles.guideContainer}>
+      <View style={styles.cameraGuideContainer}>
         {loading ? (
           <ActivityIndicator size="large" color="blue" />
         ) : error ? (
           <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
         ) : guideDetails ? (
-          <View style={styles.card}>
+          <View style={styles.cameraCard}>
             {guideDetails.profile_image_url && (
-              <View style={styles.imageWrapper}>
+              <View style={styles.cameraImageWrapper}>
                 <Image
                   source={{ uri: guideDetails.profile_image_url }}
-                  style={styles.profileImage}
+                  style={styles.cameraProfileImage}
                 />
               </View>
             )}
-            <Text style={styles.name}>{guideDetails.full_name}</Text>
-            <Text style={styles.role}>
+            <Text style={styles.cameraName}>{guideDetails.full_name}</Text>
+            <Text style={styles.cameraRole}>
               {guideDetails.role_name?.charAt(0).toUpperCase() + guideDetails.role_name.slice(1)}
             </Text>
-            <View style={styles.infoBlock}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.value}>{guideDetails.email}</Text>
+            <View style={styles.cameraInfoBlock}>
+              <Text style={styles.cameraLabel}>Email:</Text>
+              <Text style={styles.cameraValue}>{guideDetails.email}</Text>
             </View>
-            <View style={styles.infoBlock}>
-              <Text style={styles.label}>Phone:</Text>
-              <Text style={styles.value}>{guideDetails.phone_number}</Text>
+            <View style={styles.cameraInfoBlock}>
+              <Text style={styles.cameraLabel}>Phone:</Text>
+              <Text style={styles.cameraValue}>{guideDetails.phone_number}</Text>
             </View>
     
             {/* ⭐ Show rating form only when triggered */}
@@ -161,7 +162,7 @@ export default function GuideScanner() {
             {/* 🔘 Button Row */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, width: '100%' }}>
               <TouchableOpacity
-                style={[styles.backButton, { flex: 1, marginRight: 10 }]}
+                style={[styles.cameraBackButton, { flex: 1, marginRight: 10 }]}
                 onPress={() => {
                   setShowGuideDetails(false);
                   setScanned(false);
@@ -171,11 +172,11 @@ export default function GuideScanner() {
                   setStartScanning(false);
                 }}
               >
-                <Text style={styles.backButtonText}>Back to Camera</Text>
+                <Text style={styles.cameraBackButtonText}>Back to Camera</Text>
               </TouchableOpacity>
     
               <TouchableOpacity
-                style={[styles.backButton, { flex: 1, marginLeft: 10, backgroundColor: '#FF8C00' }]}
+                style={[styles.cameraBackButton, { flex: 1, marginLeft: 10, backgroundColor: '#FF8C00' }]}
                 onPress={async () => {
                   if (!showRatingForm) {
                     setShowRatingForm(true);
@@ -203,7 +204,7 @@ export default function GuideScanner() {
                 }}
                 disabled={submitting}
               >
-                <Text style={styles.backButtonText}>
+                <Text style={styles.cameraBackButtonText}>
                   {submitting ? 'Submitting...' : showRatingForm ? 'Submit' : 'Rate'}
                 </Text>
               </TouchableOpacity>
@@ -258,7 +259,7 @@ export default function GuideScanner() {
 
           </View>
         ) : (
-          <Text style={styles.guideContent}>No guide data found.</Text>
+          <Text style={styles.cameraGuideContent}>No guide data found.</Text>
         )}
       </View>
     </ScrollView>
@@ -272,29 +273,29 @@ export default function GuideScanner() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         {showGuideDetails ? (
           <ScrollView
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={styles.cameraScrollContainer}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            <View style={styles.container}>
+            <View style={styles.cameraMainContainer}>
               {renderGuideDetails()}
             </View>
           </ScrollView>
         ) : startScanning ? (
-          <View style={styles.container}>
+          <View style={styles.cameraMainContainer}>
             {renderCamera()}
           </View>
         ) : (
-          <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 }]}>
-            <Text style={styles.instructionText}>
+          <View style={[styles.cameraMainContainer, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 }]}>
+            <Text style={styles.cameraInstructionText}>
               Please click the button below to scan the QR code of the park guide to provide feedback.
             </Text>
 
             <TouchableOpacity
-              style={styles.scanButton}
+              style={styles.cameraScanButton}
               onPress={() => setStartScanning(true)}
             >
-              <Text style={styles.scanButtonText}>Scan Guide QR</Text>
+              <Text style={styles.cameraScanButtonText}>Scan Guide QR</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -302,141 +303,3 @@ export default function GuideScanner() {
     </KeyboardAvoidingView>
   );   
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  cameraContainer: {
-    flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 30,
-    width: '100%',
-    alignItems: 'center',
-  },
-  button: {
-    backgroundColor: '#000',
-    padding: 10,
-    borderRadius: 5,
-  },
-  text: {
-    color: 'white',
-    fontSize: 18,
-  },
-  guideContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  guideTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  guideContent: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  message: {
-    textAlign: 'center',
-    paddingBottom: 10,
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 15,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    alignItems: 'center',
-  },
-  
-  imageWrapper: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    overflow: 'hidden',
-    marginBottom: 15,
-  },
-  
-  profileImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  
-  name: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  
-  role: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  
-  infoBlock: {
-    width: '100%',
-    marginBottom: 10,
-  },
-  
-  label: {
-    fontWeight: 'bold',
-    fontSize: 14,
-    color: '#333',
-  },
-  
-  value: {
-    fontSize: 14,
-    color: '#666',
-  },
-  
-  backButton: {
-    marginTop: 20,
-    backgroundColor: '#00693D',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  
-  backButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  scanButton: {
-    backgroundColor: '#00693D',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    elevation: 2,
-  },
-  
-  scanButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  instructionText: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  
-});

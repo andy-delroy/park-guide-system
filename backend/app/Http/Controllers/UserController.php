@@ -63,7 +63,7 @@ class UserController extends Controller
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|string|in:male,female,other',
             'address' => 'nullable|string',
-            'profile_image_url' => 'nullable|url',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'identification_number' => 'nullable|string|max:50',
             'emergency_contact' => 'nullable|string|max:255',
             'biography' => 'nullable|string',
@@ -80,6 +80,16 @@ class UserController extends Controller
             ], 422);
         }
 
+        // Handle profile image upload
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            $filename = uniqid('profile_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('mobile/profile'), $filename);
+
+            // Save full URL or relative path
+            $user->profile_image_url = url('mobile/profile/' . $filename);
+        }
+
         // Only update fields that are present in the request
         $user->fill($request->only([
             'username',
@@ -89,7 +99,6 @@ class UserController extends Controller
             'date_of_birth',
             'gender',
             'address',
-            'profile_image_url',
             'identification_number',
             'emergency_contact',
             'biography',

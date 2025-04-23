@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView } from 're
 import * as SecureStore from 'expo-secure-store';
 import Swiper from 'react-native-swiper';
 import API_BASE_URL from '../api.config';
+import styles from '../Styles/styles'; 
 
 const Home = () => {
   const [fullname, setFullName] = useState('');
@@ -26,20 +27,20 @@ const Home = () => {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.homeCentered}>
         <ActivityIndicator size="large" color="#273c75" />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Welcome, {fullname}!</Text>
-      <Text style={styles.subtitle}>Sarawak Forestry Corporation (SFC) is a statutory body of the Sarawak Government formed under Sarawak Forestry Corporation Ordinance, 1995. {"\n\n"}Our main functions are to manage Totally Protected Areas (TPAs) and to conserve Biodiversity of Sarawak. We have been entrusted to protect the wildlife of Sarawak, particularly the totally protected and protected species. In doing this, we are governed by National Parks and Nature Reserves Ordinance 1998 and Wild Life Protection Ordinance, 1998.</Text>
+    <ScrollView contentContainerStyle={styles.homeContainer}>
+      <Text style={styles.homeTitle}>Welcome, {fullname}!</Text>
+      <Text style={styles.homeSubtitle}>Sarawak Forestry Corporation (SFC) is a statutory body of the Sarawak Government formed under Sarawak Forestry Corporation Ordinance, 1995. {"\n\n"}Our main functions are to manage Totally Protected Areas (TPAs) and to conserve Biodiversity of Sarawak. We have been entrusted to protect the wildlife of Sarawak, particularly the totally protected and protected species. In doing this, we are governed by National Parks and Nature Reserves Ordinance 1998 and Wild Life Protection Ordinance, 1998.</Text>
 
       {/* Image Slideshow using Swiper */}
       <Swiper
-        style={styles.wrapper}
+        style={styles.homeWrapper}
         showsButtons={false} // Disable manual navigation buttons
         autoplay={true} // Enable automatic sliding
         autoplayTimeout={5} // Time between slides in seconds
@@ -49,15 +50,15 @@ const Home = () => {
         scrollEnabled={false}
       >
         {images.map((imageUrl, index) => (
-          <View key={index} style={styles.slide}>
-            <Image source={{ uri: imageUrl }} style={styles.image} />
+          <View key={index} style={styles.homeSlide}>
+            <Image source={{ uri: imageUrl }} style={styles.homeImage} />
           </View>
         ))}
       </Swiper>
 
       {/* Text Slideshow */}
       <Swiper
-        style={styles.textWrapper}
+        style={styles.homeTextWrapper}
         showsButtons={false}
         autoplay={true}
         autoplayTimeout={5}
@@ -72,8 +73,8 @@ const Home = () => {
           `"Integrity, Kind and Caring, Professionalism, Sense of Urgency and Ownership, Team Spirit & Result-Oriented." - Our Values`,
           `"New Frontier in Biodiversity Conservation." - Our Tagline`
         ].map((quote, index) => (
-          <View key={index} style={styles.textSlide}>
-            <Text style={styles.quote}>{quote}</Text>
+          <View key={index} style={styles.homeTextSlide}>
+            <Text style={styles.homeQuote}>{quote}</Text>
           </View>
         ))}
       </Swiper>
@@ -83,72 +84,3 @@ const Home = () => {
 };
 
 export default Home;
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: '#f5f6fa',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    paddingTop: 50,
-    position: 'relative', // Ensure the video stays as background
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#2f3640',
-    marginBottom: 20,
-    textAlign: 'left',
-    paddingHorizontal: 20, // Add padding for better line breaks
-    lineHeight: 40, // Improve readability
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#718093',
-    marginBottom: 32,
-    textAlign: 'justify',
-    paddingHorizontal: 20, // Add padding for better line breaks
-    lineHeight: 24, // Add line height for readability
-  },
-  wrapper: {
-    height: 200, // Adjust the height of the slideshow
-    marginBottom: 20,
-  },
-  slide: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-    borderRadius: 10,
-  },
-  textWrapper: {
-    height: 100,
-    paddingHorizontal: 20,
-    marginTop: 20,
-    alignItems: 'center', // Center swiper itself
-    zIndex: 1,
-  },
-  textSlide: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-  },
-  quote: {
-    fontSize: 16,
-    color: '#2f3640',
-    textAlign: 'center',
-    fontStyle: 'italic',
-    lineHeight: 22,
-  },
-  
-  
-});
