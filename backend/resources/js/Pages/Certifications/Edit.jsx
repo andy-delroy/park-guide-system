@@ -1,18 +1,33 @@
-import React from 'react';
-import { Link, usePage, Head, useForm } from "@inertiajs/react";
+import React, { useEffect, useState } from 'react';
+import { Link, useForm, Head } from "@inertiajs/react";
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 const Edit = ({ auth, certification }) => {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        Number: certification.certificate_number || '',
-        name: certification.certification_name || '',
+    const { data, setData, post, processing, errors } = useForm({
+        guide_id: certification.guide_id || '',
+        certificate_number: certification.certificate_number || '',
+        certification_name: certification.certification_name || '',
         description: certification.description || '',
-        //issued_by: certification.issued_by,
-        issue_date: certification.issue_date,
+        issue_date: certification.issue_date || '',
         expiry_date: certification.expiry_date || '',
-        status: certification.status,
+        status: certification.status || 'active',
         _method: 'PUT',
     });
+
+    const [guides, setGuides] = useState([]);
+
+    useEffect(() => {
+        const fetchGuides = async () => {
+            try {
+                const response = await axios.get('/guides/fetch');
+                setGuides(response.data);
+            } catch (error) {
+                console.error('Error fetching guides:', error);
+            }
+        };
+        fetchGuides();
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -36,21 +51,39 @@ const Edit = ({ auth, certification }) => {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Certificaition Number</label>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
+                                    <select
+                                        value={data.guide_id}
+                                        onChange={(e) => setData('guide_id', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    >
+                                        <option value="">Select a Guide</option>
+                                        {guides.map((guide) => (
+                                            <option key={guide.id} value={guide.id}>
+                                                {guide.username}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.guide_id && <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>}
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
                                     <input
                                         type="text"
-                                        value={data.certification_number}
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        value={data.certificate_number}
+                                        onChange={(e) => setData('certificate_number', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.certification_number && <div className="text-red-500 text-sm mt-1">{errors.certification_number}</div>}
+                                    {errors.certificate_number && <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>}
                                 </div>
+
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
                                     <input
                                         type="text"
                                         value={data.certification_name}
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        onChange={(e) => setData('certification_name', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
                                     {errors.certification_name && <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>}
@@ -65,17 +98,6 @@ const Edit = ({ auth, certification }) => {
                                     />
                                     {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                                 </div>
-
-                                {/* <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Issued By</label>
-                                    <input
-                                        type="text"
-                                        value={data.issued_by}
-                                        onChange={(e) => setData('issued_by', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.issued_by && <div className="text-red-500 text-sm mt-1">{errors.issued_by}</div>}
-                                </div> */}
 
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>

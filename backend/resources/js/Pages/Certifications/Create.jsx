@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link, usePage, Head, useForm } from "@inertiajs/react";
+import axios from 'axios';
 
-const Create = ({ auth, guides }) => {
+const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
-        // guide_id: '',
+        guide_id: '',
         certificate_number: '',
         certification_name: '',
         description: '',
@@ -14,21 +15,23 @@ const Create = ({ auth, guides }) => {
         status: 'active',
     });
 
-    // const [guides, setGuides] = useState([]);
+    const [guides, setGuides] = useState([]);
 
-    // // Fetch guides when the component mounts
-    // useEffect(() => {
-    //     const fetchGuides = async () => {
-    //         try {
-    //             const response = await axios.get('/certification');
-    //             setGuides(response.data);
-    //         } catch (error) {
-    //             console.error('Error fetching guides:', error);
-    //         }
-    //     };
+    // Fetch guides when the component mounts
+    useEffect(() => {
+        const fetchGuides = async () => {
+            try {
+                const response = await axios.get('/guides/fetch'); // no need for token
+                setGuides(response.data);
+            } catch (error) {
+                console.error('Error fetching guides:', error);
+            }
+        };
+    
+        fetchGuides();
+    }, []);
+    
 
-    //     fetchGuides();
-    // }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -51,22 +54,25 @@ const Create = ({ auth, guides }) => {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* <div>
+                                <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
                                     <select
                                         value={data.guide_id}
-                                        onChange={(e) => setData('guide_id', e.target.value)}
+                                        onChange={(e) => setData({ ...data, guide_id: e.target.value })}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     >
                                         <option value="">Select a Guide</option>
-                                            {(guides || []).map((guide) => (
-                                            <option key={guide.id} value={guide.id}>
+                                        {guides.map((guide) => (
+                                        <option key={guide.id} value={guide.id}>
                                             {guide.username}
                                         </option>
                                         ))}
                                     </select>
-                                    {errors.guide_id && <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>}
-                                </div> */}
+                                    {errors.guide_id && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>
+                                    )}
+                                </div>
+
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
                                     <input

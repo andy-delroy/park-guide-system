@@ -39,7 +39,7 @@ class CertificationController extends Controller
     {
         // $guides = User::where('role_id', 2)->get(['id', 'username']);
         $validated = $request->validate([
-            // 'guide_id' => 'required|exists:users,id',
+            'guide_id' => 'required|exists:users,id',
             'certification_name' => 'required|string|unique:guide_certifications',
             'certificate_number' => 'required|string|unique:guide_certifications',
             'description' => 'required|string',
@@ -50,7 +50,7 @@ class CertificationController extends Controller
         ]);
 
         $certification = Certification::create([
-            'guide_id' => auth()->id(),
+            'guide_id' => $validated['guide_id'],
             'certification_name' => $validated['certification_name'],
             'certificate_number' => $validated['certificate_number'],
             'description' => $validated['description'],
@@ -91,14 +91,12 @@ class CertificationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCertificationRequest $request, Certification $certification)
+    public function update(Request $request, Certification $certification)
     {
-        $date = $request->validated();
-        $certification ->update($data);
-
     $validated = $request->validate([
-        'certification_name' => 'required|string|unique:guide_certifications,certification_name,' . $id,
-        'certificate_number' => 'required|string|unique:guide_certifications,certificate_number,' . $id,
+        'guide_id' => 'required|exists:users,id',
+        'certification_name' => 'required|string|unique:guide_certifications,certification_name,' . $certification->id,
+        'certificate_number' => 'required|string|unique:guide_certifications,certificate_number,' . $certification->id,
         'description' => 'required|string',
         'issue_date' => 'required|date',
         'expiry_date' => 'nullable|date|after:issue_date',
@@ -106,7 +104,7 @@ class CertificationController extends Controller
     ]);
 
     $certification->update([
-        'guide_id' => auth()->id(),
+        'guide_id' => $validated['guide_id'],
         'certification_name' => $validated['certification_name'],
         'certificate_number' => $validated['certificate_number'],
         'description' => $validated['description'],
@@ -116,7 +114,7 @@ class CertificationController extends Controller
     ]);
 
     return to_route('certification.index')
-        ->with('success', "Certification \"$certification->name\" updated successfully.");
+        ->with('success', "Certification \"{$certification->certification_name}\" updated successfully.");
     }
 
     /**
