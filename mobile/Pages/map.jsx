@@ -1,26 +1,33 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
 const Map = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>This is the map page</Text>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: 1.401994833233966, 
+          longitude: 110.31443883621625,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        }}
+        // provider="google"
+        provider={PROVIDER_GOOGLE}
+      />
     </View>
   );
 };
 
-export default Map;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f6fa',
   },
-  text: {
-    fontSize: 20,
-    color: '#2f3640',
-    fontWeight: '600',
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
+
+export default Map;

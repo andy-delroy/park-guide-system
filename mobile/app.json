@@ -12,15 +12,36 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "extra": {
+      "googleMapsApiKey": "AIzaSyByPopKshEH_iVuWiVNS4gS8xHbnrSrfhA",
+      "eas": {
+        "projectId": "faafc357-c0ba-42f2-b28c-d9d2517bacf5"
+      }
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sfc.mobile",
+      "config": {
+        "googleMapsApiKey": "AIzaSyByPopKshEH_iVuWiVNS4gS8xHbnrSrfhA"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.mobile"
+      "package": "com.anonymous.mobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyByPopKshEH_iVuWiVNS4gS8xHbnrSrfhA"
+        }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,6 +57,7 @@
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "owner": "whharry7"
   }
 }
