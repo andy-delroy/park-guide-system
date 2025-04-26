@@ -20,7 +20,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::resource('certification', CertificationController::class);
-    Route::get('/guides/fetch', [UserController::class, 'fetchGuides']);
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);

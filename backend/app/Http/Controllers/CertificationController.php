@@ -13,11 +13,15 @@ class CertificationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = Certification::query();
 
         $certifications = $query->paginate(10)->onEachside(1);
+
+        if ($request->expectsJson()) {
+            return CertificationResource::collection($certifications);
+        }
 
         return inertia('Certifications/Index', [
             "certifications" => CertificationResource::collection($certifications),

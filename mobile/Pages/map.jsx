@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView from 'react-native-maps';
 
 const Map = () => {
   return (
@@ -13,8 +13,6 @@ const Map = () => {
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         }}
-        // provider="google"
-        provider={PROVIDER_GOOGLE}
       />
     </View>
   );

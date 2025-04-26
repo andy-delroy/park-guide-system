@@ -9,30 +9,20 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     /**
-     * Fetch all users with role_id = 2 (guides).
-     */
-    public function fetchGuides()
-    {
-        $guides = User::where('role_id', 2)->get();
-
-        return response()->json($guides);
-    }
-
-    /**
      * Fetch a specific guide by username.
      */
-    public function getGuide($username)
-    {
-        $guide = User::where('username', $username)
-            ->where('role_id', 2) // Ensure the user is a guide
-            ->first();
+    // public function getGuide($username)
+    // {
+    //     $guide = User::where('username', $username)
+    //         ->where('role_id', 2) // Ensure the user is a guide
+    //         ->first();
 
-        if (!$guide) {
-            return response()->json(['message' => 'Guide not found'], 404);
-        }
+    //     if (!$guide) {
+    //         return response()->json(['message' => 'Guide not found'], 404);
+    //     }
 
-        return response()->json(['guide' => $guide]);
-    }
+    //     return response()->json(['guide' => $guide]);
+    // }
 
     public function getProfile(Request $request)
     {

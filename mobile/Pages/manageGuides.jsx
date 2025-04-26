@@ -41,20 +41,27 @@ const ManageGuides = () => {
           },
         });
 
-        // Sort alphabetically by full_name
-        const sortedGuides = response.data.sort((a, b) => {
-          const nameA = a.full_name?.toLowerCase() || '';
-          const nameB = b.full_name?.toLowerCase() || '';
-          return nameA.localeCompare(nameB);
-        });        
-
-        setGuides(sortedGuides);
+        // Handle paginated or flat response
+        const guideData = response.data.data || response.data || [];
+        if (!Array.isArray(guideData)) {
+          console.warn('Guide data is not an array:', guideData);
+          setGuides([]);
+        } else {
+          // Sort alphabetically by full_name
+          const sortedGuides = guideData.sort((a, b) => {
+            const nameA = a.full_name?.toLowerCase() || '';
+            const nameB = b.full_name?.toLowerCase() || '';
+            return nameA.localeCompare(nameB);
+          });
+          setGuides(sortedGuides);
+        }
       } catch (error) {
         console.error('Error fetching guides:', error.response?.data || error.message);
         Alert.alert(
           'Error',
           error.response?.data?.message || 'Failed to fetch guides.'
         );
+        setError(error.response?.data?.message || 'Failed to fetch guides.');
       } finally {
         setLoading(false);
       }
@@ -95,7 +102,6 @@ const ManageGuides = () => {
       </View>
     );
   };
-  
 
   if (loading) {
     return (
@@ -115,100 +121,89 @@ const ManageGuides = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={guides}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderGuide}
-            contentContainerStyle={styles.list}
-          />
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={guides}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderGuide}
+          contentContainerStyle={styles.list}
+        />
   
-          {Object.values(selectedGuides).some((val) => val) && (
-            <View style={styles.fabContainer}>
-              <Text
-                style={styles.fabText}
-                onPress={() => {
-                  const selected = guides.filter((g) => selectedGuides[g.id]);
-                  navigation.navigate('MainStack', {
-                    screen: 'Guide QR',
-                    params: { selectedGuides: selected },
-                  });
-                }}
-              >
-                Get QR
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
+        {hasSelectedGuides && (
+          <View style={styles.fabContainer}>
+            <Text
+              style={styles.fabText}
+              onPress={() => {
+                const selected = guides.filter((g) => selectedGuides[g.id]);
+                navigation.navigate('MainStack', {
+                  screen: 'Guide QR',
+                  params: { selectedGuides: selected },
+                });
+              }}
+            >
+              Get QR
+            </Text>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );  
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: colors.background,
-    },
-    title: {
-        fontSize: fonts.fontSizeLarge,
-        fontFamily: fonts.bold,
-        marginBottom: 16,
-        color: colors.primary,
-        textAlign: 'center',
-    },
-    list: {
-        paddingBottom: 24,
-    },
-    card: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.white,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 12,
-      shadowColor: '#000',
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    
-    avatar: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: colors.secondaryContrast,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 16,
-    },
-    
-    avatarText: {
-      color: colors.white,
-      fontSize: 18,
-      fontFamily: fonts.bold,
-    },
-    
-    info: {
-      flex: 1,
-    },
-    
-    name: {
-      fontSize: fonts.fontSizeMedium,
-      fontFamily: fonts.medium,
-      color: colors.textPrimary,
-    },
-    
-    email: {
-      fontSize: fonts.fontSizeSmall,
-      color: colors.textSecondary,
-      marginTop: 2,
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.background,
+  },
+  title: {
+    fontSize: fonts.fontSizeLarge,
+    fontFamily: fonts.bold,
+    marginBottom: 16,
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  list: {
+    paddingBottom: 24,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.secondaryContrast,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 18,
+    fontFamily: fonts.bold,
+  },
+  info: {
+    flex: 1,
+  },
+  name: {
+    fontSize: fonts.fontSizeMedium,
+    fontFamily: fonts.medium,
+    color: colors.textPrimary,
+  },
+  email: {
+    fontSize: fonts.fontSizeSmall,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
   checkbox: {
     marginRight: 12,
@@ -230,15 +225,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  
   fabText: {
     color: colors.buttonText,
     fontSize: fonts.fontSizeMedium,
     fontFamily: fonts.bold,
   },
-  
-  
-    
 });
 
 export default ManageGuides;

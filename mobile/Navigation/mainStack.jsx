@@ -5,6 +5,7 @@ import BottomTabs from './bottomTabs';
 import Notification from '../Pages/notification';
 import Training from '../Pages/training';
 import Certificate from '../Pages/certificate';
+import EditCertificate from '../Pages/editCertificate';
 import GenerateQR from '../Pages/generateQR';
 import ManageGuides from '../Pages/manageGuides';
 import GuideQR from '../Pages/guideQR';
@@ -18,6 +19,7 @@ const MainStack = ({ role }) => (
       <>
         <Stack.Screen name="Training" component={Training} />
         <Stack.Screen name="Certificate" component={Certificate} />
+        <Stack.Screen name="EditCertificate" component={EditCertificate} />
       </>
     )}
     <Stack.Screen name="Notification" component={Notification} />

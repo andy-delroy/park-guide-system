@@ -11,12 +11,19 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuideFeedbackController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\GuideController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('password/forgot', [AuthController::class, 'requestPasswordReset']);
     Route::post('password/reset', [AuthController::class, 'resetPassword']);
+
+    // Feedback routes
+    Route::get('guides/{id}', [GuideController::class, 'show'])->name('guides.show');
+    Route::get('guides/{id}/feedbacks', [GuideFeedbackController::class, 'showFeedbacks'])->name('guides.feedbacks');
+    Route::post('guides/{id}/feedback', [GuideFeedbackController::class, 'store'])->name('guides.feedback');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
@@ -32,22 +39,17 @@ Route::prefix('auth')->group(function () {
         // Roles route
         Route::get('roles', [RoleController::class, 'getAllRoles']);
 
-        // Manage Guides for admin
-        Route::get('guides', [UserController::class, 'fetchGuides']);
-
         // Profile routes for admin and guide
         Route::get('profile', [UserController::class, 'getProfile']);
         Route::post('profile/update', [UserController::class, 'updateProfile']);
+
+        // Certification routes
+        Route::resource('certification', CertificationController::class);
+
+        // Guide routes
+        Route::resource('guides', GuideController::class);
     });
 });
-
-// Feedback routes
-Route::get('/guides/{username}', [UserController::class, 'getGuide']);
-Route::post('/guides/{username}/feedback', [GuideFeedbackController::class, 'store']);
-Route::get('/guides/{username}/feedbacks', [GuideFeedbackController::class, 'showFeedbacks']);
-
-
-
 
 // ✅ Public route to return authenticated user (still protected if needed)
 Route::get('/user', function (Request $request) {

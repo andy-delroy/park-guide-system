@@ -21,7 +21,12 @@ const GuideQR = () => {
       <View style={styles.cardContainer}>
         <Text style={styles.name}>{item.full_name}</Text>
         <View style={styles.qrWrapper}>
-          <QRCode value={item.username} size={140} />
+          <QRCode
+              value={String(item.id)} // Convert id to string
+              size={140}
+              backgroundColor={colors.white}
+              color={colors.textPrimary}
+            />
         </View>
       </View>
     </View>

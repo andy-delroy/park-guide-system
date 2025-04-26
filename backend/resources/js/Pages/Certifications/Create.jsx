@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Link, usePage, Head, useForm } from "@inertiajs/react";
+import { Link, usePage, Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 
 const Create = ({ auth }) => {
@@ -9,29 +9,40 @@ const Create = ({ auth }) => {
         certificate_number: '',
         certification_name: '',
         description: '',
-        // issued_by: '',
         issue_date: '',
         expiry_date: '',
         status: 'active',
     });
 
     const [guides, setGuides] = useState([]);
+    const [guideError, setGuideError] = useState(null);
 
     // Fetch guides when the component mounts
     useEffect(() => {
         const fetchGuides = async () => {
             try {
-                const response = await axios.get('/guides/fetch'); // no need for token
-                setGuides(response.data);
+                const response = await axios.get('/guides', {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                // Handle paginated or flat response
+                const guideData = response.data.data || response.data || [];
+                if (!Array.isArray(guideData)) {
+                    console.warn('Guide data is not an array:', guideData);
+                    setGuides([]);
+                } else {
+                    setGuides(guideData);
+                }
             } catch (error) {
-                console.error('Error fetching guides:', error);
+                console.error('Error fetching guides:', error.response?.data || error.message);
+                setGuideError(error.response?.data?.message || 'Failed to fetch guides.');
             }
         };
-    
+
         fetchGuides();
     }, []);
-    
-
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -53,19 +64,22 @@ const Create = ({ auth }) => {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
+                            {guideError && (
+                                <div className="text-red-500 text-sm mb-4">{guideError}</div>
+                            )}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
                                     <select
                                         value={data.guide_id}
-                                        onChange={(e) => setData({ ...data, guide_id: e.target.value })}
+                                        onChange={(e) => setData('guide_id', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     >
                                         <option value="">Select a Guide</option>
                                         {guides.map((guide) => (
-                                        <option key={guide.id} value={guide.id}>
-                                            {guide.username}
-                                        </option>
+                                            <option key={guide.id} value={guide.id}>
+                                                {guide.full_name || 'Unnamed Guide'}
+                                            </option>
                                         ))}
                                     </select>
                                     {errors.guide_id && (
@@ -81,7 +95,9 @@ const Create = ({ auth }) => {
                                         onChange={(e) => setData('certificate_number', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.certificate_number && <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>}
+                                    {errors.certificate_number && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
@@ -91,7 +107,9 @@ const Create = ({ auth }) => {
                                         onChange={(e) => setData('certification_name', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.certification_name && <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>}
+                                    {errors.certification_name && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -101,19 +119,10 @@ const Create = ({ auth }) => {
                                         onChange={(e) => setData('description', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
+                                    {errors.description && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.description}</div>
+                                    )}
                                 </div>
-
-                                {/* <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Issued By</label>
-                                    <input
-                                        type="text"
-                                        value={data.issued_by}
-                                        onChange={(e) => setData('issued_by', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.issued_by && <div className="text-red-500 text-sm mt-1">{errors.issued_by}</div>}
-                                </div> */}
 
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
@@ -123,7 +132,9 @@ const Create = ({ auth }) => {
                                         onChange={(e) => setData('issue_date', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.issue_date && <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>}
+                                    {errors.issue_date && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -134,7 +145,9 @@ const Create = ({ auth }) => {
                                         onChange={(e) => setData('expiry_date', e.target.value)}
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
-                                    {errors.expiry_date && <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>}
+                                    {errors.expiry_date && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -147,7 +160,9 @@ const Create = ({ auth }) => {
                                         <option value="active">Active</option>
                                         <option value="inactive">Inactive</option>
                                     </select>
-                                    {errors.status && <div className="text-red-500 text-sm mt-1">{errors.status}</div>}
+                                    {errors.status && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.status}</div>
+                                    )}
                                 </div>
 
                                 <div className="flex space-x-2">
