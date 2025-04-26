@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use App\Http\Resources\UserResource;
 
 class GuideController extends Controller
 {
@@ -19,14 +20,19 @@ class GuideController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $guides = User::with('role')
-            ->where('role_id', 2) // Only users with guide role
-            ->get();
+            ->where('role_id', 2)
+            ->select('id', 'full_name', 'email', 'role_id') // Only safe fields
+            ->paginate(10);
+
+        if ($request->expectsJson()) {
+            return UserResource::collection($guides);
+        }
 
         return Inertia::render('Guides/Index', [
-            'guides' => $guides,
+            'guides' => UserResource::collection($guides)->response()->getData(),
         ]);
     }
 

@@ -56,12 +56,14 @@ export default function Index({ auth, certifications }) {
                                 <h3 className="text-lg font-medium text-gray-900">
                                     Certifications
                                 </h3>
-                                <Link
-                                    href="/certification/create"
-                                    className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-                                >
-                                    Add New Certification
-                                </Link>
+                                {auth.user.role.role_name === 'admin' && (
+                                    <Link
+                                        href="/certification/create"
+                                        className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+                                    >
+                                        Add New Certification
+                                    </Link>
+                                )}
                             </div>
 
                             <div className="overflow-x-auto">
@@ -96,20 +98,30 @@ export default function Index({ auth, certifications }) {
                                                         {certification.issue_date}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                        <Link
-                                                            href={`/certification/${certification.id}/edit`}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            Edit
-                                                        </Link>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleDelete(certification.id)
-                                                            }
-                                                            className="ml-4 text-red-600 hover:text-red-900"
-                                                        >
-                                                            Delete
-                                                        </button>
+                                                        {auth.user.role.role_name === 'admin' && (
+                                                            <>
+                                                                <Link
+                                                                    href={`/certification/${certification.id}/edit`}
+                                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                                >
+                                                                    Edit
+                                                                </Link>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleDelete(certification.id)
+                                                                    }
+                                                                    className="ml-4 text-red-600 hover:text-red-900"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                                <Link
+                                                                    href={`/certification/${certification.id}/details`}
+                                                                    className="ml-2 text-indigo-600 hover:text-indigo-900"
+                                                                >
+                                                                    Details
+                                                                </Link>
+                                                            </>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))

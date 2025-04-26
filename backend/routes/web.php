@@ -20,7 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::resource('certification', CertificationController::class);
-    Route::get('/guides/fetch', [UserController::class, 'fetchGuides']);
+    // Route::get('/guides/fetch', [UserController::class, 'fetchGuides']);
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);
@@ -50,7 +50,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/map', function () {
     return Inertia::render('Map/parkmap'); // This loads resources/js/Pages/parkmap.jsx
 });
-
+Route::get('/certification/{id}/details', [CertificationController::class, 'show'])->name('certifications.show');
+Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
 // Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 

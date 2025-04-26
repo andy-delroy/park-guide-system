@@ -15,9 +15,17 @@ class CertificationController extends Controller
      */
     public function index()
     {
-        $query = Certification::query();
+        $user = auth()->user();
 
-        $certifications = $query->paginate(10)->onEachside(1);
+        if ($user->role->role_name === 'guide') {
+        // Filter certifications for the logged-in guide
+            $certifications = Certification::where('guide_id', $user->id)->paginate(10);
+        } else if ($user->role->role_name === 'admin') {
+        // Admin can see all certifications
+            $certifications = Certification::paginate(10);
+        } else {
+            abort(403, 'Unauthorized');
+        }
 
         return inertia('Certifications/Index', [
             "certifications" => CertificationResource::collection($certifications),
@@ -43,6 +51,10 @@ class CertificationController extends Controller
             'certification_name' => 'required|string|unique:guide_certifications',
             'certificate_number' => 'required|string|unique:guide_certifications',
             'description' => 'required|string',
+            'requirements_description' => 'nullable|string',
+            'renewal_requirements' => 'nullable|string',
+            'validity_period_months' => 'nullable|integer',
+            // 'certificate_file_url' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             // 'issued_by' => 'required|string',
             'issue_date' => 'required|date',
             'expiry_date' => 'nullable|date|after:issue_date',
@@ -54,6 +66,10 @@ class CertificationController extends Controller
             'certification_name' => $validated['certification_name'],
             'certificate_number' => $validated['certificate_number'],
             'description' => $validated['description'],
+            'requirements_description' => $validated['requirements_description'],
+            'renewal_requirements' => $validated['renewal_requirements'],
+            'validity_period_months' => $validated['validity_period_months'],
+            // 'certificate_file_url' => $validated['certificate_file_url'],
             'issued_by' => auth()->id(), // Assuming the user creating the certification is the issuer
             'issue_date' => $validated['issue_date'],
             'expiry_date' => $validated['expiry_date'] ?? null,
@@ -68,12 +84,16 @@ class CertificationController extends Controller
      */
     public function show($id)
     {
-        $certification = Certification::with('guide')
-            ->findOrFail($id);
+    $certification = Certification::findOrFail($id);
 
-        return inertia('Certifications/Show', [
-            'certification' => $certification,
-        ]);
+    // Optionally, restrict access based on the user's role
+    if (auth()->user()->role->role_name === 'guide' && $certification->guide_id !== auth()->id()) {
+        abort(403, 'Unauthorized');
+    }
+
+    return inertia('Certifications/Details', [
+        'certification' => $certification,
+    ]);
     }
 
     /**
@@ -98,6 +118,10 @@ class CertificationController extends Controller
         'certification_name' => 'required|string|unique:guide_certifications,certification_name,' . $certification->id,
         'certificate_number' => 'required|string|unique:guide_certifications,certificate_number,' . $certification->id,
         'description' => 'required|string',
+        'requirements_description' => 'nullable|string',
+        'renewal_requirements' => 'nullable|string',
+        'validity_period_months' => 'nullable|integer',
+        // 'certificate_file_url' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         'issue_date' => 'required|date',
         'expiry_date' => 'nullable|date|after:issue_date',
         'status' => 'required|string|in:active,inactive',
@@ -108,6 +132,10 @@ class CertificationController extends Controller
         'certification_name' => $validated['certification_name'],
         'certificate_number' => $validated['certificate_number'],
         'description' => $validated['description'],
+        'requirements_description' => $validated['requirements_description'],
+        'renewal_requirements' => $validated['renewal_requirements'],
+        'validity_period_months' => $validated['validity_period_months'],
+        // 'certificate_file_url' => $validated['certificate_file_url'],
         'issue_date' => $validated['issue_date'],
         'expiry_date' => $validated['expiry_date'] ?? null,
         'status' => $validated['status'],

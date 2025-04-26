@@ -9,6 +9,10 @@ const Create = ({ auth }) => {
         certificate_number: '',
         certification_name: '',
         description: '',
+        certificate_file_url: '',
+        requirements_description: '',
+        validity_period_months: '',
+        renewal_requirements: '',
         // issued_by: '',
         issue_date: '',
         expiry_date: '',
@@ -16,15 +20,29 @@ const Create = ({ auth }) => {
     });
 
     const [guides, setGuides] = useState([]);
+    const [guideError, setGuideError] = useState(null);
 
     // Fetch guides when the component mounts
     useEffect(() => {
         const fetchGuides = async () => {
             try {
-                const response = await axios.get('/guides/fetch'); // no need for token
-                setGuides(response.data);
+                const response = await axios.get('/guides', {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                // Handle paginated or flat response
+                const guideData = response.data.data || response.data || [];
+                if (!Array.isArray(guideData)) {
+                    console.warn('Guide data is not an array:', guideData);
+                    setGuides([]);
+                } else {
+                    setGuides(guideData);
+                }
             } catch (error) {
-                console.error('Error fetching guides:', error);
+                console.error('Error fetching guides:', error.response?.data || error.message);
+                setGuideError(error.response?.data?.message || 'Failed to fetch guides.');
             }
         };
     
@@ -64,7 +82,7 @@ const Create = ({ auth }) => {
                                         <option value="">Select a Guide</option>
                                         {guides.map((guide) => (
                                         <option key={guide.id} value={guide.id}>
-                                            {guide.username}
+                                            {guide.full_name}
                                         </option>
                                         ))}
                                     </select>
@@ -102,6 +120,42 @@ const Create = ({ auth }) => {
                                         className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                                     />
                                     {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">URL</label>
+                                    <textarea
+                                        value={data.certificate_file_url}
+                                        onChange={(e) => setData('certificate_file_url', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.certificate_file_url && <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements Description</label>
+                                    <textarea
+                                        value={data.requirements_description}
+                                        onChange={(e) => setData('requirements_description', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.requirements_description && <div className="text-red-500 text-sm mt-1">{errors.requirements_description}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
+                                    <textarea
+                                        value={data.validity_period_months}
+                                        onChange={(e) => setData('validity_period_months', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
+                                    <textarea
+                                        value={data.renewal_requirements}
+                                        onChange={(e) => setData('renewal_requirements', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
                                 </div>
 
                                 {/* <div>

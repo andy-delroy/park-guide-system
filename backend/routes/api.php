@@ -33,7 +33,7 @@ Route::prefix('auth')->group(function () {
         Route::get('roles', [RoleController::class, 'getAllRoles']);
 
         // Manage Guides for admin
-        Route::get('guides', [UserController::class, 'fetchGuides']);
+        // Route::get('guides', [UserController::class, 'fetchGuides']);
 
         // Profile routes for admin and guide
         Route::get('profile', [UserController::class, 'getProfile']);
