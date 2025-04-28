@@ -1,0 +1,108 @@
+/* 🌌 Background & Wrapper */
+.video-wrapper {
+  position: relative;
+  min-height: 100vh;
+  background: #0f172a;
+  overflow-x: hidden;
+}
+
+.bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  filter: blur(6px) brightness(0.35);
+  z-index: -1;
+}
+
+/* 📦 Scrollable Upload Panel */
+.upload-scroll-wrapper {
+  max-width: 800px;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px);
+  border-radius: 18px;
+  padding: 50px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* 📝 Title Header */
+.upload-scroll-wrapper h2 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #b1f9ff;
+  text-shadow: 0 0 20px #00ffc3;
+  margin-bottom: 30px;
+}
+
+/* 📂 Inputs */
+form input[type="text"],
+form input[type="number"],
+form select,
+form input[type="file"] {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+form input::placeholder {
+  color: #cccccc;
+}
+
+.form-select.text-dark,
+.form-control.text-dark {
+  color: #0f172a !important;
+  background-color: #ffffff;
+}
+
+/* ✅ Upload Button */
+button[type="submit"] {
+  background: linear-gradient(135deg, #16e0bd, #0fa);
+  color: #0f172a;
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 255, 204, 0.25);
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(135deg, #0fa, #4efcb5);
+  transform: scale(1.03);
+}
+
+/* ✅ Toast Alert */
+.alert-success {
+  background-color: #4ade80;
+  color: #0f172a;
+  border: none;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+/* 🖼 Preview Display */
+.mb-3.text-center img,
+.mb-3.text-center video {
+  max-height: 300px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 🎯 General Overrides */
+.text-white {
+  color: #ffffff !important;
+}
+
+.text-dark {
+  color: #0f172a !important;
+}
