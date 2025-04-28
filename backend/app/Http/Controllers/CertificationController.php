@@ -16,19 +16,17 @@ class CertificationController extends Controller
     public function index()
     {
         $user = auth()->user();
-
+    
         if ($user->role->role_name === 'guide') {
-        // Filter certifications for the logged-in guide
-            $certifications = Certification::where('guide_id', $user->id)->paginate(10);
+            $certifications = Certification::with('issuer')->where('guide_id', $user->id)->paginate(10);
         } else if ($user->role->role_name === 'admin') {
-        // Admin can see all certifications
-            $certifications = Certification::paginate(10);
+            $certifications = Certification::with('issuer')->paginate(10);
         } else {
             abort(403, 'Unauthorized');
         }
-
+    
         return inertia('Certifications/Index', [
-            "certifications" => CertificationResource::collection($certifications),
+            'certifications' => $certifications,
         ]);
     }
 
@@ -84,16 +82,15 @@ class CertificationController extends Controller
      */
     public function show($id)
     {
-    $certification = Certification::findOrFail($id);
-
-    // Optionally, restrict access based on the user's role
-    if (auth()->user()->role->role_name === 'guide' && $certification->guide_id !== auth()->id()) {
-        abort(403, 'Unauthorized');
-    }
-
-    return inertia('Certifications/Details', [
-        'certification' => $certification,
-    ]);
+        $certification = Certification::with('issuer')->findOrFail($id);
+    
+        if (auth()->user()->role->role_name === 'guide' && $certification->guide_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+    
+        return inertia('Certifications/Details', [
+            'certification' => $certification,
+        ]);
     }
 
     /**

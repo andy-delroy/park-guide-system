@@ -92,7 +92,7 @@ export default function Index({ auth, certifications }) {
                                                         {certification.certification_name}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                                        {certification.issued_by}
+                                                        {certification.issuer.full_name}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {certification.issue_date}
@@ -114,14 +114,15 @@ export default function Index({ auth, certifications }) {
                                                                 >
                                                                     Delete
                                                                 </button>
-                                                                <Link
-                                                                    href={`/certification/${certification.id}/details`}
-                                                                    className="ml-2 text-indigo-600 hover:text-indigo-900"
-                                                                >
-                                                                    Details
-                                                                </Link>
+                                                                
                                                             </>
                                                         )}
+                                                        <Link
+                                                            href={`/certification/${certification.id}/details`}
+                                                            className="ml-2 text-indigo-600 hover:text-indigo-900"
+                                                        >
+                                                            Details
+                                                        </Link>
                                                     </td>
                                                 </tr>
                                             ))

@@ -52,7 +52,7 @@ export default function Details({ auth, certification }) {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-gray-500">Issued By:</p>
-                                    <p className="text-sm text-gray-900">{certification.issued_by}</p>
+                                    <p className="text-sm text-gray-900">{certification.issuer.full_name}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-gray-500">Renewal Count:</p>
