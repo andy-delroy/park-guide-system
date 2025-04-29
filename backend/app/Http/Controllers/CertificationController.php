@@ -15,9 +15,9 @@ class CertificationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Certification::query();
-
-        $certifications = $query->paginate(10)->onEachside(1);
+        $certifications = Certification::with('guide')
+            ->paginate(10)
+            ->onEachSide(1);
 
         if ($request->expectsJson()) {
             return CertificationResource::collection($certifications);
@@ -27,6 +27,7 @@ class CertificationController extends Controller
             "certifications" => CertificationResource::collection($certifications),
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -87,6 +88,10 @@ class CertificationController extends Controller
     {
         $certification = Certification::findOrFail($id);
 
+        if ($request->expectsJson()) {
+            return new CertificationResource($certification);
+        }
+
         return inertia('Certifications/Edit', [
             'certification' => $certification,
         ]);
@@ -117,6 +122,13 @@ class CertificationController extends Controller
         'status' => $validated['status'],
     ]);
 
+    if ($request->expectsJson()) {
+        return response()->json([
+            'message' => "Certification \"{$certification->certification_name}\" updated successfully.",
+            'certification' => new CertificationResource($certification),
+        ], 200);
+    }
+
     return to_route('certification.index')
         ->with('success', "Certification \"{$certification->certification_name}\" updated successfully.");
     }
@@ -124,10 +136,27 @@ class CertificationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Certification $certification)
+    public function destroy(Request $request, Certification $certification)
     {
-        $certification->delete();
+        try {
+            $certification->delete();
 
-        return redirect()->route('certification.index')->with('success', 'Certification deleted successfully.');
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Certification deleted successfully',
+                ], 200);
+            }
+
+            return redirect()->route('certification.index')->with('success', 'Certification deleted successfully.');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Failed to delete certification',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->route('certification.index')->with('error', 'Failed to delete certification.');
+        }
     }
 }

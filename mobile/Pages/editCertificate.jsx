@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,14 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  Platform,
+  Modal,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
 
@@ -20,6 +24,7 @@ const EditCertificate = () => {
   const { certification } = route.params;
 
   const [formData, setFormData] = useState({
+    guide_id: certification.guide_id ? String(certification.guide_id) : '',
     certification_name: certification.certification_name || '',
     certificate_number: certification.certificate_number || '',
     description: certification.description || '',
@@ -27,10 +32,66 @@ const EditCertificate = () => {
     expiry_date: certification.expiry_date || '',
     status: certification.status || 'active',
   });
+  const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [guidesLoading, setGuidesLoading] = useState(true);
+  const [showIssueDatePicker, setShowIssueDatePicker] = useState(false);
+  const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
+  const [showGuidePicker, setShowGuidePicker] = useState(false);
+
+  // Fetch guides for guide_id dropdown
+  useEffect(() => {
+    const fetchGuides = async () => {
+      try {
+        setGuidesLoading(true);
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+          console.warn('No token for fetching guides');
+          Alert.alert('Unauthorized', 'No user token found.');
+          return;
+        }
+        const response = await axios.get(`${API_BASE_URL}/api/auth/guides`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        });
+
+        let guidesData = response.data;
+        if (!Array.isArray(guidesData)) {
+          guidesData = response.data.data || [];
+          if (!Array.isArray(guidesData)) {
+            console.warn('Guides data is not an array:', guidesData);
+            guidesData = [];
+          }
+        }
+
+        setGuides(guidesData);
+      } catch (error) {
+        console.error('Error fetching guides:', error.response?.data || error.message);
+        Alert.alert('Error', 'Failed to fetch guides.');
+        setGuides([]);
+      } finally {
+        setGuidesLoading(false);
+      }
+    };
+    fetchGuides();
+  }, []);
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDateChange = (event, selectedDate, field) => {
+    const currentDate = selectedDate || new Date();
+    if (Platform.OS === 'android') {
+      if (field === 'issue_date') setShowIssueDatePicker(false);
+      if (field === 'expiry_date') setShowExpiryDatePicker(false);
+    }
+    if (event.type !== 'dismissed') {
+      const formattedDate = currentDate.toISOString().split('T')[0];
+      handleInputChange(field, formattedDate);
+    }
   };
 
   const handleSubmit = async () => {
@@ -39,46 +100,136 @@ const EditCertificate = () => {
       const token = await SecureStore.getItemAsync('userToken');
 
       if (!token) {
+        console.warn('handleSubmit: No token found');
         Alert.alert('Unauthorized', 'No user token found.');
         setLoading(false);
         return;
       }
 
-      // Ensure guide_id is included
       const payload = {
         ...formData,
-        guide_id: certification.guide_id, // Retain original guide_id
+        guide_id: formData.guide_id || null,
       };
+      console.log('handleSubmit: Sending API request', payload);
 
-      await axios.put(`${API_BASE_URL}/api/certification/${certification.id}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.put(
+        `${API_BASE_URL}/api/auth/certification/${certification.id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
 
-      Alert.alert('Success', 'Certification updated successfully.');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Error updating certification:', error.response?.data || error.message);
-      const errorMessage = error.response?.data?.message || 'Failed to update certification.';
-      const validationErrors = error.response?.data?.errors;
-      if (validationErrors) {
-        const errorDetails = Object.values(validationErrors).flat().join('\n');
-        Alert.alert('Validation Error', errorDetails);
-      } else {
-        Alert.alert('Error', errorMessage);
-      }
-    } finally {
       setLoading(false);
+      // Update formData with server response (like handleSave's setUser)
+      if (response.data.certification) {
+        setFormData({
+          guide_id: response.data.certification.guide_id ? String(response.data.certification.guide_id) : '',
+          certification_name: response.data.certification.certification_name || '',
+          certificate_number: response.data.certification.certificate_number || '',
+          description: response.data.certification.description || '',
+          issue_date: response.data.certification.issue_date || '',
+          expiry_date: response.data.certification.expiry_date || '',
+          status: response.data.certification.status || 'active',
+        });
+      }
+
+      Alert.alert('Success', response.data.message || 'Certification updated successfully.', [
+        {
+          text: 'OK',
+          onPress: () => {
+            try {
+              navigation.navigate('Certificate', {
+                updatedCertification: response.data.certification,
+              });
+            } catch (navError) {
+              console.error('Navigation error:', navError);
+              navigation.goBack();
+            }
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error('handleSubmit: Error', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      setLoading(false);
+      let errorMessage = error.response?.data?.message || 'Failed to update certification.';
+      if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. Please check your network and try again.';
+      } else if (error.response?.data?.errors) {
+        const errorDetails = Object.values(error.response.data.errors).flat().join('\n');
+        Alert.alert('Validation Error', errorDetails);
+        return;
+      }
+      Alert.alert('Error', errorMessage);
     }
+  };
+
+  const getSelectedGuideName = () => {
+    if (guidesLoading) return 'Loading guides...';
+    const selectedGuide = guides.find((guide) => String(guide.id) === formData.guide_id);
+    return selectedGuide ? selectedGuide.full_name : 'Select a Guide';
+  };
+
+  const handleGuideSelect = (value) => {
+    handleInputChange('guide_id', value);
+    setShowGuidePicker(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Edit Certification</Text>
       <View style={styles.form}>
+        <Text style={styles.label}>Guide</Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => !guidesLoading && setShowGuidePicker(true)}
+          disabled={guidesLoading}
+        >
+          <Text style={styles.inputText}>{getSelectedGuideName()}</Text>
+        </TouchableOpacity>
+
+        <Modal
+          visible={showGuidePicker}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setShowGuidePicker(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setShowGuidePicker(false)}
+                >
+                  <Text style={styles.modalButtonText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <Picker
+                selectedValue={formData.guide_id}
+                onValueChange={handleGuideSelect}
+                style={styles.modalPicker}
+              >
+                <Picker.Item label="Select a Guide" value="" />
+                {guides.map((guide) => (
+                  <Picker.Item
+                    key={guide.id}
+                    label={guide.full_name || 'Unknown Guide'}
+                    value={String(guide.id)}
+                  />
+                ))}
+              </Picker>
+            </View>
+          </View>
+        </Modal>
+
         <Text style={styles.label}>Certification Name</Text>
         <TextInput
           style={styles.input}
@@ -86,6 +237,7 @@ const EditCertificate = () => {
           onChangeText={(text) => handleInputChange('certification_name', text)}
           placeholder="Enter certification name"
         />
+
         <Text style={styles.label}>Certificate Number</Text>
         <TextInput
           style={styles.input}
@@ -93,28 +245,52 @@ const EditCertificate = () => {
           onChangeText={(text) => handleInputChange('certificate_number', text)}
           placeholder="Enter certificate number"
         />
+
         <Text style={styles.label}>Description</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { height: 80 }]}
           value={formData.description}
           onChangeText={(text) => handleInputChange('description', text)}
           placeholder="Enter description"
           multiline
         />
+
         <Text style={styles.label}>Issue Date</Text>
-        <TextInput
+        <TouchableOpacity
           style={styles.input}
-          value={formData.issue_date}
-          onChangeText={(text) => handleInputChange('issue_date', text)}
-          placeholder="YYYY-MM-DD"
-        />
+          onPress={() => setShowIssueDatePicker(true)}
+        >
+          <Text style={styles.dateText}>
+            {formData.issue_date || 'Select issue date'}
+          </Text>
+        </TouchableOpacity>
+        {showIssueDatePicker && (
+          <DateTimePicker
+            value={formData.issue_date ? new Date(formData.issue_date) : new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={(event, date) => handleDateChange(event, date, 'issue_date')}
+          />
+        )}
+
         <Text style={styles.label}>Expiry Date (optional)</Text>
-        <TextInput
+        <TouchableOpacity
           style={styles.input}
-          value={formData.expiry_date}
-          onChangeText={(text) => handleInputChange('expiry_date', text)}
-          placeholder="YYYY-MM-DD"
-        />
+          onPress={() => setShowExpiryDatePicker(true)}
+        >
+          <Text style={styles.dateText}>
+            {formData.expiry_date || 'Select expiry date'}
+          </Text>
+        </TouchableOpacity>
+        {showExpiryDatePicker && (
+          <DateTimePicker
+            value={formData.expiry_date ? new Date(formData.expiry_date) : new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={(event, date) => handleDateChange(event, date, 'expiry_date')}
+          />
+        )}
+
         <Text style={styles.label}>Status</Text>
         <View style={styles.statusContainer}>
           <TouchableOpacity
@@ -136,15 +312,24 @@ const EditCertificate = () => {
             <Text style={styles.statusButtonText}>Inactive</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          <Text style={styles.submitButtonText}>
-            {loading ? 'Updating...' : 'Update Certification'}
-          </Text>
-        </TouchableOpacity>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            <Text style={styles.submitButtonText}>
+              {loading ? 'Updating...' : 'Update'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -156,15 +341,16 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.background,
   },
-  title: {
-    fontSize: fonts.fontSizeLarge,
-    fontFamily: fonts.bold,
-    marginBottom: 16,
-    color: colors.primary,
-    textAlign: 'center',
-  },
   form: {
     flex: 1,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   label: {
     fontSize: fonts.fontSizeMedium,
@@ -181,34 +367,79 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.textSecondary,
     marginBottom: 16,
+    justifyContent: 'center',
+  },
+  inputText: {
+    fontSize: fonts.fontSizeSmall,
+    color: colors.textPrimary,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    padding: 16,
+    maxHeight: '50%',
+  },
+  modalPicker: {
+    backgroundColor: colors.white,
+    color: colors.textPrimary,
+    fontSize: fonts.fontSizeSmall,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+  },
+  modalButton: {
+    padding: 12,
+  },
+  modalButtonText: {
+    fontSize: fonts.fontSizeMedium,
+    fontFamily: fonts.medium,
+    color: colors.secondaryContrast,
+  },
+  dateText: {
+    fontSize: fonts.fontSizeSmall,
+    color: colors.textPrimary,
   },
   statusContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
+    borderColor: colors.textSecondary,
+    borderWidth: 1,
+    borderRadius: 8,
   },
   statusButton: {
     flex: 1,
     padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.textSecondary,
+    borderRadius: 7,
     alignItems: 'center',
-    marginRight: 8,
   },
   statusButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: colors.secondaryContrast,
+    borderColor: colors.secondaryContrast,
   },
   statusButtonText: {
     fontSize: fonts.fontSizeSmall,
     fontFamily: fonts.medium,
     color: colors.textPrimary,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   submitButton: {
+    flex: 1,
     backgroundColor: colors.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
+    marginRight: 8,
   },
   submitButtonDisabled: {
     backgroundColor: colors.textSecondary,
@@ -216,7 +447,19 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: fonts.fontSizeMedium,
     fontFamily: fonts.bold,
-    color: colors.white,
+    color: colors.buttonText,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.textSecondary,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: fonts.fontSizeMedium,
+    fontFamily: fonts.bold,
+    color: colors.buttonText,
   },
 });
 

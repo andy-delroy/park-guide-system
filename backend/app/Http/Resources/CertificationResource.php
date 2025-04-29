@@ -34,6 +34,12 @@ class CertificationResource extends JsonResource
         'renewal_requirements' => $this->renewal_requirements,
         'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
         'updated_at' => Carbon::parse($this->updated_at)->format('Y-m-d'),
+        'guide' => $this->whenLoaded('guide', function () {
+            return [
+                'id' => $this->guide->id,
+                'full_name' => $this->guide->full_name,
+            ];
+        }),
         ];
     }
 }

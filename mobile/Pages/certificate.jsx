@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
 
@@ -20,52 +20,87 @@ const Certificate = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
+  const route = useRoute();
+
+  const fetchCertifications = async () => {
+    try {
+      setLoading(true);
+      const token = await SecureStore.getItemAsync('userToken');
+
+      if (!token) {
+        Alert.alert('Unauthorized', 'No user token found.');
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/api/auth/certification`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+
+      // Handle response data
+      const certificationData = response.data.data || response.data || [];
+      if (!Array.isArray(certificationData)) {
+        console.warn('Certification data is not an array:', certificationData);
+        setCertifications([]);
+      } else {
+        const sortedCertifications = certificationData.sort((a, b) => {
+          const nameA = a.certification_name?.toLowerCase() || '';
+          const nameB = b.certification_name?.toLowerCase() || '';
+          return nameA.localeCompare(nameB);
+        });
+        setCertifications(sortedCertifications);
+      }
+    } catch (error) {
+      console.error('Error fetching certifications:', error.response?.data || error.message);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Failed to fetch certifications.'
+      );
+      setError(error.response?.data?.message || 'Failed to fetch certifications.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCertifications = async () => {
-      try {
-        const token = await SecureStore.getItemAsync('userToken');
-
-        if (!token) {
-          Alert.alert('Unauthorized', 'No user token found.');
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(`${API_BASE_URL}/api/auth/certification`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-        });
-
-        // Handle response data
-        const certificationData = response.data.data || response.data || [];
-        if (!Array.isArray(certificationData)) {
-          console.warn('Certification data is not an array:', certificationData);
-          setCertifications([]);
-        } else {
-          const sortedCertifications = certificationData.sort((a, b) => {
-            const nameA = a.certification_name?.toLowerCase() || '';
-            const nameB = b.certification_name?.toLowerCase() || '';
-            return nameA.localeCompare(nameB);
-          });
-          setCertifications(sortedCertifications);
-        }
-      } catch (error) {
-        console.error('Error fetching certifications:', error.response?.data || error.message);
-        Alert.alert(
-          'Error',
-          error.response?.data?.message || 'Failed to fetch certifications.'
-        );
-        setError(error.response?.data?.message || 'Failed to fetch certifications.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCertifications();
   }, []);
+
+  // Handle updated certification from EditCertificate
+  useEffect(() => {
+    if (route.params?.updatedCertification) {
+      console.log('Certificate: Received updated certification', route.params.updatedCertification);
+      setCertifications((prev) =>
+        prev.map((cert) =>
+          cert.id === route.params.updatedCertification.id
+            ? { ...cert, ...route.params.updatedCertification }
+            : cert
+        ).sort((a, b) => {
+          const nameA = a.certification_name?.toLowerCase() || '';
+          const nameB = b.certification_name?.toLowerCase() || '';
+          return nameA.localeCompare(nameB);
+        })
+      );
+      // Clear params to prevent repeated updates
+      navigation.setParams({ updatedCertification: undefined });
+    }
+  }, [route.params?.updatedCertification]);
+
+  // Fallback: Handle refresh flag
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log('Certificate: Screen focused, checking refresh flag');
+      if (route.params?.refresh) {
+        console.log('Certificate: Refresh flag detected, refetching data');
+        fetchCertifications();
+        navigation.setParams({ refresh: undefined });
+      }
+    });
+    return unsubscribe;
+  }, [navigation, route.params?.refresh]);
 
   const handleDelete = async (id) => {
     try {
@@ -75,7 +110,7 @@ const Certificate = () => {
         return;
       }
 
-      await axios.delete(`${API_BASE_URL}/api/certification/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/auth/certification/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -99,6 +134,7 @@ const Certificate = () => {
       <View style={styles.info}>
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
         <Text style={styles.detail}>Certificate Number: {item.certificate_number}</Text>
+        <Text style={styles.detail}>Guide: {item.guide?.full_name || 'Unknown'}</Text>
         <Text style={styles.detail}>Description: {item.description}</Text>
         <Text style={styles.detail}>Issue Date: {item.issue_date}</Text>
         <Text style={styles.detail}>Expiry Date: {item.expiry_date || 'N/A'}</Text>
@@ -167,13 +203,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.background,
   },
-  title: {
-    fontSize: fonts.fontSizeLarge,
-    fontFamily: fonts.bold,
-    marginBottom: 16,
-    color: colors.primary,
-    textAlign: 'center',
-  },
   list: {
     paddingBottom: 24,
   },
@@ -182,8 +211,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 12,
+    borderColor: colors.border,
+    borderWidth: 1,
     padding: 16,
-    marginBottom: 12,
+    marginTop: 12,
+    marginHorizontal: 16,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -222,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error || '#e03131',
   },
   buttonText: {
-    color: colors.white,
+    color: colors.buttonText,
     fontSize: fonts.fontSizeSmall,
     fontFamily: fonts.medium,
   },
