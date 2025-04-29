@@ -64,6 +64,15 @@ class CertificationController extends Controller
             'expiry_date' => $validated['expiry_date'] ?? null,
             'status' => $validated['status'],
         ]);
+
+        // Check if the request expects JSON (API call)
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => "Certification \"{$certification->certification_name}\" created successfully.",
+                'certification' => $certification,
+            ], 201);
+        }
+        
         return to_route('certification.index')
         ->with('success', "Certification \"$certification->name\" created successfully.");
     }

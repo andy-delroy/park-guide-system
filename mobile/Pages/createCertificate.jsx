@@ -14,27 +14,24 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
 
-const EditCertificate = () => {
-  const route = useRoute();
+const CreateCertificate = () => {
   const navigation = useNavigation();
-  const { certification } = route.params;
   const scrollViewRef = useRef(null);
-  const [contentHeight, setContentHeight] = useState(0); // Track dynamic content height
-
+  const [contentHeight, setContentHeight] = useState(0);
   const [formData, setFormData] = useState({
-    guide_id: certification.guide_id ? String(certification.guide_id) : '',
-    certification_name: certification.certification_name || '',
-    certificate_number: certification.certificate_number || '',
-    description: certification.description || '',
-    issue_date: certification.issue_date || '',
-    expiry_date: certification.expiry_date || '',
-    status: certification.status || 'active',
+    guide_id: '',
+    certification_name: '',
+    certificate_number: '',
+    description: '',
+    issue_date: new Date().toISOString().split('T')[0],
+    expiry_date: '',
+    status: 'active',
   });
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -115,10 +112,14 @@ const EditCertificate = () => {
   };
 
   const handleSubmit = async () => {
+    if (!formData.certification_name || !formData.certificate_number || !formData.guide_id) {
+      Alert.alert('Validation Error', 'Certification Name, Certificate Number, and Guide are required.');
+      return;
+    }
+
     try {
       setLoading(true);
       const token = await SecureStore.getItemAsync('userToken');
-
       if (!token) {
         console.warn('handleSubmit: No token found');
         Alert.alert('Unauthorized', 'No user token found.');
@@ -129,11 +130,12 @@ const EditCertificate = () => {
       const payload = {
         ...formData,
         guide_id: formData.guide_id || null,
+        expiry_date: formData.expiry_date || null,
       };
       console.log('handleSubmit: Sending API request', payload);
 
-      const response = await axios.put(
-        `${API_BASE_URL}/api/auth/certification/${certification.id}`,
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/certification`,
         payload,
         {
           headers: {
@@ -146,26 +148,12 @@ const EditCertificate = () => {
       );
 
       setLoading(false);
-      if (response.data.certification) {
-        setFormData({
-          guide_id: response.data.certification.guide_id ? String(response.data.certification.guide_id) : '',
-          certification_name: response.data.certification.certification_name || '',
-          certificate_number: response.data.certification.certificate_number || '',
-          description: response.data.certification.description || '',
-          issue_date: response.data.certification.issue_date || '',
-          expiry_date: response.data.certification.expiry_date || '',
-          status: response.data.certification.status || 'active',
-        });
-      }
-
-      Alert.alert('Success', response.data.message || 'Certification updated successfully.', [
+      Alert.alert('Success', response.data.message || 'Certification created successfully.', [
         {
           text: 'OK',
           onPress: () => {
             try {
-              navigation.navigate('Certificate', {
-                updatedCertification: response.data.certification,
-              });
+              navigation.navigate('Certificate', { refresh: true });
             } catch (navError) {
               console.error('Navigation error:', navError);
               navigation.goBack();
@@ -180,7 +168,7 @@ const EditCertificate = () => {
         status: error.response?.status,
       });
       setLoading(false);
-      let errorMessage = error.response?.data?.message || 'Failed to update certification.';
+      let errorMessage = error.response?.data?.message || 'Failed to create certification.';
       if (error.code === 'ECONNABORTED') {
         errorMessage = 'Request timed out. Please check your network and try again.';
       } else if (error.response?.data?.errors) {
@@ -369,7 +357,7 @@ const EditCertificate = () => {
                 disabled={loading}
               >
                 <Text style={styles.submitButtonText}>
-                  {loading ? 'Updating...' : 'Update'}
+                  {loading ? 'Creating...' : 'Create'}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -528,4 +516,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditCertificate;
+export default CreateCertificate;

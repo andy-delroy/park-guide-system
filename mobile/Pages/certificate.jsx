@@ -92,9 +92,7 @@ const Certificate = () => {
   // Fallback: Handle refresh flag
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      console.log('Certificate: Screen focused, checking refresh flag');
       if (route.params?.refresh) {
-        console.log('Certificate: Refresh flag detected, refetching data');
         fetchCertifications();
         navigation.setParams({ refresh: undefined });
       }
@@ -166,6 +164,10 @@ const Certificate = () => {
     </View>
   );
 
+  const handleAddCertification = () => {
+    navigation.navigate('CreateCertificate');
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -193,6 +195,12 @@ const Certificate = () => {
           <Text style={styles.emptyText}>No certifications found.</Text>
         }
       />
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={handleAddCertification}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -274,6 +282,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.secondaryContrast,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  fabText: {
+    fontSize: 24,
+    color: colors.buttonText,
+    fontFamily: fonts.bold,
   },
 });
 
