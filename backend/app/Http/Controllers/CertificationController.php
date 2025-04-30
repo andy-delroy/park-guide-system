@@ -110,7 +110,7 @@ class CertificationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function edit($id, Request $request)
     {
         $certification = Certification::findOrFail($id);
 
