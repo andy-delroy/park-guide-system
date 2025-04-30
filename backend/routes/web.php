@@ -28,6 +28,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
     Route::get('/my-trainings/download', [TrainingsController::class, 'downloadSchedule'])->name('my-trainings.download');
 
+    //Kim
+    // Trainings routes
+    Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
+    Route::post('/test-enroll', fn() => response()->json(['message' => 'its working']));
+    Route::apiResource('trainings', TrainingsController::class);
+
     // old Training management
     //Route::resource('trainings', TrainingsController::class);
 

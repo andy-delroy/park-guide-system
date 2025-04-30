@@ -7,7 +7,7 @@ export default function Index({ auth, trainings }) {
     const handleEnroll = async (trainingId) => {
         try {
             const response = await axios.post(
-                `/api/trainings/${trainingId}/enroll`,
+                `/trainings/${trainingId}/enroll`,
                 {},
                 { responseType: 'blob' } //To download .ics file
             );
