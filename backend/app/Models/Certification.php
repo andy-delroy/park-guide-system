@@ -13,6 +13,10 @@ class Certification extends Model
         'certification_name',
         'certificate_number',
         'description',
+        'certificate_file_url',
+        'requirements_description',
+        'renewal_requirements',
+        'validity_period_months',
         'issued_by',
         'issue_date',
         'expiry_date',
@@ -40,6 +44,10 @@ class Certification extends Model
     }
 
     public function issuedBy()
+    {
+    return $this->belongsTo(User::class, 'issued_by');
+    }
+    public function issuer()
     {
     return $this->belongsTo(User::class, 'issued_by');
     }

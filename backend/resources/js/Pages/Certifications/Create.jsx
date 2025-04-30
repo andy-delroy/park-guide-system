@@ -9,6 +9,11 @@ const Create = ({ auth }) => {
         certificate_number: '',
         certification_name: '',
         description: '',
+        certificate_file_url: '',
+        requirements_description: '',
+        validity_period_months: '',
+        renewal_requirements: '',
+        // issued_by: '',
         issue_date: '',
         expiry_date: '',
         status: 'active',
@@ -123,6 +128,53 @@ const Create = ({ auth }) => {
                                         <div className="text-red-500 text-sm mt-1">{errors.description}</div>
                                     )}
                                 </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">URL</label>
+                                    <textarea
+                                        value={data.certificate_file_url}
+                                        onChange={(e) => setData('certificate_file_url', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.certificate_file_url && <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements Description</label>
+                                    <textarea
+                                        value={data.requirements_description}
+                                        onChange={(e) => setData('requirements_description', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.requirements_description && <div className="text-red-500 text-sm mt-1">{errors.requirements_description}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
+                                    <textarea
+                                        value={data.validity_period_months}
+                                        onChange={(e) => setData('validity_period_months', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
+                                    <textarea
+                                        value={data.renewal_requirements}
+                                        onChange={(e) => setData('renewal_requirements', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
+                                </div>
+
+                                {/* <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Issued By</label>
+                                    <input
+                                        type="text"
+                                        value={data.issued_by}
+                                        onChange={(e) => setData('issued_by', e.target.value)}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.issued_by && <div className="text-red-500 text-sm mt-1">{errors.issued_by}</div>}
+                                </div> */}
 
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
