@@ -36,6 +36,21 @@ class TrainingsController extends Controller
         ]);
     }
 
+        public function unenroll($id)
+    {
+        $user = Auth::user();
+        $training = Trainings::findOrFail($id);
+
+        if (!$training->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Not enrolled in this training.'], 409);
+        }
+
+        $training->users()->detach($user->id);
+
+        return response()->json(['message' => 'Enrollment cancelled successfully.']);
+    }
+
+
     public function downloadSchedule()
     {
         $user = auth()->user();

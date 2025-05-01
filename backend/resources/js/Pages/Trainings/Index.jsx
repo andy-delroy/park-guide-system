@@ -9,7 +9,7 @@ export default function Index({ auth, trainings }) {
             const response = await axios.post(
                 `/trainings/${trainingId}/enroll`,
                 {},
-                { responseType: 'blob' } //To download .ics file
+                { responseType: 'blob' }
             );
     
             const blob = new Blob([response.data], { type: 'text/calendar' });
@@ -33,6 +33,17 @@ export default function Index({ auth, trainings }) {
             }
         }
     };
+
+    const handleUnenroll = async (trainingId) => {
+        try {
+            await axios.delete(`/trainings/${trainingId}/unenroll`);
+            alert("Enrollment cancelled successfully!");
+            Inertia.visit(route("my-trainings"));
+        } catch (error) {
+            alert("Something went wrong while cancelling enrollment.");
+        }
+    };
+    
     
 
     return (
@@ -101,19 +112,23 @@ export default function Index({ auth, trainings }) {
                                             <td className="px-3 py-3">{training.location}</td>
                                             <td className="px-3 py-3">{training.capacity}</td>
                                             <td className="px-3 py-3">
-                                                {auth.user?.role?.role_name !== "admin" && (
-                                                    training.is_enrolled ? (
-                                                    <span className="text-gray-600 font-bold">Already Enrolled</span>
-                                                    ) : (
+                                                {training.is_enrolled ? (
+                                                    <button
+                                                        className="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                                                        onClick={() => handleUnenroll(training.id)}
+                                                    >
+                                                        Cancel Enrollment
+                                                    </button>
+                                                ) : (
                                                     <button
                                                         className="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                                                         onClick={() => handleEnroll(training.id)}
                                                     >
                                                         Enroll
                                                     </button>
-                                                    )
                                                 )}
-                                                </td>
+                                            </td>
+
                                           </tr>   
                                         ))
                                     )}

@@ -4,42 +4,34 @@ namespace App\Services;
 
 use Eluceo\iCal\Domain\Entity\Calendar;
 use Eluceo\iCal\Domain\Entity\Event;
-use Eluceo\iCal\Domain\ValueObject\DateTime as IcalDateTime;
-use Eluceo\iCal\Domain\ValueObject\Description;
-use Eluceo\iCal\Domain\ValueObject\Location;
-use Eluceo\iCal\Domain\ValueObject\Summary;
 use Eluceo\iCal\Domain\ValueObject\UniqueIdentifier;
+use Eluceo\iCal\Domain\ValueObject\DateTime as ICalDateTime;
+use Eluceo\iCal\Domain\ValueObject\Location;
+use Eluceo\iCal\Domain\ValueObject\TimeSpan;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class IcsService
 {
-    //Generate ICS content for multiple trainings (bulk download)
-
-    public function generateBulkTrainingIcs(Collection $trainings)
+    public function generateBulkTrainingIcs($trainings)
     {
-        $events = [];
+        $calendar = new Calendar([]);
 
         foreach ($trainings as $training) {
-            $event = new Event(
-                new UniqueIdentifier('training-' . $training->id), 
-                new Summary($training->title),
-                new Description($training->description ?? ''),
-                new IcalDateTime(new \DateTime($training->start_date)),
-                new IcalDateTime(new \DateTime($training->end_date))
+            $event = new Event(new UniqueIdentifier(Str::uuid()->toString()));
+            $event->setSummary($training->title);
+            $event->setDescription($training->description ?? '');
+            $event->setLocation(new Location($training->location ?? ''));
+            $event->setOccurrence(
+                new TimeSpan(
+                    new ICalDateTime(new \DateTimeImmutable($training->start_date), true),
+                    new ICalDateTime(new \DateTimeImmutable($training->end_date), true)
+                )
             );
-
-            if ($training->location) {
-                $event->setLocation(new Location($training->location));
-            }
-
-            $events[] = $event;
+            $calendar->addEvent($event);
         }
 
-        $calendar = new Calendar($events);
         $calendarFactory = new CalendarFactory();
-
         return $calendarFactory->createCalendar($calendar);
     }
 }

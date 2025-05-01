@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Kim
     // Trainings routes
     Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
+    Route::delete('/trainings/{id}/unenroll', [TrainingsController::class, 'unenroll'])->name('trainings.unenroll');
     Route::post('/test-enroll', fn() => response()->json(['message' => 'its working']));
     Route::apiResource('trainings', TrainingsController::class);
 
