@@ -1,48 +1,54 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TrainingsController;
-use App\Http\Controllers\Api\MediaController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Redirect root to dashboard
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TrainingsController;
+use App\Http\Controllers\Api\MediaController;
+
+// 🆕 New Controllers for Courses
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\LessonController;
+use App\Http\Controllers\ProgressController;
+
+// 🔁 Redirect root to dashboard
 Route::redirect('/', '/dashboard');
 
-//
+// 📸 Media Routes (Public)
 Route::get('/media', fn () => Inertia::render('Media/Index'))->name('media.index');
 Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
 Route::get('/media/manage', fn () => Inertia::render('Media/ManageMedia'))->name('media.manage');
 
 Route::post('/api/media/upload', [MediaController::class, 'store'])->name('media.upload.store');
-Route::get('/api/media', [MediaController::class, 'index'])->name('media.index');
-// Authenticated routes (only for logged-in users)
+Route::get('/api/media', [MediaController::class, 'index'])->name('media.api.index');
+
+// ✅ Authenticated Area
 Route::middleware(['auth', 'verified'])->group(function () {
+
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
 
-   //what are resouces?
+    // Trainings (your legacy feature)
     Route::resource('trainings', TrainingsController::class);
-//    Route::resouce('user', ::class);
     Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
-    // old Training management
-    //Route::resource('trainings', TrainingsController::class);
 
-    // Media Upload page (no role check)
-   // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+    // 🆕 Course System Routes (Canvas Style)
+    Route::resource('courses', CourseController::class);
+    Route::resource('modules', ModuleController::class)->except(['index', 'show']);
+    Route::resource('lessons', LessonController::class)->except(['index']);
+    
+    // 🧠 Progress marking route
+    Route::post('/lessons/{lesson}/complete', [ProgressController::class, 'markComplete'])->name('lessons.complete');
 });
 
-// User profile routes
+// 👤 User Profile Routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Laravel Breeze auth routes
+// Auth Routes (Laravel Breeze)
 require __DIR__.'/auth.php';
-
-
-// Route::redirect('/nigga', '/dashboard');
-// Route::redirect('/nigga', '/thehood');
