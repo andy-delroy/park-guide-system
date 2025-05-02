@@ -27,6 +27,15 @@ class User extends Authenticatable
         return $this->role ? $this->role->role_name : 'Unknown';
     }
 
+
+
+    public function routeNotificationForMail(): string
+    {
+        return app()->isLocal()
+            ? 'kikunojo.onepiece@gmail.com'
+            : $this->email;
+    }
+
     /** ----------------------------
      *        Relationships
      *  ---------------------------- */
