@@ -41,40 +41,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // old Training management
     //Route::resource('trainings', TrainingsController::class);
 
-    // ✅ Media Upload page (no role check)
-   // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
-
 
    //guides management
    Route::resource('guides', GuideController::class);
 });
 
 
-//notification part
-// Route::get('/broadcast', function () {
-//     broadcast(new TestEvent());
-//     return 'Broadcast sent';
-// });
+use App\Models\Alert;
+use App\Events\AlertCreated;
+use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Admin\AlertAdminController;
 
-Route::get('/broadcast/test', function () {
-    $user = Auth::user();
-
-    $role = $user?->role_name ?? 'guest';
-    $name = $user?->full_name ?? 'Anonymous';
-
-    $message = "Notification from {$name} ({$role})";
-
-    Notification::create([
-        'user_id' => $user?->id,
-        'role' => $role,
-        'message' => $message,
-        'type' => 'info',
-    ]);
-
-    broadcast(new TestEvent($message, $role));
-
-    return response()->json(['status' => 'sent']);
-});
 
 Route::get('/notifications', function () {
     $user = Auth::user();
@@ -97,6 +74,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
     Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
+
+    Route::get('/admin/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
+    Route::put('/admin/alerts/{alert}', [AlertAdminController::class, 'update'])->name('admin.alerts.update');
+    Route::post('/alerts', [AlertController::class, 'store'])->name('alerts.store');
 });
 
 // User profile routes
