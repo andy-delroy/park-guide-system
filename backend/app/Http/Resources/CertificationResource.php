@@ -28,8 +28,6 @@ class CertificationResource extends JsonResource
         'renewal_count' => $this->renewal_count,
         'status' => $this->status,
         'certificate_file_url' => $this->certificate_file_url,
-        'verification_code' => $this->verification_code,
-        'requirements_description' => $this->requirements_description,
         'validity_period_months' => $this->validity_period_months,
         'renewal_requirements' => $this->renewal_requirements,
         'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
