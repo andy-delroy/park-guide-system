@@ -43,12 +43,6 @@ const CertificateDetails = ({ route }) => {
   const [showIssueDatePicker, setShowIssueDatePicker] = useState(false);
   const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
 
-  // Debug formData.guide_id on initialization
-  useEffect(() => {
-    console.log('Initial formData.guide_id:', formData.guide_id, 'Type:', typeof formData.guide_id);
-    console.log('certification.guide:', certification.guide);
-  }, []);
-
   // Fetch guides
   useEffect(() => {
     const fetchGuides = async () => {
@@ -75,9 +69,6 @@ const CertificateDetails = ({ route }) => {
           }
         }
         setGuides(guidesData);
-        // Debug guides and formData.guide_id after fetch
-        console.log('Fetched guides:', guidesData.map(g => ({ id: g.id, stringId: String(g.id), full_name: g.full_name })));
-        console.log('formData.guide_id after fetch:', formData.guide_id, 'Type:', typeof formData.guide_id);
       } catch (error) {
         console.error('Error fetching guides:', error.response?.data || error.message);
         Alert.alert('Error', 'Failed to fetch guides.');
@@ -92,10 +83,6 @@ const CertificateDetails = ({ route }) => {
   // Handle input changes
   const handleInputChange = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
-    // Debug guide_id changes
-    if (key === 'guide_id') {
-      console.log('Updated guide_id:', value, 'Type:', typeof value);
-    }
   };
 
   // Handle date changes
@@ -174,8 +161,6 @@ const CertificateDetails = ({ route }) => {
   const handleCancel = () => {
     setFormData({ ...certification, guide_id: certification.guide?.id ? String(certification.guide.id) : '' });
     setIsEditing(false);
-    // Debug guide_id after cancel
-    console.log('Cancelled, reset guide_id:', certification.guide?.id ? String(certification.guide.id) : '', 'Type:', typeof (certification.guide?.id ? String(certification.guide.id) : ''));
   };
 
   // Handle Delete
@@ -261,8 +246,6 @@ const CertificateDetails = ({ route }) => {
                     <Text style={styles.modalButtonText}>Done</Text>
                   </TouchableOpacity>
                 </View>
-                {/* Debug Picker rendering */}
-                {console.log('Rendering Picker, selectedValue:', formData.guide_id, 'Type:', typeof formData.guide_id)}
                 <Picker
                   selectedValue={formData.guide_id}
                   onValueChange={(value) => {
