@@ -104,7 +104,7 @@ class CertificationController extends Controller
      */
     public function show($id)
     {
-        $certification = Certification::with('issuer')->findOrFail($id);
+        $certification = Certification::with(['guide', 'issuer'])->findOrFail($id);
     
         if (auth()->user()->role->role_name === 'guide' && $certification->guide_id !== auth()->id()) {
             abort(403, 'Unauthorized');

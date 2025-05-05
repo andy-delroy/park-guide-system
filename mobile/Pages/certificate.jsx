@@ -15,6 +15,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
+import { Ionicons } from '@expo/vector-icons';
 
 const Certificate = () => {
   const [certifications, setCertifications] = useState([]);
@@ -137,46 +138,17 @@ const Certificate = () => {
   };
 
   const renderCertification = ({ item }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+    style={styles.card}
+    onPress={() => navigation.navigate('CertificateDetails', { certification: item })}
+    >
       <ScrollView style={styles.info}>
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
         <Text style={styles.detail}>Certificate Number: {item.certificate_number || 'N/A'}</Text>
         <Text style={styles.detail}>Guide: {item.guide?.full_name || 'Unknown'}</Text>
-        {/* <Text style={styles.detail}>Program: {item.program?.name || 'N/A'}</Text>
-        <Text style={styles.detail}>Description: {item.description || 'N/A'}</Text>
-        <Text style={styles.detail}>Issue Date: {formatDate(item.issue_date)}</Text>
-        <Text style={styles.detail}>Expiry Date: {formatDate(item.expiry_date)}</Text>
-        <Text style={styles.detail}>Issued By: {item.issuer?.full_name || 'Unknown'}</Text>
-        <Text style={styles.detail}>Renewal Count: {item.renewal_count ?? '0'}</Text>
-        <Text style={styles.detail}>Status: {item.status || 'N/A'}</Text>
-        <Text style={styles.detail}>Certificate URL: {item.certificate_file_url || 'N/A'}</Text>
-        <Text style={styles.detail}>Validity Period: {item.validity_period_months ? `${item.validity_period_months} months` : 'N/A'}</Text>
-        <Text style={styles.detail}>Renewal Requirements: {item.renewal_requirements || 'N/A'}</Text> */}
       </ScrollView>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.editButton]}
-          onPress={() => navigation.navigate('EditCertificate', { certification: item })}
-        >
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => {
-            Alert.alert(
-              'Confirm Delete',
-              `Are you sure you want to delete "${item.certification_name}"?`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => handleDelete(item.id) },
-              ]
-            );
-          }}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <Ionicons name="chevron-forward" size={24} color="black" style={styles.arrow} />
+    </TouchableOpacity>
   );
 
   const handleAddCertification = () => {
@@ -221,6 +193,10 @@ const Certificate = () => {
 };
 
 const styles = StyleSheet.create({
+  arrow: {
+    alignSelf: 'center',
+    margin: 10
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -257,29 +233,6 @@ const styles = StyleSheet.create({
     fontSize: fonts.fontSizeSmall,
     color: colors.textSecondary,
     marginTop: 4,
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    marginLeft: 12,
-  },
-  button: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-  editButton: {
-    backgroundColor: colors.primary,
-  },
-  deleteButton: {
-    backgroundColor: colors.error || '#e03131',
-  },
-  buttonText: {
-    color: colors.buttonText,
-    fontSize: fonts.fontSizeSmall,
-    fontFamily: fonts.medium,
   },
   emptyText: {
     fontSize: fonts.fontSizeMedium,
