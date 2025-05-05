@@ -46,13 +46,12 @@ export default function Dashboard({auth}) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                            <div className="mb-4">
-                                <p className="text-lg">Welcome, {auth.user.full_name}!</p>
-                            </div>
+                       <div className="bg-white shadow rounded-xl p-6 text-gray-900">
+                            <p className="text-lg">You're logged in!</p>
+                            <p className="text-xl font-semibold text-[--forest-green]">
+                                Welcome, {auth.user.full_name}!
+                            </p>
                         </div>
-                        
                     </div>
                 </div>
             </div>
