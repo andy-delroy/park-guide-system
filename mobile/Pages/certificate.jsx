@@ -8,6 +8,7 @@ import {
   Alert,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -84,7 +85,6 @@ const Certificate = () => {
           return nameA.localeCompare(nameB);
         })
       );
-      // Clear params to prevent repeated updates
       navigation.setParams({ updatedCertification: undefined });
     }
   }, [route.params?.updatedCertification]);
@@ -115,7 +115,6 @@ const Certificate = () => {
         },
       });
 
-      // Remove the certification from the state
       setCertifications((prev) => prev.filter((cert) => cert.id !== id));
       Alert.alert('Success', 'Certification deleted successfully.');
     } catch (error) {
@@ -127,17 +126,33 @@ const Certificate = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   const renderCertification = ({ item }) => (
     <View style={styles.card}>
-      <View style={styles.info}>
+      <ScrollView style={styles.info}>
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
-        <Text style={styles.detail}>Certificate Number: {item.certificate_number}</Text>
+        <Text style={styles.detail}>Certificate Number: {item.certificate_number || 'N/A'}</Text>
         <Text style={styles.detail}>Guide: {item.guide?.full_name || 'Unknown'}</Text>
-        <Text style={styles.detail}>Description: {item.description}</Text>
-        <Text style={styles.detail}>Issue Date: {item.issue_date}</Text>
-        <Text style={styles.detail}>Expiry Date: {item.expiry_date || 'N/A'}</Text>
-        <Text style={styles.detail}>Status: {item.status}</Text>
-      </View>
+        {/* <Text style={styles.detail}>Program: {item.program?.name || 'N/A'}</Text>
+        <Text style={styles.detail}>Description: {item.description || 'N/A'}</Text>
+        <Text style={styles.detail}>Issue Date: {formatDate(item.issue_date)}</Text>
+        <Text style={styles.detail}>Expiry Date: {formatDate(item.expiry_date)}</Text>
+        <Text style={styles.detail}>Issued By: {item.issuer?.full_name || 'Unknown'}</Text>
+        <Text style={styles.detail}>Renewal Count: {item.renewal_count ?? '0'}</Text>
+        <Text style={styles.detail}>Status: {item.status || 'N/A'}</Text>
+        <Text style={styles.detail}>Certificate URL: {item.certificate_file_url || 'N/A'}</Text>
+        <Text style={styles.detail}>Validity Period: {item.validity_period_months ? `${item.validity_period_months} months` : 'N/A'}</Text>
+        <Text style={styles.detail}>Renewal Requirements: {item.renewal_requirements || 'N/A'}</Text> */}
+      </ScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.editButton]}
@@ -212,11 +227,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   list: {
-    paddingBottom: 24,
+    paddingBottom: 80, // Increased to accommodate FAB
   },
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 12,
     borderColor: colors.border,
@@ -231,17 +245,18 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
+    maxHeight: 300, // Limit height for scrollable content
   },
   name: {
     fontSize: fonts.fontSizeMedium,
     fontFamily: fonts.medium,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   detail: {
     fontSize: fonts.fontSizeSmall,
     color: colors.textSecondary,
-    marginTop: 2,
+    marginTop: 4,
   },
   buttonContainer: {
     flexDirection: 'column',

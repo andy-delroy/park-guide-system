@@ -3,6 +3,22 @@ import { Link, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 export default function Details({ auth, certification }) {
+    // Extract relative path from certificate_file_url
+    const getRelativePath = (url) => {
+        if (!url) return null;
+        try {
+            const parsedUrl = new URL(url);
+            return parsedUrl.pathname; // e.g., /certificates/filename.pdf
+        } catch (error) {
+            console.error('Invalid URL:', url, error);
+            return null;
+        }
+    };
+
+    const relativePath = getRelativePath(certification.certificate_file_url);
+    const isImage = relativePath && /\.(jpg|jpeg|png)$/i.test(relativePath);
+    const isPdf = relativePath && /\.pdf$/i.test(relativePath);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -18,6 +34,44 @@ export default function Details({ auth, certification }) {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6">
+                            {/* Display certificate file at the top */}
+                            {relativePath ? (
+                                <div className="mb-6">
+                                    {isImage ? (
+                                        <img
+                                            src={relativePath}
+                                            alt="Certificate"
+                                            className="max-w-full h-auto rounded shadow"
+                                            style={{ maxHeight: '400px' }}
+                                        />
+                                    ) : isPdf ? (
+                                        <embed
+                                            src={relativePath}
+                                            type="application/pdf"
+                                            width="100%"
+                                            height="400px"
+                                            className="rounded shadow"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-gray-500">
+                                            Unsupported file format.{" "}
+                                            <a
+                                                href={relativePath}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-indigo-600 hover:underline"
+                                            >
+                                                Download file
+                                            </a>
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Certificate</h3>
+                                    <p className="text-sm text-gray-500">No file uploaded.</p>
+                                </div>
+                            )}
                             <h3 className="text-lg font-medium text-gray-900 mb-4">
                                 Certification Information
                             </h3>
@@ -61,27 +115,6 @@ export default function Details({ auth, certification }) {
                                 <div>
                                     <p className="text-sm font-medium text-gray-500">Status:</p>
                                     <p className="text-sm text-gray-900">{certification.status}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Certificate File URL:</p>
-                                    <p className="text-sm text-gray-900">
-                                        {certification.certificate_file_url ? (
-                                            <a
-                                                href={certification.certificate_file_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-indigo-600 hover:underline"
-                                            >
-                                                View Certificate
-                                            </a>
-                                        ) : (
-                                            "No file uploaded."
-                                        )}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Verification Code:</p>
-                                    <p className="text-sm text-gray-900">{certification.verification_code || "N/A"}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-gray-500">Requirements Description:</p>
