@@ -142,7 +142,7 @@ const Certificate = () => {
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
         <Text style={styles.detail}>Certificate Number: {item.certificate_number || 'N/A'}</Text>
         <Text style={styles.detail}>Guide: {item.guide?.full_name || 'Unknown'}</Text>
-        <Text style={styles.detail}>Program: {item.program?.name || 'N/A'}</Text>
+        {/* <Text style={styles.detail}>Program: {item.program?.name || 'N/A'}</Text>
         <Text style={styles.detail}>Description: {item.description || 'N/A'}</Text>
         <Text style={styles.detail}>Issue Date: {formatDate(item.issue_date)}</Text>
         <Text style={styles.detail}>Expiry Date: {formatDate(item.expiry_date)}</Text>
@@ -150,9 +150,8 @@ const Certificate = () => {
         <Text style={styles.detail}>Renewal Count: {item.renewal_count ?? '0'}</Text>
         <Text style={styles.detail}>Status: {item.status || 'N/A'}</Text>
         <Text style={styles.detail}>Certificate URL: {item.certificate_file_url || 'N/A'}</Text>
-        <Text style={styles.detail}>Requirements: {item.requirements_description || 'N/A'}</Text>
         <Text style={styles.detail}>Validity Period: {item.validity_period_months ? `${item.validity_period_months} months` : 'N/A'}</Text>
-        <Text style={styles.detail}>Renewal Requirements: {item.renewal_requirements || 'N/A'}</Text>
+        <Text style={styles.detail}>Renewal Requirements: {item.renewal_requirements || 'N/A'}</Text> */}
       </ScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
