@@ -46,6 +46,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
    Route::resource('guides', GuideController::class);
 });
 
+Route::get('/broadcast/test', function () {
+    $user = Auth::user();
+    $role = $user?->role_name ?? 'guest';
+    $name = $user?->full_name ?? 'Anonymous';
+
+    $message = "Test notification from {$name} ({$role})";
+
+    Notification::create([
+        'user_id' => $user?->id,
+        'message' => $message,
+        'type' => 'info',
+    ]);
+
+    broadcast(new TestEvent($role, $message))->toOthers();
+
+    return response()->json([
+        'status' => 'sent',
+        'role' => $role,
+        'channel' => "notifications.{$role}",
+        'message' => $message,
+    ]);
+})->middleware('auth');
 
 use App\Models\Alert;
 use App\Events\AlertCreated;

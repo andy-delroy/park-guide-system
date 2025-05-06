@@ -14,10 +14,10 @@ class TestEvent implements ShouldBroadcastNow
     public $message;
     public $role;
 
-    public function __construct($message, $role)
+    public function __construct($role, $message)
     {
+        $this->role = $role;
         $this->message = $message;
-        $this->role = $role; // role_name like 'admin', 'visitor', etc.
     }
 
     public function broadcastOn()

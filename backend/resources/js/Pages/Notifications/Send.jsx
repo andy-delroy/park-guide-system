@@ -36,7 +36,7 @@ export default function Send({ auth }) {
     try {
       await axios.get('/broadcast/test');
     } catch (err) {
-      console.error(' Broadcast failed:', err.response?.data ?? err.message);
+      console.error('Broadcast failed:', err.response?.data ?? err.message);
     }
   };
 
