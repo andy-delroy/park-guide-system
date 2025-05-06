@@ -19,14 +19,25 @@ const TopBar = ({ navigation, route, role }) => {
 
   const isHome = tabScreen === 'Home';
 
+  // Handle back navigation safely
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainStack', { screen: 'Tabs', params: { screen: 'Home' } });
+    }
+  };
+
   return (
     <View style={styles.topNavContainer}>
-      {(role === 'admin' || role === 'guide') ? (
+      {isHome && (role === 'admin' || role === 'guide') ? (
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={22} color="#fff" />
         </TouchableOpacity>
       ) : (
-        <View style={{ width: 22 }} />
+        <TouchableOpacity onPress={handleBack}>
+          <Icon name="arrow-left" size={22} color="#fff" />
+        </TouchableOpacity>
       )}
 
       {isHome ? (

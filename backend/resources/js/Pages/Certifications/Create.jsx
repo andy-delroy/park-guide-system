@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link, usePage, Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
+import API_BASE_URL from '../../../../../mobile/api.config';
 
 const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
@@ -9,14 +10,13 @@ const Create = ({ auth }) => {
         certificate_number: '',
         certification_name: '',
         description: '',
-        certificate_file_url: '',
-        requirements_description: '',
+        certificate_file_url: null,
         validity_period_months: '',
         renewal_requirements: '',
-        // issued_by: '',
         issue_date: '',
         expiry_date: '',
         status: 'active',
+        base_url: API_BASE_URL,
     });
 
     const [guides, setGuides] = useState([]);
@@ -51,7 +51,22 @@ const Create = ({ auth }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/certification');
+        const formData = new FormData();
+        // Append all form fields to FormData
+        Object.keys(data).forEach((key) => {
+            if (key === 'certificate_file_url' && data[key]) {
+                formData.append(key, data[key]); // Append file
+            } else if (data[key] !== null && data[key] !== '') {
+                formData.append(key, data[key]); // Append non-empty fields
+            }
+        });
+
+        post('/certification', {
+            data: formData,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
     };
 
     return (
@@ -129,24 +144,6 @@ const Create = ({ auth }) => {
                                     )}
                                 </div>
                                 <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">URL</label>
-                                    <textarea
-                                        value={data.certificate_file_url}
-                                        onChange={(e) => setData('certificate_file_url', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.certificate_file_url && <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements Description</label>
-                                    <textarea
-                                        value={data.requirements_description}
-                                        onChange={(e) => setData('requirements_description', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.requirements_description && <div className="text-red-500 text-sm mt-1">{errors.requirements_description}</div>}
-                                </div>
-                                <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
                                     <textarea
                                         value={data.validity_period_months}
@@ -164,18 +161,6 @@ const Create = ({ auth }) => {
                                     />
                                     {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
                                 </div>
-
-                                {/* <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Issued By</label>
-                                    <input
-                                        type="text"
-                                        value={data.issued_by}
-                                        onChange={(e) => setData('issued_by', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.issued_by && <div className="text-red-500 text-sm mt-1">{errors.issued_by}</div>}
-                                </div> */}
-
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
                                     <input
@@ -188,7 +173,6 @@ const Create = ({ auth }) => {
                                         <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>
                                     )}
                                 </div>
-
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Expiry Date</label>
                                     <input
@@ -201,7 +185,6 @@ const Create = ({ auth }) => {
                                         <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>
                                     )}
                                 </div>
-
                                 <div>
                                     <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
                                     <select
@@ -216,7 +199,18 @@ const Create = ({ auth }) => {
                                         <div className="text-red-500 text-sm mt-1">{errors.status}</div>
                                     )}
                                 </div>
-
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">Certificate File</label>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,application/pdf"
+                                        onChange={(e) => setData('certificate_file_url', e.target.files[0])}
+                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                    />
+                                    {errors.certificate_file_url && (
+                                        <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>
+                                    )}
+                                </div>
                                 <div className="flex space-x-2">
                                     <button
                                         type="submit"

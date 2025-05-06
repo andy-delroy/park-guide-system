@@ -1,19 +1,22 @@
 import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
-import path from 'path'; // ✅ Required for alias resolution
+import laravel from 'laravel-vite-plugin';
 
 export default defineConfig({
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    hmr: {
+      protocol: 'ws',
+      host: '127.0.0.1',
+      port: 5173,
+    },
+  },
   plugins: [
     laravel({
-      input: 'resources/js/main.jsx', // or 'app.jsx' depending on your entry
+      input: ['resources/js/app.jsx'],
       refresh: true,
     }),
     react(),
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'resources/js'), // ✅ Set up @ to point to resources/js
-    },
-  },
 });

@@ -74,6 +74,9 @@ export default function Index({ auth, certifications }) {
                                                 Name
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                Issued To
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                                 Issued By
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -90,6 +93,9 @@ export default function Index({ auth, certifications }) {
                                                 <tr key={certification.id}>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                                                         {certification.certification_name}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                        {certification.guide.full_name}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                         {certification.issuer.full_name}

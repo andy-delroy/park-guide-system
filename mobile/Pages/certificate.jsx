@@ -8,12 +8,14 @@ import {
   Alert,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
+import { Ionicons } from '@expo/vector-icons';
 
 const Certificate = () => {
   const [certifications, setCertifications] = useState([]);
@@ -84,7 +86,6 @@ const Certificate = () => {
           return nameA.localeCompare(nameB);
         })
       );
-      // Clear params to prevent repeated updates
       navigation.setParams({ updatedCertification: undefined });
     }
   }, [route.params?.updatedCertification]);
@@ -115,7 +116,6 @@ const Certificate = () => {
         },
       });
 
-      // Remove the certification from the state
       setCertifications((prev) => prev.filter((cert) => cert.id !== id));
       Alert.alert('Success', 'Certification deleted successfully.');
     } catch (error) {
@@ -127,41 +127,28 @@ const Certificate = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   const renderCertification = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.info}>
+    <TouchableOpacity
+    style={styles.card}
+    onPress={() => navigation.navigate('CertificateDetails', { certification: item })}
+    >
+      <ScrollView style={styles.info}>
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
-        <Text style={styles.detail}>Certificate Number: {item.certificate_number}</Text>
+        <Text style={styles.detail}>Certificate Number: {item.certificate_number || 'N/A'}</Text>
         <Text style={styles.detail}>Guide: {item.guide?.full_name || 'Unknown'}</Text>
-        <Text style={styles.detail}>Description: {item.description}</Text>
-        <Text style={styles.detail}>Issue Date: {item.issue_date}</Text>
-        <Text style={styles.detail}>Expiry Date: {item.expiry_date || 'N/A'}</Text>
-        <Text style={styles.detail}>Status: {item.status}</Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.editButton]}
-          onPress={() => navigation.navigate('EditCertificate', { certification: item })}
-        >
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => {
-            Alert.alert(
-              'Confirm Delete',
-              `Are you sure you want to delete "${item.certification_name}"?`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => handleDelete(item.id) },
-              ]
-            );
-          }}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </ScrollView>
+      <Ionicons name="chevron-forward" size={24} color="black" style={styles.arrow} />
+    </TouchableOpacity>
   );
 
   const handleAddCertification = () => {
@@ -206,17 +193,20 @@ const Certificate = () => {
 };
 
 const styles = StyleSheet.create({
+  arrow: {
+    alignSelf: 'center',
+    margin: 10
+  },
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: colors.background,
   },
   list: {
-    paddingBottom: 24,
+    paddingBottom: 80, // Increased to accommodate FAB
   },
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 12,
     borderColor: colors.border,
@@ -231,40 +221,18 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
+    maxHeight: 300, // Limit height for scrollable content
   },
   name: {
     fontSize: fonts.fontSizeMedium,
     fontFamily: fonts.medium,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   detail: {
     fontSize: fonts.fontSizeSmall,
     color: colors.textSecondary,
-    marginTop: 2,
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    marginLeft: 12,
-  },
-  button: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-  editButton: {
-    backgroundColor: colors.primary,
-  },
-  deleteButton: {
-    backgroundColor: colors.error || '#e03131',
-  },
-  buttonText: {
-    color: colors.buttonText,
-    fontSize: fonts.fontSizeSmall,
-    fontFamily: fonts.medium,
+    marginTop: 4,
   },
   emptyText: {
     fontSize: fonts.fontSizeMedium,

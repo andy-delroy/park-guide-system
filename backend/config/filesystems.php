@@ -47,6 +47,13 @@ return [
             'report' => false,
         ],
 
+        'public_direct' => [
+            'driver' => 'local',
+            'root' => public_path(), // Points to public/
+            'url' => '/', // Relative to base_url
+            'visibility' => 'public',
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

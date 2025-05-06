@@ -7,7 +7,10 @@ use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Events\TestEvent;
 use Inertia\Inertia;
+use App\Models\Notification;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ModuleController;
 
@@ -33,18 +36,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Kim
     // Trainings routes
     Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
+    Route::delete('/trainings/{id}/unenroll', [TrainingsController::class, 'unenroll'])->name('trainings.unenroll');
     Route::post('/test-enroll', fn() => response()->json(['message' => 'its working']));
     Route::apiResource('trainings', TrainingsController::class);
 
     // old Training management
     //Route::resource('trainings', TrainingsController::class);
 
-    // ✅ Media Upload page (no role check)
-   // Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
-
 
    //guides management
    Route::resource('guides', GuideController::class);
+});
+
+
+use App\Models\Alert;
+use App\Events\AlertCreated;
+use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Admin\AlertAdminController;
+
+
+Route::get('/notifications', function () {
+    $user = Auth::user();
+    $role = $user?->role_name ?? 'guest'; 
+
+    return Inertia::render('Notifications/List', [
+        'auth' => ['user' => $user],
+        'notifications' => Notification::where('role', $role)
+            ->latest()
+            ->take(50)
+            ->get(),
+    ]);
+})->middleware('auth');
+
+use App\Http\Controllers\NotificationController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+
+    Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
+    Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
+
+    Route::get('/admin/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
+    Route::put('/admin/alerts/{alert}', [AlertAdminController::class, 'update'])->name('admin.alerts.update');
+    Route::post('/alerts', [AlertController::class, 'store'])->name('alerts.store');
 });
 
 // User profile routes
