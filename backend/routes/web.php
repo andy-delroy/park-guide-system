@@ -8,6 +8,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ModuleController;
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
@@ -57,6 +59,26 @@ Route::get('/map', function () {
 });
 Route::get('/certification/{id}/details', [CertificationController::class, 'show'])->name('certifications.show');
 Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
+
+Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reorder'])
+    ->name('courses.modules.reorder');
+
+Route::middleware(['auth'])->group(function () {
+    // Course routes
+    Route::resource('courses', CourseController::class);
+
+    // Nested modules under each course
+    Route::prefix('courses/{course}')->name('courses.')->group(function () {
+        Route::resource('modules', ModuleController::class)->except(['show']);
+        
+        Route::get('modules/{module}', [ModuleController::class, 'show'])->name('modules.show');
+
+        Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
+
+    });
+});
+
+
 // Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 

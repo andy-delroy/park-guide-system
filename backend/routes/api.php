@@ -64,4 +64,3 @@ Route::get('/media', [MediaController::class, 'index']);              // List 10
 Route::post('/media', [MediaController::class, 'store']);             // Upload media
 Route::patch('/media/{media}', [MediaController::class, 'update']);   // Update caption / file
 Route::delete('/media/{media}', [MediaController::class, 'destroy']); // Delete media
-
