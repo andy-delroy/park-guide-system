@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { View, Text, Button, TouchableOpacity, StyleSheet, ActivityIndicator, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, ScrollView } from 'react-native';
+import { View, Text, Button, TouchableOpacity, ActivityIndicator, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, ScrollView } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import API_BASE_URL from '../api.config';
-import { AirbnbRating } from '@rneui/themed';
 import { TextInput } from 'react-native';
 import styles from '../Styles/styles';
 
@@ -75,7 +74,7 @@ export default function GuideScanner() {
       // Fetch feedbacks (authenticated)
       await fetchFeedbacks(guideId);
     } catch (err) {
-      console.error('Guide Fetch Error:', err.response?.data || err.message); // Debug error
+      console.error('Guide Fetch Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Failed to fetch guide details.');
     } finally {
       setLoading(false);
@@ -98,9 +97,47 @@ export default function GuideScanner() {
       });
       setFeedbacks(feedbackResponse.data.feedbacks || []);
     } catch (err) {
-      console.error('Feedbacks Fetch Error:', err.response?.data || err.message); // Debug log
+      console.error('Feedbacks Fetch Error:', err.response?.data || err.message);
       setFeedbacks([]);
     }
+  };
+
+  // Custom Star Rating Component (for input)
+  const CustomStarRating = ({ rating, setRating }) => {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => {
+              console.log('CustomStarRating: Rated', star);
+              setRating(star);
+            }}
+          >
+            <Text style={{ fontSize: 30, color: star <= rating ? '#FFD700' : '#D3D3D3', marginHorizontal: 5 }}>
+              ★
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  // Feedback Star Display Component (for display)
+  const FeedbackStarDisplay = ({ rating }) => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+        <Text style={{ fontWeight: 'bold', marginRight: 10 }}>Rating:</Text>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Text
+            key={star}
+            style={{ fontSize: 20, color: star <= rating ? '#FFD700' : '#D3D3D3', marginHorizontal: 2 }}
+          >
+            ★
+          </Text>
+        ))}
+      </View>
+    );
   };
 
   const renderCamera = () => (
@@ -134,13 +171,13 @@ export default function GuideScanner() {
         ) : error ? (
           <Text style={{ color: 'red', textAlign: 'center', fontSize: 16, marginVertical: 20 }}>{error}</Text>
         ) : guideDetails ? (
-          <View style={styles.cameraCard}>
+          <View style={[styles.cameraCard, { backgroundColor: '#fff' }]}>
             {guideDetails.profile_image_url && (
               <View style={styles.cameraImageWrapper}>
                 <Image
                   source={{ uri: guideDetails.profile_image_url }}
                   style={styles.cameraProfileImage}
-                  onError={() => console.warn('Failed to load profile image')} // Debug image loading
+                  onError={() => console.warn('Failed to load profile image')}
                 />
               </View>
             )}
@@ -185,15 +222,7 @@ export default function GuideScanner() {
                 <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
                   Rate this Guide
                 </Text>
-                <AirbnbRating
-                  count={5}
-                  reviews={['Terrible', 'Bad', 'Okay', 'Good', 'Excellent']}
-                  defaultRating={0}
-                  size={30}
-                  onFinishRating={(value) => {
-                    setRating(value);
-                  }}
-                />
+                <CustomStarRating rating={rating} setRating={setRating} />
                 <Text style={{ marginTop: 10, fontWeight: '500' }}>Comments (optional):</Text>
                 <TextInput
                   placeholder="Leave your feedback..."
@@ -265,7 +294,7 @@ export default function GuideScanner() {
                       setShowRatingForm(false);
                       await fetchFeedbacks(guideDetails.id);
                     } catch (err) {
-                      console.error('Feedback Submit Error:', err.response?.data || err.message); // Debug error
+                      console.error('Feedback Submit Error:', err.response?.data || err.message);
                       alert(err.response?.data?.message || 'Failed to submit feedback.');
                     } finally {
                       setSubmitting(false);
@@ -310,7 +339,7 @@ export default function GuideScanner() {
                         {new Date(fb.submitted_date).toLocaleDateString()}
                       </Text>
                     )}
-                    <Text style={{ fontWeight: 'bold' }}>Rating: {fb.rating} ⭐</Text>
+                    <FeedbackStarDisplay rating={fb.rating} />
                     {fb.comments ? (
                       <Text style={{ marginTop: 5 }}>{fb.comments}</Text>
                     ) : (
