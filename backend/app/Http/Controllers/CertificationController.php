@@ -7,6 +7,10 @@ use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 use App\Http\Resources\CertificationResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str; 
+use Illuminate\Support\Facades\Validator;     
 
 class CertificationController extends Controller
 {
@@ -137,57 +141,105 @@ class CertificationController extends Controller
     public function update(Request $request, Certification $certification)
     {
         try {
-            $validated = $request->validate([
-                'guide_id' => 'required|exists:users,id',
-                'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
-                'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
-                'description' => 'nullable|string',
-                'renewal_requirements' => 'nullable|string',
-                'validity_period_months' => 'nullable|integer',
-                'certificate_file_url' => 'nullable', // Allow null or file
-                'issue_date' => 'required|date',
-                'expiry_date' => 'nullable|date|after_or_equal:issue_date',
-                'status' => 'required|in:active,inactive',
-                'base_url' => 'required|url',
-            ]);
-
-            // Prepare data for update
-            $updateData = $validated;
-
-            if ($request->hasFile('certificate_file_url')) {
-                // Validate file separately if uploaded
-                $request->validate([
-                    'certificate_file_url' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+            if ($request->expectsJson()) {
+                // Mobile API logic (mimicking updateProfile)
+                $validator = Validator::make($request->all(), [
+                    'guide_id' => 'required|exists:users,id',
+                    'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
+                    'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
+                    'description' => 'nullable|string',
+                    'renewal_requirements' => 'nullable|string',
+                    'validity_period_months' => 'nullable|integer',
+                    'certificate_file' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
+                    'issue_date' => 'required|date',
+                    'expiry_date' => 'nullable|date|after_or_equal:issue_date',
+                    'status' => 'required|in:active,inactive',
+                    'program_name' => 'nullable|string|max:255',
                 ]);
 
-                // Delete old file if exists
-                if ($certification->certificate_file_url) {
-                    $oldFilePath = str_replace($certification->base_url, public_path(), $certification->certificate_file_url);
-                    if (file_exists($oldFilePath)) {
-                        unlink($oldFilePath);
-                    }
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors' => $validator->errors(),
+                    ], 422);
                 }
-                // Store new file
-                $file = $request->file('certificate_file_url');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('certificates', $filename, 'public_direct');
-                $updateData['certificate_file_url'] = $request->base_url . '/certificates/' . $filename;
-            } else {
-                // Preserve existing certificate_file_url, ignoring any string sent
-                $updateData['certificate_file_url'] = $certification->certificate_file_url;
-            }
 
-            $certification->update($updateData);
+                // Handle certificate file upload
+                if ($request->hasFile('certificate_file')) {
+                    $file = $request->file('certificate_file');
+                    $filename = uniqid('cert_') . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('certificates'), $filename);
+                    $certification->certificate_file_url = url('certificates/' . $filename);
+                }
 
-            if ($request->expectsJson()) {
+                // Only update fields that are present in the request
+                $certification->fill($request->only([
+                    'guide_id',
+                    'certificate_number',
+                    'certification_name',
+                    'description',
+                    'renewal_requirements',
+                    'validity_period_months',
+                    'issue_date',
+                    'expiry_date',
+                    'status',
+                ]));
+
+                $certification->save();
+
                 return response()->json([
                     'message' => "Certification \"{$certification->certification_name}\" updated successfully.",
                     'certification' => new CertificationResource($certification),
-                ], 200);
-            }
+                ])->setStatusCode(200, 'OK');
+            } else {
+                // Web logic (exactly as provided)
+                $validated = $request->validate([
+                    'guide_id' => 'required|exists:users,id',
+                    'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
+                    'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
+                    'description' => 'nullable|string',
+                    'renewal_requirements' => 'nullable|string',
+                    'validity_period_months' => 'nullable|integer',
+                    'certificate_file_url' => 'nullable', // Allow null or file
+                    'issue_date' => 'required|date',
+                    'expiry_date' => 'nullable|date|after_or_equal:issue_date',
+                    'status' => 'required|in:active,inactive',
+                    'base_url' => 'required|url',
+                ]);
 
-            return to_route('certifications.index')
-                ->with('success', "Certification \"{$certification->certification_name}\" updated successfully.");
+                // Prepare data for update
+                $updateData = $validated;
+
+                if ($request->hasFile('certificate_file_url')) {
+                    // Validate file separately if uploaded
+                    $request->validate([
+                        'certificate_file_url' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+                    ]);
+
+                    // Delete old file if exists
+                    if ($certification->certificate_file_url) {
+                        $oldFilePath = parse_url($certification->certificate_file_url, PHP_URL_PATH);
+                        $relativePath = ltrim(str_replace('/certificates/', '', $oldFilePath), '/');
+                        if ($relativePath && Storage::disk('public_direct')->exists('certificates/' . $relativePath)) {
+                            Storage::disk('public_direct')->delete('certificates/' . $relativePath);
+                        }
+                    }
+
+                    // Store new file
+                    $file = $request->file('certificate_file_url');
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $file->storeAs('certificates', $filename, 'public_direct');
+                    $updateData['certificate_file_url'] = $request->base_url . '/certificates/' . $filename;
+                } else {
+                    // Preserve existing certificate_file_url, ignoring any string sent
+                    $updateData['certificate_file_url'] = $certification->certificate_file_url;
+                }
+
+                $certification->update($updateData);
+
+                return to_route('certifications.index')
+                    ->with('success', "Certification \"{$certification->certification_name}\" updated successfully.");
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
