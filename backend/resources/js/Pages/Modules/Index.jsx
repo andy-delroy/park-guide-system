@@ -16,9 +16,7 @@ export default function ModuleIndex() {
   const [newGroupName, setNewGroupName] = useState('');
   const [courseProgress, setCourseProgress] = useState(0);
 
-  // Group modules by week or custom group
   useEffect(() => {
-    // Initialize with default groups
     const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', modules: [] };
 
     let allGroups = Array.isArray(groups)
@@ -31,8 +29,7 @@ export default function ModuleIndex() {
       const customGroups = groups.map(g => ({ id: g.id.toString(), name: g.name, modules: [] }));
       allGroups = [...customGroups, ...allGroups.filter(g => g.id === 'ungrouped')];
     }
-    
-    // Distribute modules to their groups
+
     const groupedModules = allGroups.map(group => {
       const modulesInGroup = modulesState.filter(m => 
         group.id === 'ungrouped' ? !m.group_id : m.group_id?.toString() === group.id
@@ -40,33 +37,29 @@ export default function ModuleIndex() {
       return { ...group, modules: modulesInGroup };
     });
 
-    // Filter out empty groups except 'ungrouped'
     const filteredGroups = groupedModules.filter(g => 
       g.id === 'ungrouped' || g.modules.length > 0
     );
-    
+
     setModuleGroups(filteredGroups);
-    
-    // Initialize all groups as expanded
+
     const initialExpandedState = {};
     filteredGroups.forEach(g => {
       initialExpandedState[g.id] = true;
     });
     setExpandedGroups(initialExpandedState);
-    
-    // Calculate overall course progress
+
     calculateCourseProgress();
   }, [modulesState]);
 
   const calculateCourseProgress = () => {
     let completedCount = 0;
     let totalResources = 0;
-    
+
     modulesState.forEach(module => {
       if (module.resources) {
         module.resources.forEach(resource => {
           totalResources++;
-          // Check if this resource is marked as completed in localStorage
           const moduleProgress = localStorage.getItem(`course_${course.id}_module_${module.id}_progress`);
           if (moduleProgress) {
             const completedResources = JSON.parse(moduleProgress);
@@ -77,48 +70,41 @@ export default function ModuleIndex() {
         });
       }
     });
-    
+
     const progress = totalResources > 0 ? Math.round((completedCount / totalResources) * 100) : 0;
     setCourseProgress(progress);
   };
 
   const onDragEnd = async (result) => {
     if (!result.destination || !isAdmin) return;
-    
+
     const sourceGroupId = result.source.droppableId.replace('group-', '');
     const destGroupId = result.destination.droppableId.replace('group-', '');
-    
-    // Find the source and destination groups
+
     const sourceGroup = moduleGroups.find(g => g.id === sourceGroupId);
     const destGroup = moduleGroups.find(g => g.id === destGroupId);
-    
+
     if (!sourceGroup || !destGroup) return;
-    
-    // Get the module being moved
+
     const moduleIndex = result.source.index;
     const movedModule = sourceGroup.modules[moduleIndex];
-    
+
     if (!movedModule) return;
-    
-    // Create a copy of the module groups
+
     const newModuleGroups = [...moduleGroups];
-    
-    // Remove from source
+
     const sourceGroupIndex = newModuleGroups.findIndex(g => g.id === sourceGroupId);
     newModuleGroups[sourceGroupIndex].modules.splice(moduleIndex, 1);
-    
-    // Add to destination
+
     const destGroupIndex = newModuleGroups.findIndex(g => g.id === destGroupId);
     newModuleGroups[destGroupIndex].modules.splice(result.destination.index, 0, {
       ...movedModule,
       group_id: destGroupId === 'ungrouped' ? null : destGroupId
     });
-    
+
     setModuleGroups(newModuleGroups);
-    
-    // Update in database
+
     try {
-      // Update the module's group_id
       await axios.post(`/courses/${course.id}/modules/${movedModule.id}/group`, {
         group_id: destGroupId === 'ungrouped' ? null : destGroupId
       });
@@ -130,19 +116,20 @@ export default function ModuleIndex() {
             : m
         )
       );
-      
-      // Update positions (if needed)
+
       if (sourceGroupId === destGroupId) {
         const reorderedModules = newModuleGroups[destGroupIndex].modules.map((m, index) => ({
           id: m.id,
           position: index + 1
         }));
-        
+
         await axios.post(`/courses/${course.id}/modules/reorder`, {
           modules: reorderedModules
         });
+
+        setModules(newModuleGroups.flatMap(g => g.modules));
       }
-      
+
       console.log('Module order and group updated.');
     } catch (error) {
       console.error('Failed to update module order or group:', error);

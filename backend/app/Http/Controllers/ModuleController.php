@@ -115,7 +115,7 @@ class ModuleController extends Controller
             'resources.*.type' => 'required|string|in:link,file',
             'resources.*.url' => 'nullable|url',
             'resources.*.file' => 'nullable|file|mimes:pdf,doc,docx,mp4|max:20480',
-            'resources.*.id' => 'nullable|integer|exists:resources,id',
+            'resources.*.id' => 'nullable|integer|exists:module_resources,id'
         ]);
 
         try {
@@ -187,15 +187,24 @@ class ModuleController extends Controller
     }
 
     public function destroy(Course $course, Module $module)
-    {
-        if (!in_array(auth()->user()->role_name, ['admin', 'superadmin'])) {
-            return response()->json(['error' => 'Only admins can delete modules.'], 403);
-        }
-
-        $module->delete();
-
-        return response()->json(['message' => 'Module deleted']);
+{
+    if (!in_array(auth()->user()->role_name, ['admin', 'superadmin'])) {
+        abort(403, 'Only admins can delete modules.');
     }
+
+    if ($module->course_id !== $course->id) {
+        abort(404, 'Module does not belong to this course.');
+    }
+
+    // Optional: delete related resources (if not handled by cascade)
+    $module->resources()->delete();
+
+    $module->delete();
+
+    return redirect()
+        ->route('courses.modules.index', $course->id)
+        ->with('success', 'Module deleted successfully.');
+}
 
     public function assignGroup(Request $request, Course $course, Module $module)
     {

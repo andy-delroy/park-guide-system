@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import Sidebar from './Sidebar';
 
 export default function ModuleShow() {
@@ -8,23 +8,20 @@ export default function ModuleShow() {
   const user = auth?.user;
   const isAdmin = user?.role_name === 'admin' || user?.role_name === 'superadmin' || false;
 
-  // Progress tracking state
   const [completedResources, setCompletedResources] = useState(() => {
-    // Try to load from localStorage if available
     const saved = localStorage.getItem(`course_${course.id}_module_${module.id}_progress`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const markResourceCompleted = (resourceId) => {
-    const newCompletedResources = completedResources.includes(resourceId) 
+    const newCompletedResources = completedResources.includes(resourceId)
       ? completedResources.filter(id => id !== resourceId)
       : [...completedResources, resourceId];
-    
+
     setCompletedResources(newCompletedResources);
-    
-    // Save to localStorage
+
     localStorage.setItem(
-      `course_${course.id}_module_${module.id}_progress`, 
+      `course_${course.id}_module_${module.id}_progress`,
       JSON.stringify(newCompletedResources)
     );
   };
@@ -129,17 +126,33 @@ export default function ModuleShow() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">{module.title}</h1>
-            
-            <div className="flex items-center">
-              <div className="mr-3 text-sm text-gray-600">Progress: {calculateProgress()}%</div>
-              <div className="w-32 bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-blue-600 h-2.5 rounded-full" 
-                  style={{ width: `${calculateProgress()}%` }}
-                ></div>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold">{module.title}</h1>
+              <p className="text-sm text-gray-500 capitalize">{module.material_type}</p>
             </div>
+
+            {isAdmin && (
+              <div className="space-x-2">
+                <Link
+                  href={`/courses/${course.id}/modules/${module.id}/edit`}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this module?')) {
+                      router.delete(`/courses/${course.id}/modules/${module.id}`, {
+                        onSuccess: () => router.visit(`/courses/${course.id}/modules`)
+                      });
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="text-gray-700 mb-6">{module.description}</div>
@@ -156,13 +169,12 @@ export default function ModuleShow() {
                         <p className="text-sm text-gray-600 capitalize">{res.type}</p>
                       </div>
                       <div className="flex items-center">
-                        {/* Mark as completed checkbox */}
                         <label className="inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
                             checked={completedResources.includes(res.id)}
                             onChange={() => markResourceCompleted(res.id)}
-                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring focus:ring-blue-200"
                           />
                           <span className="ml-2 text-sm text-gray-600">Mark as completed</span>
                         </label>
