@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\ModuleGroup;
 
 class ModuleController extends Controller
 {
@@ -16,9 +17,10 @@ class ModuleController extends Controller
         return Inertia::render('Modules/Index', [
             'course' => $course->loadCount('modules'),
             'modules' => Module::where('course_id', $course->id)
-                ->with('resources')
+                ->with(['resources', 'group'])
                 ->orderBy('position')
-                ->get()
+                ->get(),
+            'groups' => ModuleGroup::where('course_id', $course->id)->orderBy('id')->get(),
         ]);
     }
 
@@ -30,7 +32,7 @@ class ModuleController extends Controller
     public function show(Course $course, Module $module)
     {
         $module->load('resources');
-    
+
         return Inertia::render('Modules/Show', [
             'course' => $course,
             'module' => $module,
@@ -39,7 +41,6 @@ class ModuleController extends Controller
 
     public function store(Request $request, $courseId)
     {
-        // Validate incoming data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -48,19 +49,11 @@ class ModuleController extends Controller
             'resources.*.title' => 'required|string|max:255',
             'resources.*.type' => 'required|string|in:link,file',
             'resources.*.url' => 'nullable|url',
-            'resources.*.file' => 'nullable|file|mimes:pdf,doc,docx,mp4|max:20480', // 20MB
-        ]);
-
-        // Log incoming data
-        Log::info('Store request data:', [
-            'course_id' => $courseId,
-            'validated' => $validated,
-            'files' => $request->file('resources') ?? [],
+            'resources.*.file' => 'nullable|file|mimes:pdf,doc,docx,mp4|max:20480',
         ]);
 
         try {
             $module = DB::transaction(function () use ($request, $courseId, $validated) {
-                // Create module
                 $module = Module::create([
                     'course_id' => $courseId,
                     'title' => $validated['title'],
@@ -68,16 +61,8 @@ class ModuleController extends Controller
                     'material_type' => $validated['material_type'],
                 ]);
 
-                Log::info('Module created:', [
-                    'module_id' => $module->id,
-                    'attributes' => $module->getAttributes(),
-                ]);
-
-                // Handle resources
-                $resources = $validated['resources'] ?? [];
-                foreach ($resources as $index => $res) {
+                foreach ($validated['resources'] ?? [] as $index => $res) {
                     $url = null;
-
                     if ($res['type'] === 'link') {
                         $url = $res['url'] ?? null;
                     } elseif ($res['type'] === 'file') {
@@ -88,14 +73,7 @@ class ModuleController extends Controller
                         }
                     }
 
-                    $resource = $module->resources()->create([
-                        'title' => $res['title'],
-                        'type' => $res['type'],
-                        'url' => $url,
-                    ]);
-
-                    Log::info('Resource created:', [
-                        'resource_id' => $resource->id,
+                    $module->resources()->create([
                         'title' => $res['title'],
                         'type' => $res['type'],
                         'url' => $url,
@@ -104,15 +82,12 @@ class ModuleController extends Controller
 
                 return $module;
             });
-
-            Log::info('Module creation completed successfully:', ['module_id' => $module->id]);
         } catch (\Exception $e) {
-            Log::error('Module creation failed:', [
+            Log::error('Module creation failed', [
                 'course_id' => $courseId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
-            throw $e; // Rethrow for debugging
+            throw $e;
         }
 
         return redirect()->route('courses.modules.index', $courseId)->with('success', 'Module created.');
@@ -123,15 +98,14 @@ class ModuleController extends Controller
         if (!in_array(auth()->user()->role_name, ['admin', 'superadmin'])) {
             abort(403, 'Only admins can edit modules.');
         }
-    
+
         $module->load('resources');
-    
+
         return Inertia::render('Modules/Edit', compact('course', 'module'));
     }
 
     public function update(Request $request, Course $course, Module $module)
     {
-        // Validate incoming data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -144,51 +118,21 @@ class ModuleController extends Controller
             'resources.*.id' => 'nullable|integer|exists:resources,id',
         ]);
 
-        // Log incoming data
-        Log::info('Update request data:', [
-            'module_id' => $module->id,
-            'validated' => $validated,
-            'files' => $request->file('resources') ?? [],
-            'raw_input' => $request->all(),
-        ]);
-
         try {
             DB::transaction(function () use ($request, $module, $validated) {
-                // Log current module state
-                Log::info('Module before update:', [
-                    'module_id' => $module->id,
-                    'attributes' => $module->getAttributes(),
+                $module->update([
+                    'title' => $validated['title'],
+                    'description' => $validated['description'],
+                    'material_type' => $validated['material_type'],
                 ]);
 
-                // Update module
-                $module->title = $validated['title'];
-                $module->description = $validated['description'];
-                $module->material_type = $validated['material_type'];
-                $updated = $module->save();
-
-                Log::info('Module update attempt:', [
-                    'module_id' => $module->id,
-                    'updated' => $updated,
-                    'changes' => $module->getChanges(),
-                    'new_attributes' => $module->getAttributes(),
-                ]);
-
-                // Get existing resources
                 $existingResources = $module->resources()->pluck('id')->toArray();
                 $submittedResourceIds = array_filter(array_column($validated['resources'] ?? [], 'id'));
 
-                // Delete resources not in the submitted list
                 $module->resources()->whereNotIn('id', $submittedResourceIds)->delete();
-                Log::info('Resources deleted:', [
-                    'module_id' => $module->id,
-                    'deleted_ids' => array_diff($existingResources, $submittedResourceIds),
-                ]);
 
-                // Update or create resources
-                $resources = $validated['resources'] ?? [];
-                foreach ($resources as $index => $res) {
+                foreach ($validated['resources'] ?? [] as $index => $res) {
                     $url = null;
-
                     if ($res['type'] === 'link') {
                         $url = $res['url'] ?? null;
                     } elseif ($res['type'] === 'file') {
@@ -199,50 +143,28 @@ class ModuleController extends Controller
                         }
                     }
 
-                    $resourceData = [
+                    $data = [
                         'title' => $res['title'],
                         'type' => $res['type'],
                         'url' => $url,
                     ];
 
                     if (isset($res['id']) && in_array($res['id'], $existingResources)) {
-                        $resource = $module->resources()->find($res['id']);
-                        $resource->update($resourceData);
-                        Log::info('Resource updated:', [
-                            'resource_id' => $res['id'],
-                            'data' => $resourceData,
-                        ]);
+                        $module->resources()->find($res['id'])->update($data);
                     } else {
-                        $resource = $module->resources()->create($resourceData);
-                        Log::info('Resource created:', [
-                            'resource_id' => $resource->id,
-                            'data' => $resourceData,
-                        ]);
+                        $module->resources()->create($data);
                     }
                 }
-
-                // Log final module state
-                $module->refresh();
-                Log::info('Module after update:', [
-                    'module_id' => $module->id,
-                    'attributes' => $module->getAttributes(),
-                    'resources' => $module->resources()->get()->toArray(),
-                ]);
             });
-
-            Log::info('Module update completed successfully:', ['module_id' => $module->id]);
         } catch (\Exception $e) {
-            Log::error('Module update failed:', [
+            Log::error('Module update failed', [
                 'module_id' => $module->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }
 
-        return redirect()
-            ->route('courses.modules.index', $course->id)
-            ->with('success', 'Module updated successfully.');
+        return redirect()->route('courses.modules.index', $course->id)->with('success', 'Module updated successfully.');
     }
 
     public function reorder(Request $request, Course $course)
@@ -252,7 +174,7 @@ class ModuleController extends Controller
             'modules.*.id' => 'required|integer|exists:modules,id',
             'modules.*.position' => 'required|integer',
         ]);
-    
+
         foreach ($request->modules as $mod) {
             $module = Module::find($mod['id']);
             if ($module && $module->course_id === $course->id) {
@@ -260,7 +182,7 @@ class ModuleController extends Controller
                 $module->save();
             }
         }
-    
+
         return response()->json(['status' => 'ok']);
     }
 
@@ -273,5 +195,43 @@ class ModuleController extends Controller
         $module->delete();
 
         return response()->json(['message' => 'Module deleted']);
+    }
+
+    public function assignGroup(Request $request, Course $course, Module $module)
+    {
+        $request->validate([
+            'group_id' => 'nullable|integer|exists:module_groups,id',
+        ]);
+
+        if ($module->course_id !== $course->id) {
+            abort(403);
+        }
+
+        $groupId = $request->group_id !== null ? (int) $request->group_id : null;
+
+        Log::info('Assigning group to module', [
+            'module_id' => $module->id,
+            'old_group_id' => $module->group_id,
+            'new_group_id' => $groupId,
+        ]);
+
+        $module->group_id = $groupId;
+        $module->save();
+
+        return response()->json(['status' => 'group updated']);
+    }
+
+    public function createGroup(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $group = ModuleGroup::create([
+            'course_id' => $course->id,
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json($group);
     }
 }
