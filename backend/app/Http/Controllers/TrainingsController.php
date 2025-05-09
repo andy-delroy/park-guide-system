@@ -14,7 +14,7 @@ use Inertia\Inertia;
 
 class TrainingsController extends Controller
 {
-    public function enroll($id)
+    public function enroll($id, Request $request)
     {
         $user = Auth::user();
         $training = Trainings::findOrFail($id);
@@ -29,6 +29,14 @@ class TrainingsController extends Controller
 
         $training->users()->attach($user->id);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully enrolled in the training.',
+                'training_id' => $training->id
+            ]);
+        }
+
         $icsService = new IcsService();
         // Reuse bulk method with a single-item array
         $icsContent = $icsService->generateBulkTrainingIcs([$training]);
@@ -39,7 +47,7 @@ class TrainingsController extends Controller
         ]);
     }
 
-    public function unenroll($id)
+    public function unenroll($id, Request $request)
     {
         $user = Auth::user();
         $training = Trainings::findOrFail($id);
@@ -49,6 +57,14 @@ class TrainingsController extends Controller
         }
 
         $training->users()->detach($user->id);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Enrollment cancelled successfully.',
+                'training_id' => $training->id,
+            ]);
+        }
 
         return response()->json(['message' => 'Enrollment cancelled successfully.']);
     }

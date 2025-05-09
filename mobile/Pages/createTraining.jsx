@@ -129,8 +129,6 @@ const CreateTraining = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Create New Training</Text>
-
           {/* Title */}
           <Text style={styles.label}>Title *</Text>
           <TextInput

@@ -21,6 +21,7 @@ const Trainings = () => {
   const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
 
@@ -32,6 +33,8 @@ const Trainings = () => {
     try {
       setLoading(true);
       const token = await SecureStore.getItemAsync('userToken');
+      const role = await SecureStore.getItemAsync('userRole'); 
+      setUserRole(role); 
 
       if (!token) {
         Alert.alert('Unauthorized', 'No user token found.');
@@ -134,12 +137,11 @@ const Trainings = () => {
       />
 
       {/* FAB button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={handleAddTraining}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      {userRole === 'admin' && (
+        <TouchableOpacity style={styles.fab} onPress={handleAddTraining}>
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -44,7 +44,23 @@ const TrainingDetails = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(training.is_enrolled || false);
 
+    // Fetch user role from SecureStore
+    useEffect(() => {
+        const fetchUserRole = async () => {
+        try {
+            const role = await SecureStore.getItemAsync('userRole');
+            setUserRole(role);
+        } catch (error) {
+            console.error('Error fetching user role:', error);
+            Alert.alert('Error', 'Failed to load user role.');
+        }
+        };
+        fetchUserRole();
+    }, []);
+    
   // Handle input changes
   const handleInputChange = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -177,13 +193,62 @@ const TrainingDetails = () => {
       );
     }
   };
+  
+  const handleEnroll = async (trainingId) => {
+    try {
+      const token = await SecureStore.getItemAsync('userToken');
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/trainings/${trainingId}/enroll`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+      
+        setIsEnrolled(true);
+      Alert.alert('Success', response.data.message || 'Successfully enrolled!');
+    } catch (error) {
+      if (error.response) {
+        Alert.alert('Error', error.response.data.message || 'Enrollment failed.');
+      } else {
+        Alert.alert('Error', 'Network or server error.');
+      }
+    }
+  };
+  
+  const handleUnenroll = async (trainingId) => {
+    try {
+      const token = await SecureStore.getItemAsync('userToken');
+  
+      const response = await axios.delete(
+        `${API_BASE_URL}/api/auth/trainings/${trainingId}/unenroll`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+  
+        setIsEnrolled(false);
+      Alert.alert('Success', response.data.message || 'Unenrolled successfully!');
+    } catch (error) {
+      if (error.response) {
+        Alert.alert('Error', error.response.data.message || 'Unenrollment failed.');
+      } else {
+        Alert.alert('Error', 'Network or server error.');
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* General Info Card */}
         <TouchableOpacity style={styles.card} activeOpacity={0.95} disabled={isEditing}>
-          <Text style={styles.cardTitle}>Training Information</Text>
           <View style={styles.field}>
             <Text style={styles.label}>Title</Text>
             {isEditing ? (
@@ -308,7 +373,7 @@ const TrainingDetails = () => {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          {isEditing ? (
+          {isEditing && userRole === 'admin' ? (
             <>
               <TouchableOpacity
                 style={[styles.button, styles.saveButton]}
@@ -328,7 +393,7 @@ const TrainingDetails = () => {
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
             </>
-          ) : (
+          ) : userRole === 'admin' ? (
             <>
               <TouchableOpacity
                 style={[styles.button, styles.editButton]}
@@ -356,6 +421,24 @@ const TrainingDetails = () => {
                 <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>
             </>
+          ) : userRole === 'guide' ? (
+            isEnrolled ? (
+              <TouchableOpacity
+                style={[styles.button, styles.unenrollButton]}
+                onPress={() => handleUnenroll(training.id)}
+              >
+                <Text style={styles.buttonText}>Unenroll</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.button, styles.enrollButton]}
+                onPress={() => handleEnroll(training.id)}
+              >
+                <Text style={styles.buttonText}>Enroll</Text>
+              </TouchableOpacity>
+            )
+          ) : (
+            <Text style={styles.noAccessText}>No actions available for your role.</Text>
           )}
         </View>
       </ScrollView>
@@ -462,6 +545,12 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: colors.error || '#d32f2f',
+  },
+  enrollButton: {
+    backgroundColor: '#00693D', // Match editButton and saveButton
+  },
+  unenrollButton: {
+    backgroundColor: colors.error || '#d32f2f', // Match deleteButton
   },
   buttonText: {
     fontSize: fonts.fontSizeMedium || 16,
