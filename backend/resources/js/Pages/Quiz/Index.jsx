@@ -66,8 +66,8 @@ export default function Index({ auth, quizzes }) {
                                                 {quiz.time_duration}
                                             </td>
                                             {isGuide && (
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {quiz.total_score}
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {quiz.guide_score !== null ? quiz.guide_score : "N/A"}
                                                 </td>
                                             )}
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -97,7 +97,7 @@ export default function Index({ auth, quizzes }) {
                                                     </>
                                                 )}
                                                 {/* Show Go to Quiz Button for Guides Only */}
-                                                {isGuide && (
+                                                {isGuide && quiz.guide_score === null && (
                                                     <Link
                                                         href={route("quiz.take", quiz.id)} // Replace with the actual route for taking the quiz
                                                         className="text-green-500 hover:underline ml-4"

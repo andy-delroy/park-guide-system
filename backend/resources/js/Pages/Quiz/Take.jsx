@@ -61,6 +61,8 @@ export default function Take({ auth, quiz }) {
             .then((response) => {
                 console.log('Quiz submitted successfully:', response.data);
                 setResult(`You got ${correctAnswers} out of ${quiz.questions.length} correct. Submission saved!`);
+
+                window.location.href = route("quiz.index");
             })
             .catch((error) => {
                 console.error('Error submitting quiz:', error.message, error.response?.data, error.response?.status);

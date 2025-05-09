@@ -39,4 +39,15 @@ class Quiz extends Model
                     ->withPivot('total_score', 'time_taken')
                     ->withTimestamps();
     }
+
+    public function getGuideScoreAttribute()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return null; // Return null if no authenticated user
+        }
+
+        $guide = $this->guides()->where('guide_id', $user->id)->first();
+        return $guide ? $guide->pivot->total_score : null; // Return the score from the pivot table
+    }
 }

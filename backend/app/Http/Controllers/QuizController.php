@@ -16,9 +16,17 @@ class QuizController extends Controller
     public function index()
     {
         $quizzes = Quiz::all();
-
+    
         return Inertia::render('Quiz/Index', [
-            'quizzes' => $quizzes,
+            'quizzes' => $quizzes->map(function ($quiz) {
+                return [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'description' => $quiz->description,
+                    'time_duration' => $quiz->time_duration,
+                    'guide_score' => $quiz->guide_score, // Access the accessor here
+                ];
+            }),
         ]);
     }
 
