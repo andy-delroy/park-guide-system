@@ -101,6 +101,9 @@ const Trainings = () => {
       onPress={() => navigation.navigate('TrainingDetails', { training: item })}
     >
       <ScrollView style={styles.info}>
+        {item.is_enrolled && (
+          <Text style={styles.enrolledText}>ENROLLED</Text>
+        )}
         <Text style={styles.name}>{item.title}</Text>
         <Text style={styles.detail}>Location: {item.location}</Text>
         <Text style={styles.detail}>Start: {formatDate(item.start_date)}</Text>
@@ -224,6 +227,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: colors.buttonText,
     fontFamily: fonts.bold,
+  },
+  enrolledText: {
+    fontSize: fonts.fontSizeSmall || 14,
+    fontFamily: fonts.medium || '600',
+    color: colors.success || '#28a745', // Green for enrolled status
   },
 
 });
