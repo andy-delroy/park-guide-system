@@ -10,12 +10,14 @@ import {
   TextInput,
   Modal,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts } from '../Styles/theme';
 import API_BASE_URL from '../api.config';
 
@@ -36,12 +38,17 @@ const CertificateDetails = ({ route }) => {
   const [formData, setFormData] = useState({
     ...certification,
     guide_id: certification.guide?.id ? String(certification.guide.id) : '',
+    program_name: certification.program?.name || '',
+    status: certification.status || 'active',
+    issue_date: certification.issue_date || new Date().toISOString().split('T')[0],
   });
   const [guides, setGuides] = useState([]);
   const [guidesLoading, setGuidesLoading] = useState(true);
   const [showGuidePicker, setShowGuidePicker] = useState(false);
   const [showIssueDatePicker, setShowIssueDatePicker] = useState(false);
   const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   // Fetch guides
   useEffect(() => {
@@ -105,61 +112,181 @@ const CertificateDetails = ({ route }) => {
     return selectedGuide ? selectedGuide.full_name : 'Select a Guide';
   };
 
-  // Handle Save
-  const handleSave = async () => {
-    if (!formData.certification_name || !formData.certificate_number || !formData.guide_id) {
-      Alert.alert('Validation Error', 'Certification Name, Certificate Number, and Guide are required.');
+  // Image picker
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission required', 'Media library access is needed.');
       return;
     }
 
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedImage(result.assets[0]);
+      handleInputChange('certificate_file_url', result.assets[0].uri); // For UI preview
+    }
+  };
+
+  // MIME type detection
+  const getMimeType = (uri) => {
+    const extension = uri.split('.').pop().toLowerCase();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
+    }
+  };
+
+  // Handle Save
+  const handleSave = async () => {
+    if (saving) return;
+  
+    // Validate required fields (client-side, to catch issues early)
+    if (
+      !formData.certification_name?.trim() ||
+      !formData.certificate_number?.trim() ||
+      !formData.guide_id?.trim() ||
+      !formData.issue_date?.trim() ||
+      !formData.status?.trim()
+    ) {
+      Alert.alert(
+        'Validation Error',
+        'Certification Name, Certificate Number, Guide, Issue Date, and Status are required and cannot be empty.'
+      );
+      return;
+    }
+  
+    setSaving(true);
+  
     try {
       const token = await SecureStore.getItemAsync('userToken');
       if (!token) {
         Alert.alert('Unauthorized', 'No user token found.');
+        setSaving(false);
         return;
       }
-
-      // Prepare data
-      const updatedData = {
-        ...formData,
-        guide_id: formData.guide_id || null,
-        validity_period_months: formData.validity_period_months
-          ? parseInt(formData.validity_period_months, 10)
-          : null,
-        renewal_count: formData.renewal_count ? parseInt(formData.renewal_count, 10) : 0,
-        issue_date: formData.issue_date || null,
-        expiry_date: formData.expiry_date || null,
-        base_url : API_BASE_URL,
-      };
-
-      await axios.put(
-        `${API_BASE_URL}/api/auth/certification/${formData.id}`,
-        updatedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
+  
+      if (selectedImage) {
+        const formDataToSend = new FormData();
+        // Only include primitive fields, excluding nested objects
+        const fieldsToSend = {
+          guide_id: formData.guide_id,
+          certificate_number: formData.certificate_number,
+          certification_name: formData.certification_name,
+          description: formData.description,
+          renewal_requirements: formData.renewal_requirements,
+          validity_period_months: formData.validity_period_months,
+          issue_date: formData.issue_date,
+          expiry_date: formData.expiry_date,
+          status: formData.status,
+          program_name: formData.program_name,
+        };
+        Object.entries(fieldsToSend).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formDataToSend.append(key, String(value));
+          }
+        });
+  
+        const fileUri = selectedImage.uri;
+        const fileName = fileUri.split('/').pop();
+        const mimeType = getMimeType(fileUri);
+        formDataToSend.append('certificate_file', {
+          uri: fileUri,
+          name: fileName,
+          type: mimeType,
+        });
+  
+        console.log('FormData entries:');
+        for (let pair of formDataToSend._parts) {
+          console.log(`${pair[0]}: ${typeof pair[1] === 'object' ? JSON.stringify(pair[1]) : pair[1]}`);
         }
-      );
-
-      Alert.alert('Success', 'Certification updated successfully.');
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating certification:', error.response?.data || error.message);
-      let errorMessage = error.response?.data?.message || 'Failed to update certification.';
-      if (error.response?.data?.errors) {
-        const errorDetails = Object.values(error.response.data.errors).flat().join('\n');
-        Alert.alert('Validation Error', errorDetails);
+  
+        const response = await fetch(`${API_BASE_URL}/api/auth/certification/${formData.id}/update`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formDataToSend,
+        });
+  
+        const responseData = await response.json();
+        if (!response.ok) {
+          throw new Error(JSON.stringify(responseData));
+        }
       } else {
+        // Filter out nested objects for JSON submission
+        const filteredFormData = {
+          guide_id: formData.guide_id,
+          certificate_number: formData.certificate_number,
+          certification_name: formData.certification_name,
+          description: formData.description,
+          renewal_requirements: formData.renewal_requirements,
+          validity_period_months: formData.validity_period_months,
+          issue_date: formData.issue_date,
+          expiry_date: formData.expiry_date,
+          status: formData.status,
+          program_name: formData.program_name,
+        };
+        console.log('Sending JSON:', filteredFormData);
+        await fetch(`${API_BASE_URL}/api/auth/certification/${formData.id}/update`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data',
+          },
+          body: filteredFormData,
+        });
+      }
+  
+      setSelectedImage(null);
+      setIsEditing(false);
+      Alert.alert('Success', 'Certification updated successfully.');
+    } catch (error) {
+      console.error('Error updating certification:', error.message);
+      let errorMessage = 'Failed to update certification.';
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.errors) {
+          const errorDetails = Object.values(errorData.errors).flat().join('\n');
+          Alert.alert('Validation Error', errorDetails);
+        } else {
+          Alert.alert('Error', errorData.message || errorMessage);
+        }
+      } catch {
         Alert.alert('Error', errorMessage);
       }
+    } finally {
+      setSaving(false);
     }
   };
 
   // Handle Cancel
   const handleCancel = () => {
-    setFormData({ ...certification, guide_id: certification.guide?.id ? String(certification.guide.id) : '' });
+    setFormData({
+      ...certification,
+      guide_id: certification.guide?.id ? String(certification.guide.id) : '',
+      program_name: certification.program?.name || '',
+      status: certification.status || 'active',
+      issue_date: certification.issue_date || new Date().toISOString().split('T')[0],
+    });
+    setSelectedImage(null);
     setIsEditing(false);
   };
 
@@ -200,7 +327,24 @@ const CertificateDetails = ({ route }) => {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Certificate Image */}
       <View style={styles.imageContainer}>
-        {certification.certificate_file_url ? (
+        {isEditing ? (
+          <TouchableOpacity onPress={pickImage}>
+            <Image
+              source={{
+                uri:
+                  selectedImage?.uri ||
+                  formData.certificate_file_url ||
+                  `${API_BASE_URL}/mobile/assets/placeholder.jpg`,
+              }}
+              style={styles.certificateImage}
+              resizeMode="contain"
+              onError={() => console.log('Failed to load certificate image')}
+            />
+            <Text style={{ textAlign: 'center', color: colors.secondaryContrast || '#00693D' }}>
+              Tap to change
+            </Text>
+          </TouchableOpacity>
+        ) : certification.certificate_file_url ? (
           <Image
             source={{ uri: certification.certificate_file_url }}
             style={styles.certificateImage}
@@ -273,15 +417,13 @@ const CertificateDetails = ({ route }) => {
           {isEditing ? (
             <TextInput
               style={styles.input}
-              value={formData.program?.name || ''}
-              onChangeText={(text) =>
-                handleInputChange('program', { ...formData.program, name: text })
-              }
+              value={formData.program_name || ''}
+              onChangeText={(text) => handleInputChange('program_name', text)}
               placeholder="Enter program name"
             />
           ) : (
             <Text style={styles.value}>
-              {formData.program?.name || 'N/A'}
+              {formData.program_name || formData.program?.name || 'N/A'}
             </Text>
           )}
         </View>
@@ -490,8 +632,13 @@ const CertificateDetails = ({ route }) => {
             <TouchableOpacity
               style={[styles.button, styles.saveButton]}
               onPress={handleSave}
+              disabled={saving}
             >
-              <Text style={styles.buttonText}>Save</Text>
+              {saving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Save</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}

@@ -46,6 +46,7 @@ Route::prefix('auth')->group(function () {
 
         // Certification routes
         Route::resource('certification', CertificationController::class);
+        Route::post('certification/{id}/update', [CertificationController::class, 'update']);
 
         // Guide routes
         Route::resource('guides', GuideController::class);

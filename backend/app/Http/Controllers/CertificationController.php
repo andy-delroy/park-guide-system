@@ -144,16 +144,16 @@ class CertificationController extends Controller
             if ($request->expectsJson()) {
                 // Mobile API logic (mimicking updateProfile)
                 $validator = Validator::make($request->all(), [
-                    'guide_id' => 'required|exists:users,id',
-                    'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
-                    'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
+                    'guide_id' => 'nullable|exists:users,id',
+                    'certificate_number' => 'nullable|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
+                    'certification_name' => 'nullable|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
                     'description' => 'nullable|string',
                     'renewal_requirements' => 'nullable|string',
                     'validity_period_months' => 'nullable|integer',
                     'certificate_file' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
-                    'issue_date' => 'required|date',
+                    'issue_date' => 'nullable|date',
                     'expiry_date' => 'nullable|date|after_or_equal:issue_date',
-                    'status' => 'required|in:active,inactive',
+                    'status' => 'nullable|in:active,inactive',
                     'program_name' => 'nullable|string|max:255',
                 ]);
 
@@ -183,6 +183,7 @@ class CertificationController extends Controller
                     'issue_date',
                     'expiry_date',
                     'status',
+                    'program_name',
                 ]));
 
                 $certification->save();
