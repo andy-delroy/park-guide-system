@@ -46,7 +46,18 @@ export default function Index({ auth, trainings }) {
         }
     };
     
-
+    const handleDelete = async (trainingId) => {
+        if (!confirm("Are you sure you want to delete this training?")) return;
+    
+        try {
+            await axios.delete(`/trainings/${trainingId}`);
+            alert("Training deleted successfully.");
+            Inertia.reload({ only: ['trainings'] }); // reload only the training data
+        } catch (error) {
+            alert("Something went wrong while deleting the training.");
+        }
+    };
+    
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -86,6 +97,9 @@ export default function Index({ auth, trainings }) {
                             {auth.user?.role?.role_name === "guide" && (
                                 <th className="px-3 py-2">Enrolment</th>
                             )}
+                            {auth.user?.role?.role_name === "admin" && (
+                                <th className="px-3 py-2">Actions</th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -117,6 +131,16 @@ export default function Index({ auth, trainings }) {
                                             </Button>
                                         )}
                                     </td>
+                                )}
+                                {auth.user?.role?.role_name === "admin" && (
+                                    <td className="px-3 py-3 flex space-x-2">
+                                        <Link href={route("trainings.edit", training.id)}>
+                                            <Button type="success">Edit</Button>
+                                        </Link>
+                                        <Button type="danger" onClick={() => handleDelete(training.id)}>
+                                            Delete
+                                        </Button>
+                                    </td>                                
                                 )}
                                 </tr>   
                             ))

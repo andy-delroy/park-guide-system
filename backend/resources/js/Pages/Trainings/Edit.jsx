@@ -1,0 +1,103 @@
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, useForm } from "@inertiajs/react";
+
+export default function Edit({ auth, training }) {
+    const { data, setData, put, processing, errors } = useForm({
+        title: training.title || "",
+        description: training.description || "",
+        start_date: training.start_date || "",
+        end_date: training.end_date || "",
+        location: training.location || "",
+        capacity: training.capacity || 10,
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        put(route("trainings.update", training.id));
+    };
+
+    return (
+        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800">Edit Training</h2>}>
+            <Head title="Edit Training" />
+            <div className="py-12">
+                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
+                    <div className="bg-white p-6 rounded shadow">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block">Name of Training</label>
+                                <input
+                                    type="text"
+                                    value={data.title}
+                                    onChange={(e) => setData("title", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block">Description</label>
+                                <textarea
+                                    value={data.description}
+                                    onChange={(e) => setData("description", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block">Start Date</label>
+                                <input
+                                    type="datetime-local"
+                                    value={data.start_date}
+                                    onChange={(e) => setData("start_date", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                                {errors.start_date && <p className="text-red-500 text-sm">{errors.start_date}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block">End Date</label>
+                                <input
+                                    type="datetime-local"
+                                    value={data.end_date}
+                                    onChange={(e) => setData("end_date", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                                {errors.end_date && <p className="text-red-500 text-sm">{errors.end_date}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block">Location</label>
+                                <input
+                                    type="text"
+                                    value={data.location}
+                                    onChange={(e) => setData("location", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                                {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block">Capacity</label>
+                                <input
+                                    type="number"
+                                    value={data.capacity}
+                                    onChange={(e) => setData("capacity", e.target.value)}
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+                                {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity}</p>}
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            >
+                                Update Training
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </AuthenticatedLayout>
+    );
+}

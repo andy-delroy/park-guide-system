@@ -4,10 +4,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 import BottomTabs from './bottomTabs';
 import Notification from '../Pages/notification';
 import Training from '../Pages/training';
+import TrainingDetails from '../Pages/trainingDetails';
+import CreateTraining from '../Pages/createTraining';
 import Certificate from '../Pages/certificate';
 import CertificateDetails from '../Pages/certificateDetails';
 import CreateCertificate from '../Pages/createCertificate';
-import EditCertificate from '../Pages/editCertificate';
 import GenerateQR from '../Pages/generateQR';
 import ManageGuides from '../Pages/manageGuides';
 import GuideQR from '../Pages/guideQR';
@@ -19,11 +20,13 @@ const MainStack = ({ role }) => (
     <Stack.Screen name="Tabs" component={BottomTabs} />
     {(role === 'admin' || role === 'guide') && (
       <>
-        <Stack.Screen name="Training" component={Training} />
         <Stack.Screen name="Certificate" component={Certificate} />
         <Stack.Screen name="CertificateDetails" component={CertificateDetails} />
         <Stack.Screen name="CreateCertificate" component={CreateCertificate} />
-        <Stack.Screen name="EditCertificate" component={EditCertificate} />
+
+        <Stack.Screen name="Training" component={Training} />
+        <Stack.Screen name="TrainingDetails" component={TrainingDetails} />
+        <Stack.Screen name="CreateTraining" component={CreateTraining} />
       </>
     )}
     <Stack.Screen name="Notification" component={Notification} />

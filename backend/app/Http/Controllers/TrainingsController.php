@@ -10,6 +10,7 @@ use App\Services\IcsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class TrainingsController extends Controller
 {
@@ -38,7 +39,7 @@ class TrainingsController extends Controller
         ]);
     }
 
-        public function unenroll($id)
+    public function unenroll($id)
     {
         $user = Auth::user();
         $training = Trainings::findOrFail($id);
@@ -100,11 +101,19 @@ class TrainingsController extends Controller
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if ($user->role->role_name !== 'admin') {
+        // Authenticate using Sanctum's Bearer token
+        $user = Auth::guard('sanctum')->user();
+        if (!$user || $user->role->role_name !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthorized',
+                    'errors' => ['auth' => ['You do not have permission to perform this action.']],
+                ], 403);
+            }
             abort(403, 'Unauthorized');
         }
 
+        // Validate the request
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -114,13 +123,31 @@ class TrainingsController extends Controller
             'capacity' => 'required|integer|min:1',
         ]);
 
-        // Parse date inputs into proper datetime format
-        $validated['start_date'] = Carbon::parse($validated['start_date']);
-        $validated['end_date'] = Carbon::parse($validated['end_date']);
+        try {
+            // Parse dates using Carbon
+            $validated['start_date'] = Carbon::parse($validated['start_date']);
+            $validated['end_date'] = Carbon::parse($validated['end_date']);
 
-        Trainings::create($validated);
+            // Create the training
+            $training = Trainings::create($validated);
 
-        return redirect()->route('trainings.index')->with('success', 'Training created successfully!');
+            if ($request->expectsJson()) {
+                // Return JSON response with TrainingsResource for mobile
+                return new TrainingsResource($training);
+            }
+
+            // Return web response for Inertia
+            return redirect()->route('trainings.index')->with('success', 'Training created successfully!');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                // Handle unexpected errors for JSON requests
+                return response()->json([
+                    'message' => 'Failed to create training.',
+                    'errors' => ['server' => [$e->getMessage()]],
+                ], 500);
+            }
+            throw $e; // Let Laravel handle web errors
+        }
     }
 
     public function myTrainings()
@@ -138,20 +165,84 @@ class TrainingsController extends Controller
         return new TrainingsResource($trainings);
     }
 
-    public function edit(Trainings $trainings)
+    public function edit($id)
     {
-        // Not needed for API 
+        $user = auth()->user();
+        if ($user->role->role_name !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        $training = Trainings::findOrFail($id);
+
+        return Inertia::render('Trainings/Edit', [
+            'training' => $training,
+        ]);
     }
 
-    public function update(UpdateTrainingsRequest $request, Trainings $trainings)
+    public function update(Request $request, $id)
     {
-        $trainings->update($request->validated());
-        return new TrainingsResource($trainings);
+        // Authenticate using Sanctum's Bearer token
+        $user = Auth::guard('sanctum')->user();
+        if (!$user || $user->role->role_name !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthorized',
+                    'errors' => ['auth' => ['You do not have permission to perform this action.']],
+                ], 403);
+            }
+            abort(403, 'Unauthorized');
+        }
+
+        // Find the training or return 404
+        $training = Trainings::findOrFail($id);
+
+        // Validate the JSON request
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'location' => 'required|string|max:255',
+            'capacity' => 'required|integer|min:1',
+        ]);
+
+        try {
+            // Parse dates using Carbon
+            $validated['start_date'] = Carbon::parse($validated['start_date']);
+            $validated['end_date'] = Carbon::parse($validated['end_date']);
+
+            // Update the training
+            $training->update($validated);
+
+            if ($request->expectsJson()) {
+                // Return JSON response with TrainingsResource for mobile
+                return new TrainingsResource($training);
+            }
+
+            // Return web response for Inertia
+            return redirect()->route('trainings.index')->with('success', 'Training updated successfully!');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                // Handle unexpected errors for JSON requests
+                return response()->json([
+                    'message' => 'Failed to update training.',
+                    'errors' => ['server' => [$e->getMessage()]],
+                ], 500);
+            }
+            throw $e; // Let Laravel handle web errors
+        }
     }
 
-    public function destroy(Trainings $trainings)
+    public function destroy($id)
     {
-        $trainings->delete();
-        return response()->json(['message' => 'Training deleted']);
+        $training = Trainings::findOrFail($id);
+
+        // If you have a pivot table or dependencies, detach or delete them first
+        $training->users()->detach();
+
+        $training->delete();
+
+        return response()->json(['message' => 'Training deleted successfully.']);
     }
+
 }
