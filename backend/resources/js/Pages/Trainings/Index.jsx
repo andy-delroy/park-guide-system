@@ -83,7 +83,9 @@ export default function Index({ auth, trainings }) {
                             <th className="px-3 py-2">End Date</th>
                             <th className="px-3 py-2">Location</th>
                             <th className="px-3 py-2">Capacity</th>
-                            <th className="px-3 py-2">Enrolment</th>
+                            {auth.user?.role?.role_name === "guide" && (
+                                <th className="px-3 py-2">Enrolment</th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -103,17 +105,19 @@ export default function Index({ auth, trainings }) {
                                 <td className="px-3 py-3">{training.end_date}</td>
                                 <td className="px-3 py-3">{training.location}</td>
                                 <td className="px-3 py-3">{training.capacity}</td>
-                                <td className="px-3 py-3">
-                                    {training.is_enrolled ? (
-                                        <Button type="danger" onClick={() => handleUnenroll(training.id)}>
-                                            Cancel Enrollment
-                                        </Button>
-                                    ) : (
-                                        <Button type="success" onClick={() => handleEnroll(training.id)}>
-                                            Enroll
-                                        </Button>
-                                    )}
-                                </td>
+                                {auth.user?.role?.role_name === "guide" && (
+                                    <td className="px-3 py-3">
+                                        {training.is_enrolled ? (
+                                            <Button type="danger" onClick={() => handleUnenroll(training.id)}>
+                                                Cancel Enrollment
+                                            </Button>
+                                        ) : (
+                                            <Button type="success" onClick={() => handleEnroll(training.id)}>
+                                                Enroll
+                                            </Button>
+                                        )}
+                                    </td>
+                                )}
                                 </tr>   
                             ))
                         )}

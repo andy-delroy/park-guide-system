@@ -31,11 +31,13 @@ Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::delete('destroy', [AuthController::class, 'destroy']);
 
-        // Trainings routes
+        Route::resource('trainings', TrainingsController::class);
+        
+        Route::get('/my-trainings', [TrainingsController::class, 'myTrainings'])->name('my-trainings');
+        Route::get('/my-trainings/download', [TrainingsController::class, 'downloadSchedule'])->name('my-trainings.download');
+
         Route::post('/trainings/{id}/enroll', [TrainingsController::class, 'enroll']);
-        Route::post('/trainings/{id}/unenroll', [TrainingsController::class, 'unenroll']);
-        Route::post('/test-enroll', fn() => response()->json(['message' => 'its working']));
-        Route::apiResource('trainings', TrainingsController::class);
+        Route::delete('/trainings/{id}/unenroll', [TrainingsController::class, 'unenroll'])->name('trainings.unenroll');
 
         // Roles route
         Route::get('roles', [RoleController::class, 'getAllRoles']);

@@ -9,6 +9,7 @@ use App\Http\Resources\TrainingsResource;
 use App\Services\IcsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TrainingsController extends Controller
 {
@@ -28,7 +29,8 @@ class TrainingsController extends Controller
         $training->users()->attach($user->id);
 
         $icsService = new IcsService();
-        $icsContent = $icsService->generateTrainingIcs($training);
+        // Reuse bulk method with a single-item array
+        $icsContent = $icsService->generateBulkTrainingIcs([$training]);
 
         return response($icsContent, 200, [
             'Content-Type' => 'text/calendar',
@@ -65,11 +67,22 @@ class TrainingsController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $query = Trainings::query();
-        $trainings = $query->paginate(10)->onEachSide(1);
+        $user = auth()->user();
 
+        if ($user->role->role_name === 'guide') {
+            $trainings = Trainings::query()->paginate(10)->onEachSide(1);
+        } else if ($user->role->role_name === 'admin') {
+            $trainings = Trainings::query()->paginate(10)->onEachSide(1);
+        } else {
+            abort(403, 'Unauthorized');
+        }
+
+        if ($request->expectsJson()) {
+            return TrainingsResource::collection($trainings);
+        }
+        
         return inertia("Trainings/Index", [
             "trainings" => TrainingsResource::collection($trainings),
         ]);
@@ -92,7 +105,7 @@ class TrainingsController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'start_date' => 'required|date',
@@ -101,7 +114,11 @@ class TrainingsController extends Controller
             'capacity' => 'required|integer|min:1',
         ]);
 
-        Trainings::create($request->all());
+        // Parse date inputs into proper datetime format
+        $validated['start_date'] = Carbon::parse($validated['start_date']);
+        $validated['end_date'] = Carbon::parse($validated['end_date']);
+
+        Trainings::create($validated);
 
         return redirect()->route('trainings.index')->with('success', 'Training created successfully!');
     }

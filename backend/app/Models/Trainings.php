@@ -11,10 +11,11 @@ class Trainings extends Model
 
     protected $fillable = [
         'title',
-        'category',
-        'duration',
         'description',
-        'created_by',
+        'start_date',
+        'end_date',
+        'location',
+        'capacity',
     ];
 
     // Creator of the training //RECHECK///////
