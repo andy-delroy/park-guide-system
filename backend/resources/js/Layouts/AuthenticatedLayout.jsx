@@ -49,6 +49,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Guides
                                 </NavLink>
+                                <NavLink
+                                    href={route('quiz.index')}
+                                    active={route().current('quiz.index')}
+                                >
+                                    Quiz
+                                </NavLink>
                                 {/* <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}

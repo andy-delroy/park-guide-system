@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropColumn(['title', 'notification_type']);
-        });
+        // Schema::table('notifications', function (Blueprint $table) {
+        //     $table->dropColumn(['title', 'notification_type']);
+        // });
     }
 
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('title');
-            $table->string('notification_type');
-        });
+        // Schema::table('notifications', function (Blueprint $table) {
+        //     $table->string('title');
+        //     $table->string('notification_type');
+        // });
     }
 };
