@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Events\TestEvent;
 use Inertia\Inertia;
 use App\Models\Notification;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ModuleController;
+use App\Models\Alert;
+use App\Events\AlertCreated;
+use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Admin\AlertAdminController;
+use App\Http\Controllers\NotificationController;
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
@@ -69,11 +76,6 @@ Route::get('/broadcast/test', function () {
     ]);
 })->middleware('auth');
 
-use App\Models\Alert;
-use App\Events\AlertCreated;
-use App\Http\Controllers\AlertController;
-use App\Http\Controllers\Admin\AlertAdminController;
-
 
 Route::get('/notifications', function () {
     $user = Auth::user();
@@ -88,7 +90,6 @@ Route::get('/notifications', function () {
     ]);
 })->middleware('auth');
 
-use App\Http\Controllers\NotificationController;
 
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -114,6 +115,32 @@ Route::get('/map', function () {
 });
 Route::get('/certification/{id}/details', [CertificationController::class, 'show'])->name('certifications.show');
 Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
+
+Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reorder'])
+    ->name('courses.modules.reorder');
+
+    Route::middleware(['auth'])->group(function () {
+        // Course routes
+        Route::resource('courses', CourseController::class);
+    
+        // Nested modules under each course
+        Route::prefix('courses/{course}')->name('courses.')->group(function () {
+            Route::resource('modules', ModuleController::class)->except(['show']);
+            
+            Route::get('modules/{module}', [ModuleController::class, 'show'])->name('modules.show');
+            
+            Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
+            
+            // ✅ NEW: Assign module to a group
+            Route::post('modules/{module}/group', [ModuleController::class, 'assignGroup'])->name('modules.assignGroup');
+    
+            // ✅ NEW: Create a new module group
+            Route::post('groups', [ModuleController::class, 'createGroup'])->name('groups.store');
+        });
+    });
+    
+
+
 // Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 

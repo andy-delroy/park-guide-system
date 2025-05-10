@@ -12,6 +12,7 @@ export default defineConfig({
       port: 5173,
     },
   },
+  
   plugins: [
     laravel({
       input: ['resources/js/app.jsx'],
@@ -20,3 +21,4 @@ export default defineConfig({
     react(),
   ],
 });
+

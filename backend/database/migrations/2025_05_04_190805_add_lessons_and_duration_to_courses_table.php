@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('role')->nullable()->after('user_id');
+        Schema::table('courses', function (Blueprint $table) {
+            $table->unsignedInteger('lessons')->default(0)->after('thumbnail');
+            $table->string('duration')->nullable()->after('lessons');
         });
     }
 
@@ -21,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('role')->nullable()->after('user_id');
+        Schema::table('courses', function (Blueprint $table) {
+            $table->dropColumn('lessons');
+            $table->dropColumn('duration');
         });
     }
 };
