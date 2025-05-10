@@ -159,4 +159,11 @@ class User extends Authenticatable
     {
         return $this->role ? $this->role->role_name : 'Unknown';
     }
+
+    public function quizzes()
+    {
+        return $this->belongsToMany(Quiz::class, 'quiz_guide', 'guide_id', 'quiz_id')
+                    ->withPivot('total_score', 'time_taken')
+                    ->withTimestamps();
+    }
 }

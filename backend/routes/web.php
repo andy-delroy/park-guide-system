@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuestionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -144,6 +146,28 @@ Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reord
 // Laravel Breeze auth routes
 require __DIR__.'/auth.php';
 
+Route::get('/quiz', function () {return Inertia::render('Quiz/Index');})->name('quiz.index');
+Route::middleware(['auth'])->group(function () {Route::resource('quiz', QuizController::class);});
+Route::get('/quiz/{quiz}/take', [QuizController::class, 'take'])->name('quiz.take');
+Route::middleware(['auth'])->group(function () {Route::resource('quizzes.questions', QuestionController::class);});
+Route::middleware(['auth'])->group(function () {
+    Route::get('/quiz/{quiz}/take', [QuizController::class, 'take'])->name('quiz.take');
+    Route::post('/quiz/{quiz}/submit', [QuizController::class, 'submitQuiz'])->name('quiz.submit');
+    Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quiz.edit');
+    Route::put('/quizzes/{quiz}', [QuizController::class, 'update'])->name('quiz.update');
+    Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
+        return Inertia::render('Quiz/AddQuestion', [
+            'quiz' => \App\Models\Quiz::findOrFail($quiz),
+        ]);
+    })->name('quizzes.questions.create');
+
+    Route::post('/quizzes/{quiz}/questions', [QuestionController::class, 'store'])->name('quizzes.questions.store');
+});
+Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
+    return Inertia::render('Quiz/AddQuestion', [
+        'quiz' => \App\Models\Quiz::findOrFail($quiz),
+    ]);
+})->name('quizzes.questions.create');
 
 // Route::redirect('/nigga', '/dashboard');
 // Route::redirect('/nigga', '/thehood');
