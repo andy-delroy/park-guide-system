@@ -4,7 +4,7 @@ export default function ApplicationLogo(props) {
             {...props}
             src="/storage/ino_logo.png" // or "/images/ino_logo.png"
             alt="Sarawak Parks Logo"
-            className="h-10 w-auto"
+            className="h-16 w-auto"
         />
     ); 
 }
