@@ -8,6 +8,7 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import axios from "axios";
+import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const containerStyle = {
@@ -184,6 +185,7 @@ const ParkMap = () => {
             </h2>
         }
     >
+      <Head title="Map" />
       <div style={{ display: "flex", position: "relative" }}>
         {/* Google Map */}
         <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "directions"]}>
