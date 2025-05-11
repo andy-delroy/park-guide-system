@@ -10,15 +10,20 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100 flex">
+        <div className="bg-gray-100 flex relative h-screen overflow-hidden">
             {/* Sidebar */}
-            <nav className="w-60 border-r border-gray-100 bg-[--forest-green] min-h-screen hidden sm:block">
+            <nav
+                className={`${
+                    sidebarCollapsed ? 'w-0 overflow-hidden' : 'w-60'
+                } transition-all duration-300 border-r border-gray-100 bg-[--forest-green] h-screen fixed sm:block hidden`}
+            >
                 <div className="flex flex-col h-full pt-3">
                     <div className="flex items-center justify-center mb-3">
                         <Link href="/">
-                            <ApplicationLogo/>
+                            <ApplicationLogo className="h-16 w-auto" />
                         </Link>
                     </div>
 
@@ -83,51 +88,40 @@ export default function AuthenticatedLayout({ header, children }) {
                             Log Out
                         </NavLink>
                     </div>
-
-                    {/* <div className="mt-auto pt-6 border-t border-gray-200">
-                        <Dropdown>
-                            <Dropdown.Trigger>
-                                <span className="inline-flex rounded-md">
-                                    <button
-                                        type="button"
-                                        className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                    >
-                                        {user.name}
-                                        <svg
-                                            className="-me-0.5 ms-2 h-4 w-4"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </button>
-                                </span>
-                            </Dropdown.Trigger>
-
-                            <Dropdown.Content>
-                                <Dropdown.Link href={route('profile.edit')}>
-                                    Profile
-                                </Dropdown.Link>
-                                <Dropdown.Link
-                                    href={route('logout')}
-                                    method="post"
-                                    as="button"
-                                >
-                                    Log Out
-                                </Dropdown.Link>
-                            </Dropdown.Content>
-                        </Dropdown>
-                    </div> */}
                 </div>
             </nav>
 
+            {/* Toggle Button */}
+            <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="absolute top-1/2 -translate-y-1/2 sm:flex hidden z-20 bg-[--secondary-contrast] hover:bg-gray-100 p-2 w-8 h-20 rounded-r-lg transition-all duration-300 items-center justify-center"
+                style={{
+                    left: sidebarCollapsed ? '0rem' : '14.95rem',
+                }}
+            >
+                <svg
+                    className={`w-8 h-8 text-gray-700 transform transition-transform duration-300 ${
+                        sidebarCollapsed ? '' : 'rotate-180'
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        d="M9 5l7 7-7 7"
+                    />
+                </svg>
+            </button>
+
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
+            <div
+                className={`flex-1 flex flex-col h-screen overflow-y-auto transition-all duration-300 ${
+                    sidebarCollapsed ? 'ml-0' : 'sm:ml-60'
+                }`}
+            >
                 {/* Mobile Nav (top bar toggle) */}
                 <div className="sm:hidden border-b border-gray-100 bg-[--forest-green] p-4 flex justify-between items-center">
                     <Link href="/">
