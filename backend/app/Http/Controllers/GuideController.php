@@ -85,7 +85,7 @@ class GuideController extends Controller
     {
         $guide = User::with('role')
             ->where('role_id', 2)
-            ->select('id', 'full_name', 'email', 'phone_number', 'profile_image_url', 'role_id', 'biography', 'languages_spoken', 'years_of_experience', 'specializations')
+            ->select('id', 'full_name', 'email', 'phone_number', 'profile_image_url', 'role_id', 'biography', 'languages_spoken', 'years_of_experience', 'specializations', 'average_rating')
             ->findOrFail($id);
         if ($request->expectsJson()) {
             return new UserResource($guide);

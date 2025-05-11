@@ -102,6 +102,24 @@ export default function GuideScanner() {
     }
   };
 
+  const fetchGuideDetails = async (guideId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/guides/${guideId}`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      // Assuming that response.data is the updated guide data, including the new average_rating
+      const updatedGuideData = response.data.data || response.data;
+      setGuideDetails(updatedGuideData); // Update state with the new data
+    } catch (err) {
+      console.error('Error fetching updated guide details:', err.response?.data || err.message);
+      alert('Failed to fetch updated guide details.');
+    }
+  };
+
+
   // Custom Star Rating Component (for input)
   const CustomStarRating = ({ rating, setRating }) => {
     return (
@@ -183,6 +201,14 @@ export default function GuideScanner() {
             )}
             <Text style={styles.cameraName}>{guideDetails.full_name || 'Unnamed Guide'}</Text>
             <Text style={styles.cameraRole}>Guide</Text>
+            {guideDetails?.average_rating !== null && (
+              <View style={{ alignItems: 'center', marginVertical: 10 }}>
+                <Text style={{ fontWeight: 'bold' }}>
+                  Average Rating: {guideDetails.average_rating} / 5
+                </Text>
+                <FeedbackStarDisplay rating={Math.round(guideDetails.average_rating)} />
+              </View>
+            )}
             <View style={styles.cameraInfoBlock}>
               <Text style={styles.cameraLabel}>Email:</Text>
               <Text style={styles.cameraValue}>{guideDetails.email || 'N/A'}</Text>
@@ -293,6 +319,7 @@ export default function GuideScanner() {
                       setComments('');
                       setShowRatingForm(false);
                       await fetchFeedbacks(guideDetails.id);
+                      await fetchGuideDetails(guideDetails.id);
                     } catch (err) {
                       console.error('Feedback Submit Error:', err.response?.data || err.message);
                       alert(err.response?.data?.message || 'Failed to submit feedback.');

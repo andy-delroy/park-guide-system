@@ -49,6 +49,9 @@ class GuideFeedbackController extends Controller
             'submitted_date' => now(),
         ]);
 
+        // Update the guide's average rating
+        $this->updateGuideAverage($guide->id);
+
         return response()->json([
             'message' => 'Feedback submitted successfully.',
             'feedback' => $feedback
@@ -72,4 +75,17 @@ class GuideFeedbackController extends Controller
             'feedbacks' => $feedbacks
         ], 200);
     }
+
+    // After creating or updating a rating
+    public function updateGuideAverage($guideId)
+    {
+        $average = GuideFeedback::where('guide_id', $guideId)->avg('rating');
+
+        // Round it if needed (optional)
+        $average = round($average, 2);
+
+        // Update the 'average_rating' column in the users table
+        User::where('id', $guideId)->update(['average_rating' => $average]);
+    }
+
 }
