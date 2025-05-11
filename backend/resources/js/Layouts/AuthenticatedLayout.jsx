@@ -61,6 +61,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Map
                                 </NavLink>
+                                <NavLink
+                                    href={route('courses.index')}
+                                    active={route().current('courses.index')}
+                                >
+                                    Courses
+                                </NavLink>
                             </div>
                         </div>
 
