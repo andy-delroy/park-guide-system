@@ -114,7 +114,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/map', function () {
     return Inertia::render('Map/parkmap'); // This loads resources/js/Pages/parkmap.jsx
-});
+})->name('map.parkmap');
 Route::get('/certification/{id}/details', [CertificationController::class, 'show'])->name('certifications.show');
 Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
 

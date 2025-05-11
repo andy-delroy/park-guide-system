@@ -55,12 +55,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Quiz
                                 </NavLink>
-                                {/* <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                <NavLink
+                                    href={route('map.parkmap')}
+                                    active={route().current('map.parkmap')}
                                 >
-                                    Dashboard
-                                </NavLink> */}
+                                    Map
+                                </NavLink>
                             </div>
                         </div>
 
