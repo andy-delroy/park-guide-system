@@ -17,10 +17,15 @@ class User extends Authenticatable
         'date_of_birth', 'gender', 'address', 'role_id', 'profile_image_url',
         'identification_number', 'emergency_contact', 'biography',
         'languages_spoken', 'years_of_experience', 'specializations',
-        'employment_status', 'status', 'registration_date', 'last_login'
+        'employment_status', 'status', 'registration_date', 'last_login', 'average_rating',
     ];
 
     protected $appends = ['role_name'];
+
+    protected $casts = [
+        'average_rating' => 'float',
+    ];
+
 
     public function getRoleNameAttribute(): string
     {

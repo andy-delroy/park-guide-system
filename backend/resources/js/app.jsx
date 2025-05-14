@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.min.css'; // ✅ ADD THIS at the top
+import 'bootstrap/dist/css/bootstrap.min.css'; 
 import '../css/app.css';
 import './bootstrap';
 import 'swiper/css';
@@ -12,7 +12,7 @@ import { createRoot } from 'react-dom/client';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.jsx`,

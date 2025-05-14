@@ -8,7 +8,8 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import axios from "axios";
-
+import { Head } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const containerStyle = {
   width: "100vw",
@@ -177,307 +178,315 @@ const ParkMap = () => {
 
 
   return (
-    <div style={{ display: "flex", position: "relative" }}>
-      {/* Google Map */}
-      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "directions"]}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={searchLocation}
-          zoom={17}
-          options={options}
-          onMouseMove={handleMouseMove}
-          mapTypeId={selectedMapType}
-          ref={mapRef}
-        >
-          {/* Markers */}
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={{ lat: marker.lat, lng: marker.lng }}
-              icon={marker.icon}
-              onClick={() => {
-                setSelectedPark(marker);
-                setSidebarOpen(true);
-                handleMarkerClick(marker);
+    <AuthenticatedLayout
+        header={
+            <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                Map
+            </h2>
+        }
+    >
+      <Head title="Map" />
+      <div style={{ display: "flex", position: "relative" }}>
+        {/* Google Map */}
+        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "directions"]}>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={searchLocation}
+            zoom={17}
+            options={options}
+            onMouseMove={handleMouseMove}
+            mapTypeId={selectedMapType}
+            ref={mapRef}
+          >
+            {/* Markers */}
+            {markers.map((marker) => (
+              <Marker
+                key={marker.id}
+                position={{ lat: marker.lat, lng: marker.lng }}
+                icon={marker.icon}
+                onClick={() => {
+                  setSelectedPark(marker);
+                  setSidebarOpen(true);
+                  handleMarkerClick(marker);
+                }}
+                
+              />
+            ))}
+
+            {/* Directions Renderer */}
+            {directions && (
+              <DirectionsRenderer directions={directions} />
+            )}
+          </GoogleMap>
+        </LoadScript>
+
+        {/* Sidebar */}
+        {sidebarOpen && selectedPark && (
+          <div
+            style={{
+              position: "fixed",
+              left: sidebarOpen ? "0" : "-400px",
+              top: 0,
+              width: "400px",
+              height: "100%",
+              backgroundColor: "#1a1a1a",
+              color: "white",
+              padding: "20px",
+              overflowY: "auto",
+              boxShadow: "2px 0 5px rgba(0, 0, 0, 0.5)",
+              transition: "left 0.3s ease",
+              zIndex: 2,
+            }}
+          >
+            <button
+              onClick={toggleSidebar}
+              style={{
+                position: "absolute",
+                top: "25px",
+                right: "20px",
+                backgroundColor: "solid #444",
+                color: "white",
+                border: "none",
+                fontSize: "20px",
+                cursor: "pointer",
               }}
-              
+            >
+              X
+            </button>
+            <h3 style={{ marginBottom: "10px", fontSize: "22px", borderBottom: "1px solid #444", paddingBottom: "5px" }} >
+              {selectedPark.name}
+            </h3>
+            <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>{selectedPark.description}</p>
+
+            {/* 360 Image Container for the selected marker */}
+            <div style={{ width: "100%", height: "250px", backgroundColor: "#333", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "8px", marginBottom: "20px" }}>
+              <img
+                src={selectedPark.picture} // Use the unique 360-degree image for the selected marker
+                alt="360-degree view"
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
+              />
+            </div>
+            {/* Button Container */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
+        {/* Get Directions Button */}
+        <button
+          onClick={handleGetDirections}
+          style={{
+            width: "50px", // Make the button square
+            height: "50px", // Make the button square
+            backgroundColor: "#007bff", // Button background color
+            color: "white",
+            border: "none",
+            borderRadius: "8px", // Rounded corners
+            cursor: "pointer",
+            display: "flex", // Center the icon inside the button
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios/452/route.png" // URL for route icon (use your own icon if needed)
+            alt="Route Icon"
+            style={{
+              width: "24px", // Size of the route icon inside the button
+              height: "24px", // Size of the route icon inside the button
+            }}
+          />
+        </button>
+        {/* vacant button */}
+        <button
+          onClick={handleGetDirections}
+          style={{
+            width: "50px", // Make the button square
+            height: "50px", // Make the button square
+            backgroundColor: "#ebb00f", // Button background color
+            color: "white",
+            border: "none",
+            borderRadius: "8px", // Rounded corners
+            cursor: "pointer",
+            display: "flex", // Center the icon inside the button
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios/452/forest.png" // URL for route icon (use your own icon if needed)
+            alt="Route Icon"
+            style={{
+              width: "24px", // Size of the route icon inside the button
+              height: "24px", // Size of the route icon inside the button
+            }}
+          />
+        </button>
+        {/* "!" Button linking to Sarawak Forestry Website */}
+        <a
+          href="https://sarawakforestry.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: "absolute",
+            left: "180px",
+            width: "50px", // Make the button square
+            height: "50px", // Make the button square
+            backgroundColor: "#5ced73", // Button background color (red)
+            color: "white",
+            border: "none",
+            borderRadius: "8px", // Rounded corners
+            cursor: "pointer",
+            display: "flex", // Center the icon inside the button
+            justifyContent: "center",
+            alignItems: "center",
+            textDecoration: "none", // Remove underline from the link
+          }}
+        >
+          <span
+            style={{
+              fontSize: "24px", // Size of the "!" icon
+              fontWeight: "bold", // Make the "!" icon bold
+            }}
+          >
+            !
+          </span>
+        </a>
+      </div>
+      {/* History Section */}
+      <div style={{ marginTop: "20px", padding: "10px", backgroundColor: "#2a2a2a", borderRadius: "8px" }}>
+        <h4 style={{ color: "white", marginBottom: "10px" }}>History</h4>
+        <p style={{ color: "#ccc", fontSize: "14px" }}>
+          This is the history section where you can add some information related to this location. For example, you can describe the background of the park or any important events related to this place.
+        </p>
+        {/* Add more content or text as needed */}
+      </div>
+      
+    </div>
+        )}
+        {/* Search Bar */}
+        <div style={{ position: "absolute", top: "10px", left: sidebarOpen ? "405px" : "10px", zIndex: 1, transition: "left 0.3s ease" }}>
+          
+            <input 
+              ref={autocompleteRef}
+              type="text"
+              placeholder="Search for a location..."
+              style={{
+                width: "300px",
+                padding: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
             />
-          ))}
+          
+        </div>
+      
+        {/* Map View Toggle */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "25px",
+            left: sidebarOpen ? "405px" : "10px", // Adjust position based on sidebar state
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            padding: "15px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.3)",
+            zIndex: 1,
+            transition: "left 0.3s ease",
+          }}
+        >
 
-          {/* Directions Renderer */}
-          {directions && (
-            <DirectionsRenderer directions={directions} />
-          )}
-        </GoogleMap>
-      </LoadScript>
-
-      {/* Sidebar */}
-      {sidebarOpen && selectedPark && (
+          {/* Recenter Button */}
         <div
           style={{
             position: "fixed",
-            left: sidebarOpen ? "0" : "-400px",
-            top: 0,
-            width: "400px",
-            height: "100%",
-            backgroundColor: "#1a1a1a",
-            color: "white",
-            padding: "20px",
-            overflowY: "auto",
-            boxShadow: "2px 0 5px rgba(0, 0, 0, 0.5)",
-            transition: "left 0.3s ease",
-            zIndex: 2,
+            bottom: "70px",
+            right: "14px",
+            zIndex: 1,
           }}
         >
           <button
-            onClick={toggleSidebar}
+            onClick={recenterToUserLocation}
             style={{
-              position: "absolute",
-              top: "25px",
-              right: "20px",
-              backgroundColor: "solid #444",
+              padding: "10px",
+              backgroundColor: "#007bff",
               color: "white",
               border: "none",
-              fontSize: "20px",
+              borderRadius: "5px",
               cursor: "pointer",
             }}
           >
-            X
+            O
           </button>
-          <h3 style={{ marginBottom: "10px", fontSize: "22px", borderBottom: "1px solid #444", paddingBottom: "5px" }} >
-            {selectedPark.name}
-          </h3>
-          <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>{selectedPark.description}</p>
+        </div>
 
-          {/* 360 Image Container for the selected marker */}
-          <div style={{ width: "100%", height: "250px", backgroundColor: "#333", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "8px", marginBottom: "20px" }}>
-            <img
-              src={selectedPark.picture} // Use the unique 360-degree image for the selected marker
-              alt="360-degree view"
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
-            />
-          </div>
-          {/* Button Container */}
-    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-      {/* Get Directions Button */}
-      <button
-        onClick={handleGetDirections}
-        style={{
-          width: "50px", // Make the button square
-          height: "50px", // Make the button square
-          backgroundColor: "#007bff", // Button background color
-          color: "white",
-          border: "none",
-          borderRadius: "8px", // Rounded corners
-          cursor: "pointer",
-          display: "flex", // Center the icon inside the button
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <img
-          src="https://img.icons8.com/ios/452/route.png" // URL for route icon (use your own icon if needed)
-          alt="Route Icon"
-          style={{
-            width: "24px", // Size of the route icon inside the button
-            height: "24px", // Size of the route icon inside the button
-          }}
-        />
-      </button>
-      {/* vacant button */}
-      <button
-        onClick={handleGetDirections}
-        style={{
-          width: "50px", // Make the button square
-          height: "50px", // Make the button square
-          backgroundColor: "#ebb00f", // Button background color
-          color: "white",
-          border: "none",
-          borderRadius: "8px", // Rounded corners
-          cursor: "pointer",
-          display: "flex", // Center the icon inside the button
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <img
-          src="https://img.icons8.com/ios/452/forest.png" // URL for route icon (use your own icon if needed)
-          alt="Route Icon"
-          style={{
-            width: "24px", // Size of the route icon inside the button
-            height: "24px", // Size of the route icon inside the button
-          }}
-        />
-      </button>
-      {/* "!" Button linking to Sarawak Forestry Website */}
-      <a
-        href="https://sarawakforestry.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          position: "absolute",
-          left: "180px",
-          width: "50px", // Make the button square
-          height: "50px", // Make the button square
-          backgroundColor: "#5ced73", // Button background color (red)
-          color: "white",
-          border: "none",
-          borderRadius: "8px", // Rounded corners
-          cursor: "pointer",
-          display: "flex", // Center the icon inside the button
-          justifyContent: "center",
-          alignItems: "center",
-          textDecoration: "none", // Remove underline from the link
-        }}
-      >
-        <span
-          style={{
-            fontSize: "24px", // Size of the "!" icon
-            fontWeight: "bold", // Make the "!" icon bold
-          }}
-        >
-          !
-        </span>
-      </a>
-    </div>
-    {/* History Section */}
-    <div style={{ marginTop: "20px", padding: "10px", backgroundColor: "#2a2a2a", borderRadius: "8px" }}>
-      <h4 style={{ color: "white", marginBottom: "10px" }}>History</h4>
-      <p style={{ color: "#ccc", fontSize: "14px" }}>
-        This is the history section where you can add some information related to this location. For example, you can describe the background of the park or any important events related to this place.
-      </p>
-      {/* Add more content or text as needed */}
-    </div>
-    
-  </div>
-      )}
-      {/* Search Bar */}
-      <div style={{ position: "absolute", top: "10px", left: sidebarOpen ? "405px" : "10px", zIndex: 1, transition: "left 0.3s ease" }}>
-        
-          <input 
-            ref={autocompleteRef}
-            type="text"
-            placeholder="Search for a location..."
+          <h3 style={{ margin: "0 0 10px", fontSize: "16px", color: "#333" }}>Map View</h3>
+          <button
+            onClick={() => handleMapTypeChange("roadmap")}
             style={{
-              width: "300px",
-              padding: "10px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
+              marginRight: "10px",
+              padding: "8px 12px",
+              backgroundColor: selectedMapType === "roadmap" ? "#007bff" : "#f0f0f0",
+              color: selectedMapType === "roadmap" ? "white" : "#333",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
             }}
-          />
+          >
+            Roadmap
+          </button>
+          <button
+            onClick={() => handleMapTypeChange("satellite")}
+            style={{
+              padding: "8px 12px",
+              backgroundColor: selectedMapType === "satellite" ? "#007bff" : "#f0f0f0",
+              color: selectedMapType === "satellite" ? "white" : "#333",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Satellite
+          </button>
+        </div>
+        {hoverLatLng && (
+    <div
+      style={{
+        position: "absolute",
+        top: "10px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        color: "white",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        fontSize: "14px",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.3)",
+        zIndex: 1,
+      }}
+    >
+      <strong>Lat:</strong> {hoverLatLng.lat.toFixed(5)} | <strong>Lng:</strong> {hoverLatLng.lng.toFixed(5)}
+    </div>
+  )}
+  {/* Exit Directions Button */}
+  {directions && (
+    <button
+      onClick={handleExitDirections}
+      style={{
+        position: "absolute",
+        bottom: "10px",
+        padding: "10px 20px",
+        left: "50%",
+        marginTop: "20px",
+        backgroundColor: "#ff4d4d", // Red color for the exit button
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+      }}
+    >
+      Exit Directions
+    </button>
+  )}
         
       </div>
-    
-      {/* Map View Toggle */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "25px",
-          left: sidebarOpen ? "405px" : "10px", // Adjust position based on sidebar state
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          padding: "15px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.3)",
-          zIndex: 1,
-          transition: "left 0.3s ease",
-        }}
-      >
-
-        {/* Recenter Button */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: "70px",
-          right: "14px",
-          zIndex: 1,
-        }}
-      >
-        <button
-          onClick={recenterToUserLocation}
-          style={{
-            padding: "10px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          O
-        </button>
-      </div>
-
-        <h3 style={{ margin: "0 0 10px", fontSize: "16px", color: "#333" }}>Map View</h3>
-        <button
-          onClick={() => handleMapTypeChange("roadmap")}
-          style={{
-            marginRight: "10px",
-            padding: "8px 12px",
-            backgroundColor: selectedMapType === "roadmap" ? "#007bff" : "#f0f0f0",
-            color: selectedMapType === "roadmap" ? "white" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Roadmap
-        </button>
-        <button
-          onClick={() => handleMapTypeChange("satellite")}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: selectedMapType === "satellite" ? "#007bff" : "#f0f0f0",
-            color: selectedMapType === "satellite" ? "white" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Satellite
-        </button>
-      </div>
-      {hoverLatLng && (
-  <div
-    style={{
-      position: "absolute",
-      top: "10px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
-      color: "white",
-      padding: "8px 12px",
-      borderRadius: "8px",
-      fontSize: "14px",
-      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.3)",
-      zIndex: 1,
-    }}
-  >
-    <strong>Lat:</strong> {hoverLatLng.lat.toFixed(5)} | <strong>Lng:</strong> {hoverLatLng.lng.toFixed(5)}
-  </div>
-)}
-{/* Exit Directions Button */}
-{directions && (
-  <button
-    onClick={handleExitDirections}
-    style={{
-      position: "absolute",
-      bottom: "10px",
-      padding: "10px 20px",
-      left: "50%",
-      marginTop: "20px",
-      backgroundColor: "#ff4d4d", // Red color for the exit button
-      color: "white",
-      border: "none",
-      borderRadius: "5px",
-      cursor: "pointer",
-    }}
-  >
-    Exit Directions
-  </button>
-)}
-      
-    </div>
-    
+    </AuthenticatedLayout>
   );
 };
 
