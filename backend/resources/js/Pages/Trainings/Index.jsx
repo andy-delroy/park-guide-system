@@ -84,69 +84,74 @@ export default function Index({ auth, trainings }) {
                     )}
                 </div>
 
-                <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="sticky top-0 z-10 shadow text-xs text-gray-700 uppercase bg-gray-50 darK:bg-gray-700 dark:text-gray-400 border-b-2 border-gray-500">
-                        <tr className="text-nowrap">
-                            <th className="px-3 py-2">ID</th>
-                            <th className="px-3 py-2">Name of Training</th>
-                            <th className="px-3 py-2">Description</th>
-                            <th className="px-3 py-2">Start Date</th>
-                            <th className="px-3 py-2">End Date</th>
-                            <th className="px-3 py-2">Location</th>
-                            <th className="px-3 py-2">Capacity</th>
-                            {auth.user?.role?.role_name === "guide" && (
-                                <th className="px-3 py-2">Enrolment</th>
-                            )}
-                            {auth.user?.role?.role_name === "admin" && (
-                                <th className="px-3 py-2">Actions</th>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {trainings.data.length === 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <td colSpan="8" className="text-center py-4">
-                                    No trainings found.
-                                </td>
-                            </tr>
-                        ) : (
-                            trainings.data.map((training) => (
-                                <tr key={training.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td className="px-3 py-3">{training.id}</td>
-                                <td className="px-3 py-3">{training.title}</td>
-                                <td className="px-3 py-3">{training.description}</td>
-                                <td className="px-3 py-3">{training.start_date}</td>
-                                <td className="px-3 py-3">{training.end_date}</td>
-                                <td className="px-3 py-3">{training.location}</td>
-                                <td className="px-3 py-3">{training.capacity}</td>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name of Training</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Start Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">End Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Location</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Capacity</th>
                                 {auth.user?.role?.role_name === "guide" && (
-                                    <td className="px-3 py-3">
-                                        {training.is_enrolled ? (
-                                            <Button type="danger" onClick={() => handleUnenroll(training.id)}>
-                                                Cancel Enrollment
-                                            </Button>
-                                        ) : (
-                                            <Button type="success" onClick={() => handleEnroll(training.id)}>
-                                                Enroll
-                                            </Button>
-                                        )}
-                                    </td>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Enrolment</th>
                                 )}
                                 {auth.user?.role?.role_name === "admin" && (
-                                    <td className="px-3 py-3 flex space-x-2">
-                                        <Link href={route("trainings.edit", training.id)}>
-                                            <Button type="success">Edit</Button>
-                                        </Link>
-                                        <Button type="danger" onClick={() => handleDelete(training.id)}>
-                                            Delete
-                                        </Button>
-                                    </td>                                
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
                                 )}
-                                </tr>   
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                            {trainings.data.length === 0 ? (
+                                <tr>
+                                    <td
+                                        colSpan="4"
+                                        className="px-6 py-4 text-center text-sm text-gray-500"
+                                    >
+                                        No trainings found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                trainings.data.map((training) => (
+                                    <tr key={training.id}>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.id}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.title}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.description}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.start_date}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.end_date}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.location}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.capacity}</td>
+                                        {auth.user?.role?.role_name === "guide" && (
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                                                {training.is_enrolled ? (
+                                                    <Button type="danger" onClick={() => handleUnenroll(training.id)}>
+                                                        Cancel Enrollment
+                                                    </Button>
+                                                ) : (
+                                                    <Button type="success" onClick={() => handleEnroll(training.id)}>
+                                                        Enroll
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        )}
+                                        {auth.user?.role?.role_name === "admin" && (
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 flex space-x-2">
+                                                <Link href={route("trainings.edit", training.id)}>
+                                                    <Button type="success">Edit</Button>
+                                                </Link>
+                                                <Button type="danger" onClick={() => handleDelete(training.id)}>
+                                                    Delete
+                                                </Button>
+                                            </td>                                
+                                        )}
+                                    </tr>   
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </SectionCard> 
         </AuthenticatedLayout>
     );

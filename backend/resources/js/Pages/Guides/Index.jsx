@@ -58,7 +58,7 @@ export default function Index({ guides }) {
                         href="/guides/create"
                         className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                     >
-                        Add New Guide
+                        + Add New Guide
                     </Link>
                 </div>
 
@@ -110,6 +110,12 @@ export default function Index({ guides }) {
                                             >
                                                 Delete
                                             </button>
+                                            <Link
+                                                href={`/guides/${guide.id}`}
+                                                className="ml-2 text-indigo-600 hover:text-indigo-900"
+                                            >
+                                                Details
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

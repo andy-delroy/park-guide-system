@@ -1,3 +1,4 @@
+import SectionCard from "@/Components/SectionCard";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 
@@ -19,9 +20,7 @@ export default function Edit({ auth, training }) {
     return (
         <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800">Edit Training</h2>}>
             <Head title="Edit Training" />
-            <div className="py-12">
-                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white p-6 rounded shadow">
+            <SectionCard>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block">Name of Training</label>
@@ -95,9 +94,7 @@ export default function Edit({ auth, training }) {
                                 Update Training
                             </button>
                         </form>
-                    </div>
-                </div>
-            </div>
+            </SectionCard>
         </AuthenticatedLayout>
     );
 }

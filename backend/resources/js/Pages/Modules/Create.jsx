@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useForm, usePage, router  } from '@inertiajs/react';
+import { Link, useForm, usePage, Head } from '@inertiajs/react'; // Added Head
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Added for template
+import SectionCard from '@/Components/SectionCard'; // Added for template
 
 export default function ModuleCreate() {
-  const { course, module, groups } = usePage().props;
+  const { course, module, groups, auth } = usePage().props; // Added auth
   const isEditing = !!module?.id;
 
   // Initialize resources from module data or empty array
@@ -51,7 +53,6 @@ export default function ModuleCreate() {
     formData.append('title', data.title);
     formData.append('description', data.description);
     formData.append('material_type', data.material_type);
-    //formData.append('group_id', data.group_id);
   
     resources.forEach((res, i) => {
       formData.append(`resources[${i}][title]`, res.title);
@@ -64,48 +65,43 @@ export default function ModuleCreate() {
     });
   
     const url = isEditing
-    ? `/courses/${course.id}/modules/${module.id}`
-    : `/courses/${course.id}/modules`;
+      ? `/courses/${course.id}/modules/${module.id}`
+      : `/courses/${course.id}/modules`;
 
-  router.post(url, formData, {
-    forceFormData: true,
-    onError: (err) => console.error('Validation Errors', err),
-    onSuccess: () => console.log('Saved successfully!'),
-  });
-};
+    const method = isEditing ? put : post; // Use put for editing, post for creating
+    method(url, {
+      data: formData,
+      forceFormData: true,
+      onError: (err) => console.error('Validation Errors', err),
+      onSuccess: () => console.log('Saved successfully!'),
+    });
+  };
 
   const groupList = Array.isArray(groups) && groups.length > 0 ? groups : [];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <aside className="w-64 bg-blue-800 text-white p-6 flex-shrink-0">
-        <h2 className="text-xl font-bold mb-8">{course?.title || 'Course'}</h2>
-        <nav className="space-y-2">
-          <Link href="/courses"className="block px-4 py-2 text-sm bg-blue-900 rounded-md">All Courses</Link>
-          <Link
-            href={`/courses/${course?.id || '#'}/modules`}
-            className="block px-4 py-2 text-sm bg-blue-900 rounded-md"
-          >
-            Modules
-          </Link>
-          <Link
-            href={`/courses/${course?.id || '#'}/grades`}
-            className="block px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition"
-          >
-            Grades
-          </Link>
-        </nav>
-      </aside>
+    <AuthenticatedLayout
+      user={auth?.user} // Added user prop
+      header={
+        <h2 className="text-xl font-semibold leading-tight text-gray-800">
+          {isEditing ? 'Edit Module' : 'Create Module'}
+        </h2>
+      }
+    >
+      <Head title={isEditing ? 'Edit Module' : 'Create Module'} />
 
-      <main className="flex-1 p-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {isEditing ? 'Edit Module' : 'Create Module'}
-          </h1>
-          <p className="mt-2 text-gray-600">
+      <SectionCard>
+        {Object.keys(errors).length > 0 && (
+          <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+            {Object.values(errors)[0]} {/* Display first error */}
+          </div>
+        )}
+
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
             {isEditing ? `Editing module for ${course?.title || 'course'}` : `Add a new module to ${course?.title || 'course'}`}
-          </p>
-        </header>
+          </h3>
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm max-w-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -116,12 +112,12 @@ export default function ModuleCreate() {
               <input
                 id="title"
                 type="text"
-                value={data.name}
+                value={data.title} // Fixed: Changed data.name to data.title
                 onChange={(e) => setData('title', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
-              {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
+              {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title}</p>} {/* Fixed: errors.name to errors.title */}
             </div>
 
             <div>
@@ -132,7 +128,7 @@ export default function ModuleCreate() {
                 id="description"
                 value={data.description}
                 onChange={(e) => setData('description', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 rows="4"
               />
               {errors.description && <p className="mt-2 text-sm text-red-600">{errors.description}</p>}
@@ -146,7 +142,7 @@ export default function ModuleCreate() {
                 id="material_type"
                 value={data.material_type}
                 onChange={(e) => setData('material_type', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="Video">Video</option>
                 <option value="Document">Document</option>
@@ -169,7 +165,7 @@ export default function ModuleCreate() {
                       <button
                         type="button"
                         onClick={() => removeResource(resource.index)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-red-600 hover:text-red-900 text-sm"
                       >
                         Remove
                       </button>
@@ -184,7 +180,7 @@ export default function ModuleCreate() {
                           type="text"
                           value={resource.title}
                           onChange={(e) => updateResource(resource.index, 'title', e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                           required
                         />
                         {errors[`resources.${resource.index}.title`] && (
@@ -199,7 +195,7 @@ export default function ModuleCreate() {
                           id={`resource-type-${resource.index}`}
                           value={resource.type}
                           onChange={(e) => updateResource(resource.index, 'type', e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         >
                           <option value="link">Video/Link</option>
                           <option value="file">File</option>
@@ -215,7 +211,7 @@ export default function ModuleCreate() {
                             type="url"
                             value={resource.url}
                             onChange={(e) => updateResource(resource.index, 'url', e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             required
                           />
                           {errors[`resources.${resource.index}.url`] && (
@@ -232,7 +228,7 @@ export default function ModuleCreate() {
                             type="file"
                             accept=".pdf,.doc,.docx,.mp4"
                             onChange={(e) => updateResource(resource.index, 'file', e.target.files[0])}
-                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                           />
                           {resource.url && (
                             <p className="mt-2 text-sm text-gray-500">Current file: {resource.url}</p>
@@ -248,7 +244,7 @@ export default function ModuleCreate() {
                 <button
                   type="button"
                   onClick={addResource}
-                  className="mt-2 inline-flex px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition"
+                  className="mt-2 inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                 >
                   Add Resource
                 </button>
@@ -258,21 +254,21 @@ export default function ModuleCreate() {
             <div className="flex justify-end space-x-4">
               <Link
                 href={`/courses/${course?.id || '#'}/modules`}
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition"
+                className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={processing}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+                className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:opacity-50"
               >
                 {isEditing ? 'Update Module' : 'Create Module'}
               </button>
             </div>
           </form>
         </div>
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }

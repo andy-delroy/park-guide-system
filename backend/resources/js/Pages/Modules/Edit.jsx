@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useForm, usePage, router } from '@inertiajs/react';
+import { Link, useForm, usePage, router, Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SectionCard from '@/Components/SectionCard';
 
 export default function ModuleEdit() {
   const { course, module, auth } = usePage().props;
@@ -125,42 +127,46 @@ export default function ModuleEdit() {
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded shadow max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-4">Only admins can edit modules.</p>
-          <Link href={`/courses/${course.id}/modules`} className="text-blue-600 hover:underline">Back to Modules</Link>
-        </div>
-      </div>
+      <AuthenticatedLayout
+        user={auth?.user}
+        header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Access Denied</h2>}
+      >
+        <Head title="Access Denied" />
+        <SectionCard>
+          <div className="bg-white p-8 rounded shadow max-w-md text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+            <p className="text-gray-600 mb-4">Only admins can edit modules.</p>
+            <Link
+              href={`/courses/${course.id}/modules`}
+              className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+            >
+              Back to Modules
+            </Link>
+          </div>
+        </SectionCard>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <aside className="w-64 bg-blue-800 text-white p-6 flex-shrink-0">
-        <h2 className="text-xl font-bold mb-8">{course?.title || 'Course'}</h2>
-        <nav className="space-y-2">
-          <Link href="/courses" className="block px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition">All Courses</Link>
-          <Link
-            href={`/courses/${course?.id}/modules`}
-            className="block px-4 py-2 text-sm bg-blue-900 rounded-md"
-          >
-            Modules
-          </Link>
-          <Link
-            href={`/courses/${course?.id}/grades`}
-            className="block px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition"
-          >
-            Grades
-          </Link>
-        </nav>
-      </aside>
+    <AuthenticatedLayout
+      user={auth?.user}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Edit Module</h2>}
+    >
+      <Head title="Edit Module" />
 
-      <main className="flex-1 p-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Edit Module</h1>
-          <p className="mt-2 text-gray-600">Editing module for {course?.title || 'course'}</p>
-        </header>
+      <SectionCard>
+        {Object.keys(errors).length > 0 && (
+          <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+            {Object.values(errors)[0]}
+          </div>
+        )}
+
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Editing module for {course?.title || 'course'}
+          </h3>
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm max-w-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -173,7 +179,7 @@ export default function ModuleEdit() {
                 type="text"
                 value={data.title}
                 onChange={(e) => setData('title', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
               {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title}</p>}
@@ -187,7 +193,7 @@ export default function ModuleEdit() {
                 id="description"
                 value={data.description}
                 onChange={(e) => setData('description', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 rows="4"
               />
               {errors.description && <p className="mt-2 text-sm text-red-600">{errors.description}</p>}
@@ -201,7 +207,7 @@ export default function ModuleEdit() {
                 id="material_type"
                 value={data.material_type}
                 onChange={(e) => setData('material_type', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="Video">Video</option>
                 <option value="Document">Document</option>
@@ -224,7 +230,7 @@ export default function ModuleEdit() {
                       <button
                         type="button"
                         onClick={() => removeResource(resource.index)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-red-600 hover:text-red-900 text-sm"
                       >
                         Remove
                       </button>
@@ -239,7 +245,7 @@ export default function ModuleEdit() {
                           type="text"
                           value={resource.title}
                           onChange={(e) => updateResource(resource.index, 'title', e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                           required
                         />
                         {errors[`resources.${resource.index}.title`] && (
@@ -254,7 +260,7 @@ export default function ModuleEdit() {
                           id={`resource-type-${resource.index}`}
                           value={resource.type}
                           onChange={(e) => updateResource(resource.index, 'type', e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         >
                           <option value="link">Video/Link</option>
                           <option value="file">File</option>
@@ -270,7 +276,7 @@ export default function ModuleEdit() {
                             type="url"
                             value={resource.url}
                             onChange={(e) => updateResource(resource.index, 'url', e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             required
                           />
                           {resource.url && renderVideoPreview(resource.url, resource.title)}
@@ -288,7 +294,7 @@ export default function ModuleEdit() {
                             type="file"
                             accept=".pdf,.doc,.docx,.mp4"
                             onChange={(e) => updateResource(resource.index, 'file', e.target.files[0])}
-                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                           />
                           {resource.url && (
                             <p className="mt-2 text-sm text-gray-500">Current file: {resource.url}</p>
@@ -304,7 +310,7 @@ export default function ModuleEdit() {
                 <button
                   type="button"
                   onClick={addResource}
-                  className="mt-2 inline-flex px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition"
+                  className="mt-2 inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 transition"
                 >
                   Add Resource
                 </button>
@@ -314,21 +320,21 @@ export default function ModuleEdit() {
             <div className="flex justify-end space-x-4">
               <Link
                 href={`/courses/${course?.id}/modules`}
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition"
+                className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={processing}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+                className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 transition disabled:opacity-50"
               >
                 Update Module
               </button>
             </div>
           </form>
         </div>
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }

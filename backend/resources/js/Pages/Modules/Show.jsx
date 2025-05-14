@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
-import Sidebar from './Sidebar';
+import { Link, usePage, router, Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SectionCard from '@/Components/SectionCard';
 
 export default function ModuleShow() {
   const { course, module, auth } = usePage().props;
@@ -100,7 +101,7 @@ export default function ModuleShow() {
     return (
       <a
         href={resourceUrl}
-        className="text-blue-500 underline mt-2 inline-block"
+        className="text-indigo-600 hover:text-indigo-900 mt-2 inline-block"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -110,13 +111,16 @@ export default function ModuleShow() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <Sidebar course={course} activePage="modules" />
+    <AuthenticatedLayout
+      user={auth?.user}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">{module.title}</h2>}
+    >
+      <Head title={module.title} />
 
-      <main className="flex-1 p-8">
+      <SectionCard>
         <Link 
           href={`/courses/${course.id}/modules`} 
-          className="inline-flex items-center text-blue-600 hover:underline mb-4"
+          className="inline-flex items-center text-indigo-600 hover:text-indigo-900 mb-4"
         >
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -135,7 +139,7 @@ export default function ModuleShow() {
               <div className="space-x-2">
                 <Link
                   href={`/courses/${course.id}/modules/${module.id}/edit`}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                  className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                 >
                   Edit
                 </Link>
@@ -147,7 +151,7 @@ export default function ModuleShow() {
                       });
                     }
                   }}
-                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                  className="inline-block rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700"
                 >
                   Delete
                 </button>
@@ -174,7 +178,7 @@ export default function ModuleShow() {
                             type="checkbox"
                             checked={completedResources.includes(res.id)}
                             onChange={() => markResourceCompleted(res.id)}
-                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring focus:ring-blue-200"
+                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200"
                           />
                           <span className="ml-2 text-sm text-gray-600">Mark as completed</span>
                         </label>
@@ -189,7 +193,7 @@ export default function ModuleShow() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }

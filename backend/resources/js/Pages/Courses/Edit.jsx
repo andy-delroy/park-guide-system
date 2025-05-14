@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage, Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SectionCard from '@/Components/SectionCard';
 
 export default function EditCourse() {
   const { course, auth } = usePage().props;
@@ -48,32 +50,24 @@ export default function EditCourse() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <aside className="w-64 bg-blue-800 text-white p-6 flex-shrink-0">
-        <h2 className="text-xl font-bold mb-8">Courses</h2>
-        <nav className="space-y-2">
-          <Link
-            href="/courses"
-            className="block px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition"
-          >
-            All Courses
-          </Link>
-          {isAdmin && (
-            <Link
-              href="/courses/create"
-              className="block px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition"
-            >
-              Create Course
-            </Link>
-          )}
-        </nav>
-      </aside>
+    <AuthenticatedLayout
+      user={auth?.user}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Edit Course</h2>}
+    >
+      <Head title="Edit Course" />
 
-      <main className="flex-1 p-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Edit Course</h1>
-          <p className="mt-2 text-gray-600">Update the details for {course?.title || 'course'}.</p>
-        </header>
+      <SectionCard>
+        {Object.keys(errors).length > 0 && (
+          <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+            {Object.values(errors)[0]}
+          </div>
+        )}
+
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Update the details for {course?.title || 'course'}.
+          </h3>
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm max-w-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -86,7 +80,7 @@ export default function EditCourse() {
                 type="text"
                 value={data.title}
                 onChange={(e) => setData('title', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
               {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title}</p>}
@@ -100,7 +94,7 @@ export default function EditCourse() {
                 id="description"
                 value={data.description}
                 onChange={(e) => setData('description', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 rows="4"
               />
               {errors.description && <p className="mt-2 text-sm text-red-600">{errors.description}</p>}
@@ -115,7 +109,7 @@ export default function EditCourse() {
                 type="text"
                 value={data.duration}
                 onChange={(e) => setData('duration', e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
               {errors.duration && <p className="mt-2 text-sm text-red-600">{errors.duration}</p>}
@@ -130,7 +124,7 @@ export default function EditCourse() {
                 type="file"
                 accept="image/*"
                 onChange={handleThumbnailChange}
-                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
               />
               {preview && (
                 <img
@@ -145,21 +139,21 @@ export default function EditCourse() {
             <div className="flex justify-end space-x-4">
               <Link
                 href="/courses"
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition"
+                className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={processing}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+                className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:opacity-50"
               >
                 Update Course
               </button>
             </div>
           </form>
         </div>
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }

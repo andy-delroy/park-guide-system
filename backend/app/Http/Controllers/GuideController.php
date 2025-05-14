@@ -32,7 +32,7 @@ class GuideController extends Controller
         }
 
         return Inertia::render('Guides/Index', [
-            'guides' => UserResource::collection($guides)->response()->getData(),
+            'guides' => UserResource::collection($guides)->resolve(),
         ]);
     }
 
@@ -85,13 +85,13 @@ class GuideController extends Controller
     {
         $guide = User::with('role')
             ->where('role_id', 2)
-            ->select('id', 'full_name', 'email', 'phone_number', 'profile_image_url', 'role_id', 'biography', 'languages_spoken', 'years_of_experience', 'specializations', 'average_rating')
+            ->select('id', 'full_name', 'email', 'phone_number', 'profile_image_url', 'role_id', 'biography', 'languages_spoken', 'years_of_experience', 'specializations', 'average_rating', 'username')
             ->findOrFail($id);
         if ($request->expectsJson()) {
             return new UserResource($guide);
         }
         return Inertia::render('Guides/Show', [
-            'guide' => new UserResource($guide),
+            'guide' => (new UserResource($guide))->resolve(),
         ]);
     }
 

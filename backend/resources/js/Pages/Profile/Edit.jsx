@@ -17,7 +17,7 @@ export default function Edit({ mustVerifyEmail, status }) {
             <Head title="Profile" />
 
             <SectionCard>
-                <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                <div className="bg-white p-4 border-b-2">
                     <UpdateProfileInformationForm
                         mustVerifyEmail={mustVerifyEmail}
                         status={status}
@@ -25,11 +25,11 @@ export default function Edit({ mustVerifyEmail, status }) {
                     />
                 </div>
 
-                <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                <div className="bg-white p-4 border-b-2">
                     <UpdatePasswordForm className="max-w-xl" />
                 </div>
 
-                <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                <div className="bg-white p-4">
                     <DeleteUserForm className="max-w-xl" />
                 </div>
             </SectionCard>

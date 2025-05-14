@@ -57,7 +57,7 @@ export default function Index({ auth, certifications }) {
                     {auth.user.role.role_name === 'admin' && (
                         <Link
                             href="/certification/create"
-                            className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+                            className="inline-block rounded bg-[--forest-green] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[--secondary-contrast]"
                         >
                             Add New Certification
                         </Link>
