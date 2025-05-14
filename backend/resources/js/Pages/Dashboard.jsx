@@ -1,3 +1,4 @@
+import SectionCard from '@/Components/SectionCard';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
@@ -51,7 +52,7 @@ export default function Dashboard({ auth }) {
       user={auth.user}
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800">
-          You are logged in as: {auth.user.role_name}
+          Sarawak Forestry Corporation
         </h2>
       }
     >
@@ -64,18 +65,11 @@ export default function Dashboard({ auth }) {
           <span className="ml-2">{alert.message}</span>
         </div>
       )}
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-            <div className="p-6 text-gray-900">
-              You're logged in!
-              <div className="mb-4">
-                <p className="text-lg">Welcome, {auth.user.full_name}!</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SectionCard>
+        <p className="text-lg">Welcome, {auth.user.full_name}!</p>
+        <br />
+        <p className='text-md text-justify'>Sarawak Forestry Corporation (SFC) is a statutory body of the Sarawak Government formed under Sarawak Forestry Corporation Ordinance, 1995. {"\n\n"}Our main functions are to manage Totally Protected Areas (TPAs) and to conserve Biodiversity of Sarawak. We have been entrusted to protect the wildlife of Sarawak, particularly the totally protected and protected species. In doing this, we are governed by National Parks and Nature Reserves Ordinance 1998 and Wild Life Protection Ordinance, 1998.</p>
+      </SectionCard>
     </AuthenticatedLayout>
   );
 }

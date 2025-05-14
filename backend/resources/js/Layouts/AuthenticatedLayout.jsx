@@ -13,17 +13,17 @@ export default function AuthenticatedLayout({ header, children }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
-        <div className="bg-gray-100 flex relative h-screen overflow-hidden">
+        <div className="bg-white flex relative h-screen overflow-hidden">
             {/* Sidebar */}
             <nav
                 className={`${
                     sidebarCollapsed ? 'w-0 overflow-hidden' : 'w-60'
-                } transition-all duration-300 border-r border-gray-100 bg-[--forest-green] h-screen fixed sm:block hidden`}
+                } transition-all duration-300 bg-[--forest-green] h-screen fixed sm:block hidden`}
             >
                 <div className="flex flex-col h-full pt-3">
                     <div className="flex items-center justify-center mb-3">
                         <Link href="/">
-                            <ApplicationLogo className="h-16 w-auto" />
+                            <ApplicationLogo className="h-14 w-auto" />
                         </Link>
                     </div>
 
@@ -90,31 +90,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
             </nav>
-
-            {/* Toggle Button */}
-            <button
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="absolute top-1/2 -translate-y-1/2 sm:flex hidden z-20 bg-[--secondary-contrast] hover:bg-gray-100 p-2 w-8 h-20 rounded-r-lg transition-all duration-300 items-center justify-center"
-                style={{
-                    left: sidebarCollapsed ? '0rem' : '14.95rem',
-                }}
-            >
-                <svg
-                    className={`w-8 h-8 text-gray-700 transform transition-transform duration-300 ${
-                        sidebarCollapsed ? '' : 'rotate-180'
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        d="M9 5l7 7-7 7"
-                    />
-                </svg>
-            </button>
 
             {/* Main Content Area */}
             <div
@@ -243,12 +218,54 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 {/* Header */}
                 {header && (
-                    <header className="bg-white shadow">
-                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                            {header}
+                    <header className="bg-stone-900/10">
+                        <div className="flex items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+                            {/* Sidebar toggle button (desktop only) */}
+                            <button
+                                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                                className="sm:flex hidden items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
+                            >
+                                {sidebarCollapsed ? (
+                                    // Hamburger icon (collapsed)
+                                    <svg
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2.5"
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
+                                    </svg>
+                                ) : (
+                                    // X icon (expanded)
+                                    <svg
+                                        className="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2.5"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                )}
+                            </button>
+
+                            {/* Header Content */}
+                            <div className="flex-grow">
+                                {header}
+                            </div>
                         </div>
                     </header>
                 )}
+
 
                 {/* Main */}
                 <main>{children}</main>

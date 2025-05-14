@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import SectionCard from "@/Components/SectionCard";
 
 export default function Index({ guides }) {
     const { props } = usePage();
@@ -37,101 +38,95 @@ export default function Index({ guides }) {
         >
             <Head title="Guide Management" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {message.success && (
-                        <div className="mb-4 rounded-lg bg-green-100 p-4 text-green-700">
-                            {message.success}
-                        </div>
-                    )}
-                    {message.error && (
-                        <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
-                            {message.error}
-                        </div>
-                    )}
-
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            <div className="mb-4 flex justify-between">
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    Guides
-                                </h3>
-                                <Link
-                                    href="/guides/create"
-                                    className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-                                >
-                                    Add New Guide
-                                </Link>
-                            </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Full Name
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Email
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Role
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 bg-white">
-                                        {guides.length > 0 ? (
-                                            guides.map((guide) => (
-                                                <tr key={guide.id}>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                                        {guide.full_name}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                                        {guide.email}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                                        {guide.role_name}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                        <Link
-                                                            href={`/guides/${guide.id}/edit`}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            Edit
-                                                        </Link>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    guide.id,
-                                                                )
-                                                            }
-                                                            className="ml-4 text-red-600 hover:text-red-900"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="4"
-                                                    className="px-6 py-4 text-center text-sm text-gray-500"
-                                                >
-                                                    No guides found.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <SectionCard>
+                {message.success && (
+                    <div className="mb-4 rounded-lg bg-green-100 p-4 text-green-700">
+                        {message.success}
                     </div>
+                )}
+                {message.error && (
+                    <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+                        {message.error}
+                    </div>
+                )}
+                    
+                <div className="mb-4 flex justify-between">
+                    <h3 className="text-lg font-medium text-gray-900">
+                        Guides
+                    </h3>
+                    <Link
+                        href="/guides/create"
+                        className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+                    >
+                        Add New Guide
+                    </Link>
                 </div>
-            </div>
+
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    Full Name
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    Email
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    Role
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                            {guides.length > 0 ? (
+                                guides.map((guide) => (
+                                    <tr key={guide.id}>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                                            {guide.full_name}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                            {guide.email}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                            {guide.role_name}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                                            <Link
+                                                href={`/guides/${guide.id}/edit`}
+                                                className="text-indigo-600 hover:text-indigo-900"
+                                            >
+                                                Edit
+                                            </Link>
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(
+                                                        guide.id,
+                                                    )
+                                                }
+                                                className="ml-4 text-red-600 hover:text-red-900"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan="4"
+                                        className="px-6 py-4 text-center text-sm text-gray-500"
+                                    >
+                                        No guides found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </SectionCard>
         </AuthenticatedLayout>
     );
 }
