@@ -16,56 +16,58 @@ export default function Take({ auth, quiz }) {
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-    
-        // Calculate the number of correct answers
+    // Function to calculate correct answers
+    const calculateCorrectAnswers = () => {
         let correctAnswers = 0;
-    
+
         quiz.questions.forEach((question) => {
             const correctAnswer = question.correct_answer?.toLowerCase();
-            const userAnswer = answers[question.id]?.toLowerCase();
-    
+            const userAnswer = answers[question.id];
+
             if (question.question_type === "Multiple Answer MCQ") {
-                if (Array.isArray(userAnswer) && JSON.stringify(userAnswer) === JSON.stringify(correctAnswer)) {
+                if (
+                    Array.isArray(userAnswer) &&
+                    Array.isArray(correctAnswer) &&
+                    JSON.stringify(userAnswer.sort()) === JSON.stringify(correctAnswer.sort())
+                ) {
                     correctAnswers++;
                 }
             } else {
-                if (userAnswer === correctAnswer) {
+                if (userAnswer?.toLowerCase() === correctAnswer) {
                     correctAnswers++;
                 }
             }
         });
-    
+
+        return correctAnswers;
+    };
+
+    const handleSubmit = () => {
+        // Calculate the number of correct answers
+        const correctAnswers = calculateCorrectAnswers();
+
         // Prepare submission data
         const submissionData = {
             total_score: correctAnswers,
             time_taken: quiz.time_duration * 60 - timeLeft,
         };
-    
-        // Log debug information
-        console.log('Quiz ID:', quiz.id);
-        console.log('Authenticated user:', auth.user);
-        console.log('Submitting quiz:', submissionData);
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-        console.log('CSRF Token:', csrfToken);
-    
+
         // Send the total score to the backend using axios
         axios
             .post(`/quiz/${quiz.id}/submit`, submissionData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                 },
             })
             .then((response) => {
-                console.log('Quiz submitted successfully:', response.data);
+                console.log("Quiz submitted successfully:", response.data);
                 setResult(`You got ${correctAnswers} out of ${quiz.questions.length} correct. Submission saved!`);
 
+                // Redirect to the quiz index page
                 window.location.href = route("quiz.index");
             })
             .catch((error) => {
-                console.error('Error submitting quiz:', error.message, error.response?.data, error.response?.status);
+                console.error("Error submitting quiz:", error.message, error.response?.data, error.response?.status);
                 const errorMsg = error.response?.data?.error || error.message;
                 setResult(`You got ${correctAnswers} out of ${quiz.questions.length} correct. Failed to submit quiz: ${errorMsg}`);
             });
@@ -81,9 +83,37 @@ export default function Take({ auth, quiz }) {
             return () => clearInterval(timer);
         } else if (timeLeft === 0) {
             setIsTimeUp(true);
-            handleSubmit({ preventDefault: () => {} });
+            handleSubmit();
         }
     }, [timeLeft, isTimeUp]);
+
+    // Restrict user from leaving the page
+    useEffect(() => {
+        // Handle when the user tries to close or refresh the tab
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = "";
+            handleSubmit();
+        };
+
+        // Handle when the user switches tabs or minimizes the browser
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") {
+                console.log("User switched tabs or minimized the browser. Submitting the quiz...");
+                handleSubmit();
+            }
+        };
+
+        // Add event listeners
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        // Cleanup event listeners when the component unmounts
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, [answers]); // Add answers as a dependency to ensure latest answers are used
 
     // Format time as MM:SS
     const formatTime = (seconds) => {
@@ -112,7 +142,7 @@ export default function Take({ auth, quiz }) {
                             <div className="mb-4 text-red-500 font-bold">
                                 Time Left: {formatTime(timeLeft)}
                             </div>
-                            <form onSubmit={handleSubmit}>
+                            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
                                 <ul className="space-y-4">
                                     {quiz.questions.map((question, index) => (
                                         <li key={index} className="border p-4 rounded-md">
