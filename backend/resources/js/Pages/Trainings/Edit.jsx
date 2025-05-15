@@ -1,3 +1,4 @@
+import Button from "@/Components/Button";
 import SectionCard from "@/Components/SectionCard";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -18,7 +19,16 @@ export default function Edit({ auth, training }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800">Edit Training</h2>}>
+        <AuthenticatedLayout
+            user={auth.user}
+            header={
+                <h2 className="font-semibold text-xl text-gray-800">
+                    Edit Training
+                </h2>
+            }
+            showBackButton={true}
+            backHref={route("quiz.index")}
+        >
             <Head title="Edit Training" />
             <SectionCard>
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,13 +96,9 @@ export default function Edit({ auth, training }) {
                                 {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity}</p>}
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                            >
+                            <Button type="update" processing={processing} typeAttr="submit">
                                 Update Training
-                            </button>
+                            </Button>
                         </form>
             </SectionCard>
         </AuthenticatedLayout>

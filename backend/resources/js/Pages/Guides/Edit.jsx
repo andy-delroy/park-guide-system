@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, usePage, Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
 // import { Head } from '@inertiajs/react';
 
 const Edit = ({ auth, guide }) => {
@@ -28,6 +29,8 @@ const Edit = ({ auth, guide }) => {
                     Edit Guide
                 </h2>
             }
+            showBackButton={true}
+            backHref="/guides"
         >
             <Head title="Edit Guide" />
 
@@ -111,18 +114,15 @@ const Edit = ({ auth, guide }) => {
                     </div>
 
                     <div className="flex space-x-2">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="inline-block px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded shadow hover:bg-indigo-700 transition"
-                        >
-                            Update Guide
-                        </button>
+                        <Button type="update" disabled={processing} typeAttr="submit">
+                            {processing ? 'Updating...' : 'Update Guide'}
+                        </Button>
                         <Link
                             href="/guides"
-                            className="inline-block px-4 py-2 bg-gray-500 text-white font-semibold text-sm rounded shadow hover:bg-gray-600 transition"
                         >
-                            Cancel
+                            <Button type="cancel">
+                                Cancel
+                            </Button>
                         </Link>
                     </div>
                 </form>

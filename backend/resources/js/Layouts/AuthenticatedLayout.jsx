@@ -5,7 +5,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ header, children, showBackButton = false, backHref = '/' }) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -221,7 +221,8 @@ export default function AuthenticatedLayout({ header, children }) {
                     <header className="bg-stone-900/10">
                         <div className="flex items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
                             {/* Sidebar toggle button (desktop only) */}
-                            <button
+                            {!showBackButton && (
+                                <button
                                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                                 className="sm:flex hidden items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
                             >
@@ -256,7 +257,30 @@ export default function AuthenticatedLayout({ header, children }) {
                                         />
                                     </svg>
                                 )}
-                            </button>
+                            </button>)}
+
+                            {/* Back Button */}
+                            {showBackButton && (
+                                <Link
+                                    href={backHref}
+                                    className="sm:flex hidden items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
+                                >
+                                    <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
+
+                                </Link>
+                            )}
 
                             {/* Header Content */}
                             <div className="flex-grow">

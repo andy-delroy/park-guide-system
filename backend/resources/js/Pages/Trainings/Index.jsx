@@ -4,6 +4,8 @@ import Button from "@/Components/Button";
 import { Head, Link } from "@inertiajs/react";
 import axios from "axios";
 import { Inertia } from "@inertiajs/inertia";
+import DataGridTable from "@/Components/DataGridTable";
+import ButtonThin from "@/Components/ButtonThin";
 
 export default function Index({ auth, trainings }) {
     const handleEnroll = async (trainingId) => {
@@ -63,95 +65,84 @@ export default function Index({ auth, trainings }) {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Trainings
+                    Training Management
                 </h2>
             }
         >
-            <Head title="Trainings" />
+            <Head title="Training Management" />
 
             <SectionCard> 
-                <div className="flex justify-end mb-4 space-x-2">
+                <div className="mb-4 flex justify-between">
+                    <h3 className="text-lg font-medium text-gray-900">
+                            Trainings
+                    </h3>
+
                     {auth.user?.role?.role_name === "guide" && (
                         <Link href={route("my-trainings")}>
-                            <Button type="info">View My Trainings</Button>
+                            <Button type="detail">View My Trainings</Button>
                         </Link>
                     )}
 
                     {auth.user?.role?.role_name === "admin" && (
                         <Link href={route("trainings.create")}>
-                            <Button>Add Training</Button>
+                            <Button>+ Create New Training</Button>
                         </Link>
                     )}
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name of Training</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Start Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">End Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Location</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Capacity</th>
-                                {auth.user?.role?.role_name === "guide" && (
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Enrolment</th>
-                                )}
-                                {auth.user?.role?.role_name === "admin" && (
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
-                                )}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                            {trainings.data.length === 0 ? (
-                                <tr>
-                                    <td
-                                        colSpan="4"
-                                        className="px-6 py-4 text-center text-sm text-gray-500"
-                                    >
-                                        No trainings found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                trainings.data.map((training) => (
-                                    <tr key={training.id}>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.id}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.title}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.description}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.start_date}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.end_date}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.location}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{training.capacity}</td>
-                                        {auth.user?.role?.role_name === "guide" && (
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                                {training.is_enrolled ? (
-                                                    <Button type="danger" onClick={() => handleUnenroll(training.id)}>
-                                                        Cancel Enrollment
-                                                    </Button>
-                                                ) : (
-                                                    <Button type="success" onClick={() => handleEnroll(training.id)}>
-                                                        Enroll
-                                                    </Button>
-                                                )}
-                                            </td>
-                                        )}
-                                        {auth.user?.role?.role_name === "admin" && (
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 flex space-x-2">
-                                                <Link href={route("trainings.edit", training.id)}>
-                                                    <Button type="success">Edit</Button>
-                                                </Link>
-                                                <Button type="danger" onClick={() => handleDelete(training.id)}>
-                                                    Delete
-                                                </Button>
-                                            </td>                                
-                                        )}
-                                    </tr>   
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <DataGridTable
+                    columns={[
+                        { field: "id", headerName: "ID", width: 70 },
+                        { field: "title", headerName: "Name of Training", flex: 1 },
+                        { field: "description", headerName: "Description", flex: 1 },
+                        { field: "start_date", headerName: "Start Date", width: 130 },
+                        { field: "end_date", headerName: "End Date", width: 130 },
+                        { field: "location", headerName: "Location", width: 130 },
+                        { field: "capacity", headerName: "Capacity", width: 100 },
+                        ...(auth.user?.role?.role_name === "guide"
+                            ? [{
+                                field: "enrollment",
+                                headerName: "Enrollment",
+                                width: 200,
+                                sortable: false,
+                                renderCell: (params) => (
+                                    params.row.is_enrolled ? (
+                                        <ButtonThin type="delete" onClick={() => handleUnenroll(params.row.id)}>
+                                            Cancel Enrollment
+                                        </ButtonThin>
+                                    ) : (
+                                        <ButtonThin type="success" onClick={() => handleEnroll(params.row.id)}>
+                                            Enroll
+                                        </ButtonThin>
+                                    )
+                                )
+                            }]
+                            : []),
+                        ...(auth.user?.role?.role_name === "admin"
+                            ? [{
+                                field: "actions",
+                                headerName: "Actions",
+                                width: 200,
+                                sortable: false,
+                                renderCell: (params) => (
+                                    <div className="flex space-x-2">
+                                        <Link href={route("trainings.edit", params.row.id)}>
+                                            <ButtonThin type="edit">
+                                                Edit
+                                            </ButtonThin>
+                                        </Link>
+                                        <ButtonThin type="delete" onClick={() => handleDelete(params.row.id)}>
+                                            Delete
+                                        </ButtonThin>
+                                    </div>
+                                )
+                            }]
+                            : []),
+                    ]}
+                    rows={trainings.data}
+                    checkboxSelection={false}
+                />
+
             </SectionCard> 
         </AuthenticatedLayout>
     );

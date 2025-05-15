@@ -3,6 +3,9 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
+import DataGridTable from "@/Components/DataGridTable";
+import Button from "@/Components/Button";
+import ButtonThin from "@/Components/ButtonThin";
 
 export default function Index({ guides }) {
     const { props } = usePage();
@@ -54,84 +57,62 @@ export default function Index({ guides }) {
                     <h3 className="text-lg font-medium text-gray-900">
                         Guides
                     </h3>
-                    <Link
-                        href="/guides/create"
-                        className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-                    >
-                        + Add New Guide
+                    <Link href="/guides/create">
+                        <Button>+ Create New Guide</Button>
                     </Link>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Full Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Email
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Role
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                            {guides.length > 0 ? (
-                                guides.map((guide) => (
-                                    <tr key={guide.id}>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                            {guide.full_name}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                            {guide.email}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                            {guide.role_name}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                            <Link
-                                                href={`/guides/${guide.id}/edit`}
-                                                className="text-indigo-600 hover:text-indigo-900"
-                                            >
-                                                Edit
-                                            </Link>
-                                            <button
-                                                onClick={() =>
-                                                    handleDelete(
-                                                        guide.id,
-                                                    )
-                                                }
-                                                className="ml-4 text-red-600 hover:text-red-900"
-                                            >
-                                                Delete
-                                            </button>
-                                            <Link
-                                                href={`/guides/${guide.id}`}
-                                                className="ml-2 text-indigo-600 hover:text-indigo-900"
-                                            >
-                                                Details
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan="4"
-                                        className="px-6 py-4 text-center text-sm text-gray-500"
+                <DataGridTable
+                    rows={guides.map((guide) => ({
+                        id: guide.id,
+                        full_name: guide.full_name,
+                        email: guide.email,
+                        role: guide.role_name,
+                    }))}
+                    columns={[
+                        { field: 'full_name', headerName: 'Full Name', flex: 1 },
+                        { field: 'email', headerName: 'Email', flex: 1 },
+                        { field: 'role', headerName: 'Role', flex: 1 },
+                        {
+                            field: 'actions',
+                            headerName: 'Actions',
+                            flex: 1,
+                            sortable: false,
+                            renderCell: (params) => (
+                                <div className="space-x-2">
+                                    <Link
+                                        href={`/guides/${params.row.id}/edit`}
                                     >
-                                        No guides found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        <ButtonThin type="edit">
+                                            Edit
+                                        </ButtonThin>
+                                    </Link>
+                                    <Link
+                                        href={`/guides/${params.row.id}`}
+                                        method="delete"
+                                        as="button"
+                                        onClick={(e) => {
+                                            if (!confirm("Are you sure you want to delete this guide?")) {
+                                                e.preventDefault(); // Cancel delete if not confirmed
+                                            }
+                                        }}
+                                    >
+                                        <ButtonThin type="delete">
+                                            Delete
+                                        </ButtonThin>
+                                    </Link>
+                                    <Link
+                                        href={`/guides/${params.row.id}`}
+                                    >
+                                        <ButtonThin type="detail">
+                                            Details
+                                        </ButtonThin>
+                                    </Link>
+                                </div>
+                            ),
+                        },
+                    ]}
+                />
             </SectionCard>
         </AuthenticatedLayout>
     );

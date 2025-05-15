@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useForm, usePage, router, Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
+import ButtonThin from '@/Components/ButtonThin';
 
 export default function ModuleEdit() {
   const { course, module, auth } = usePage().props;
@@ -130,6 +132,8 @@ export default function ModuleEdit() {
       <AuthenticatedLayout
         user={auth?.user}
         header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Access Denied</h2>}
+        showBackButton={true}
+        backHref={`/courses/${course.id}/modules`}
       >
         <Head title="Access Denied" />
         <SectionCard>
@@ -138,9 +142,8 @@ export default function ModuleEdit() {
             <p className="text-gray-600 mb-4">Only admins can edit modules.</p>
             <Link
               href={`/courses/${course.id}/modules`}
-              className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
             >
-              Back to Modules
+              <Button type="cancel">Back to Modules</Button>
             </Link>
           </div>
         </SectionCard>
@@ -152,6 +155,8 @@ export default function ModuleEdit() {
     <AuthenticatedLayout
       user={auth?.user}
       header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Edit Module</h2>}
+      showBackButton={true}
+      backHref={`/courses/${course.id}/modules`}
     >
       <Head title="Edit Module" />
 
@@ -227,13 +232,20 @@ export default function ModuleEdit() {
                   <div key={resource.index} className="p-4 bg-gray-50 rounded-md border border-gray-200">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">Resource {resource.index + 1}</span>
-                      <button
-                        type="button"
+                      <ButtonThin
+                        type="detail"
                         onClick={() => removeResource(resource.index)}
-                        className="text-red-600 hover:text-red-900 text-sm"
                       >
-                        Remove
-                      </button>
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
+                        </svg>
+                      </ButtonThin>
                     </div>
                     <div className="space-y-2">
                       <div>
@@ -307,30 +319,30 @@ export default function ModuleEdit() {
                     </div>
                   </div>
                 ))}
-                <button
-                  type="button"
+                <Button
+                  type="create"
                   onClick={addResource}
-                  className="mt-2 inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 transition"
                 >
                   Add Resource
-                </button>
+                </Button>
               </div>
             </div>
 
             <div className="flex justify-end space-x-4">
               <Link
                 href={`/courses/${course?.id}/modules`}
-                className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
               >
-                Cancel
+                <Button type="cancel">
+                  Cancel
+                </Button>
               </Link>
-              <button
-                type="submit"
+              <Button
+                type="update"
+                typeAttr="submit"
                 disabled={processing}
-                className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                Update Module
-              </button>
+                {processing ? 'Updating...' : 'Update Module'}
+              </Button>
             </div>
           </form>
         </div>

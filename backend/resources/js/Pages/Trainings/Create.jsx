@@ -1,3 +1,4 @@
+import Button from "@/Components/Button";
 import SectionCard from "@/Components/SectionCard";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
@@ -18,7 +19,16 @@ export default function Create({ auth }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800">Add New Training</h2>}>
+        <AuthenticatedLayout
+            user={auth.user}
+            header={
+                <h2 className="font-semibold text-xl text-gray-800">
+                    Add New Training
+                </h2>
+            }
+            showBackButton={true}
+            backHref={route("trainings.index")}
+        >
             <Head title="Add Training" />
             <SectionCard>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,13 +96,9 @@ export default function Create({ auth }) {
                         {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity}</p>}
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                    >
-                        Save Training
-                    </button>
+                    <Button type="create" processing={processing} typeAttr="submit">
+                        Create Training
+                    </Button>
                 </form>
             </SectionCard>
         </AuthenticatedLayout>

@@ -114,49 +114,18 @@ export default function ModuleShow() {
     <AuthenticatedLayout
       user={auth?.user}
       header={<h2 className="text-xl font-semibold leading-tight text-gray-800">{module.title}</h2>}
+      showBackButton={true}
+      backHref={`/courses/${course.id}/modules`}
     >
       <Head title={module.title} />
 
       <SectionCard>
-        <Link 
-          href={`/courses/${course.id}/modules`} 
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-900 mb-4"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Modules
-        </Link>
-
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h1 className="text-2xl font-bold">{module.title}</h1>
               <p className="text-sm text-gray-500 capitalize">{module.material_type}</p>
             </div>
-
-            {isAdmin && (
-              <div className="space-x-2">
-                <Link
-                  href={`/courses/${course.id}/modules/${module.id}/edit`}
-                  className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this module?')) {
-                      router.delete(`/courses/${course.id}/modules/${module.id}`, {
-                        onSuccess: () => router.visit(`/courses/${course.id}/modules`)
-                      });
-                    }
-                  }}
-                  className="inline-block rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="text-gray-700 mb-6">{module.description}</div>

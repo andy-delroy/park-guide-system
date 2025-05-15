@@ -28,6 +28,8 @@ export default function Details({ auth, certification }) {
                     Certification Details
                 </h2>
             }
+            showBackButton={true}
+            backHref="/certification"
         >
             <Head title="Certification Details" />
 
@@ -126,14 +128,6 @@ export default function Details({ auth, certification }) {
                         <p className="text-sm font-medium text-gray-500">Renewal Requirements:</p>
                         <p className="text-sm text-gray-900">{certification.renewal_requirements || "N/A"}</p>
                     </div>
-                </div>
-                <div className="mt-6">
-                    <Link
-                        href={route('certifications.index')}
-                        className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-                    >
-                        Back to Certifications
-                    </Link>
                 </div>
             </SectionCard>
         </AuthenticatedLayout>

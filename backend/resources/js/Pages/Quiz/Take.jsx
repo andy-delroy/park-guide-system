@@ -3,6 +3,7 @@ import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import axios from "axios";
 import SectionCard from "@/Components/SectionCard";
+import Button from "@/Components/Button";
 
 export default function Take({ auth, quiz }) {
     const [answers, setAnswers] = useState({});
@@ -136,6 +137,8 @@ export default function Take({ auth, quiz }) {
                     Take Quiz: {quiz.title}
                 </h2>
             }
+            showBackButton={true}
+            backHref={route("quiz.index")}
         >
             <Head title={`Take Quiz: ${quiz.title}`} />
             <SectionCard>
@@ -251,13 +254,9 @@ export default function Take({ auth, quiz }) {
                         ))}
                     </ul>
                     <div className="mt-6">
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                            disabled={isTimeUp || isSubmitted}
-                        >
+                        <Button type="create" disabled={isTimeUp || isSubmitted} typeAttr="submit">
                             Submit Quiz
-                        </button>
+                        </Button>
                     </div>
                 </form>
                 {result && (

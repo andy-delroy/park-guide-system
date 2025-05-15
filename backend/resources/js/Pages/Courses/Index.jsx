@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useForm, usePage, Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
+import ButtonThin from '@/Components/ButtonThin';
 
 export default function CoursesIndex() {
   const { courses, auth } = usePage().props;
@@ -40,9 +42,10 @@ export default function CoursesIndex() {
           {isAdmin && (
             <Link
               href="/courses/create"
-              className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
             >
-              + Create Course
+              <Button type="create">
+                + Create Course
+              </Button>
             </Link>
           )}
         </div>
@@ -73,24 +76,34 @@ export default function CoursesIndex() {
                   <div className="mt-4 flex justify-between items-center">
                     <Link
                       href={`/courses/${course.id}/modules`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
-                      View Modules
+                      <ButtonThin type="detail">
+                        View Modules
+                      </ButtonThin>
                     </Link>
                     {isAdmin && (
                       <div className="flex space-x-2">
                         <Link
                           href={`/courses/${course.id}/edit`}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
                         >
-                          Edit
+                          <ButtonThin type="edit">
+                            Edit
+                          </ButtonThin>
                         </Link>
-                        <button
-                          onClick={() => handleDelete(course.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
+                        <Link
+                          href={`/courses/${course.id}`}
+                          method="delete"
+                          as="button"
+                          onClick={(e) => {
+                            if (!confirm("Are you sure you want to delete this course?")) {
+                              e.preventDefault();
+                            }
+                          }}
                         >
-                          Delete
-                        </button>
+                          <ButtonThin type="delete">
+                            Delete
+                          </ButtonThin>
+                        </Link>
                       </div>
                     )}
                   </div>
@@ -101,14 +114,6 @@ export default function CoursesIndex() {
             <div className="col-span-full p-8 bg-white border border-gray-200 rounded-lg shadow-sm text-center">
               <h3 className="text-lg font-semibold text-gray-900">No courses available</h3>
               <p className="text-gray-600 mt-2">Create a course to get started.</p>
-              {isAdmin && (
-                <Link
-                  href="/courses/create"
-                  className="mt-4 inline-flex px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition"
-                >
-                  Create First Course
-                </Link>
-              )}
             </div>
           )}
         </div>

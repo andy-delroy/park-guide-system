@@ -5,6 +5,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Added for template
 import SectionCard from '@/Components/SectionCard'; // Added for template
+import Button from '@/Components/Button';
+import ButtonThin from '@/Components/ButtonThin';
 
 export default function ModuleIndex() {
   const { course, modules, groups, auth } = usePage().props;
@@ -261,6 +263,8 @@ export default function ModuleIndex() {
           Module Management
         </h2>
       }
+      showBackButton={true}
+      backHref="/courses"
     >
       <Head title="Module Management" />
 
@@ -294,23 +298,23 @@ export default function ModuleIndex() {
               <div className="flex space-x-2">
                 <Link
                   href={`/courses/${course?.id}/modules/create`}
-                  className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                 >
-                  + Add New Module
+                  <Button type="create">
+                    + Create New Module
+                  </Button>
                 </Link>
-                <Link
+                {/* <Link
                   href={`/courses/${course?.id}/edit`}
-                  className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
                 >
-                  Edit Course
-                </Link>
+                  <Button type="edit">
+                    Edit Course
+                  </Button>
+                </Link> */}
                 {!showCreateGroup ? (
-                  <button
-                    onClick={() => setShowCreateGroup(true)}
-                    className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
-                  >
-                    + Add New Group
-                  </button>
+                  <Button type="create" onClick={() => setShowCreateGroup(true)}>
+                    + Create New Group
+                  </Button>
+
                 ) : (
                   <div className="flex items-center space-x-2">
                     <input
@@ -321,18 +325,20 @@ export default function ModuleIndex() {
                       className="px-3 py-2 border border-gray-300 rounded-md text-sm"
                       autoFocus
                     />
-                    <button
+                    <Button
+                      type="create"
                       onClick={createNewGroup}
-                      className="inline-block rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700"
                     >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setShowCreateGroup(false)}
-                      className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
+                      Create
+                    </Button>
+                    <Button
+                      type="cancel"
+                      onClick={() => {
+                        setShowCreateGroup(false);
+                      }}
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -416,19 +422,17 @@ export default function ModuleIndex() {
                                         </div>
                                       </div>
                                     </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium space-x-2">
                                       <Link
                                         href={`/courses/${course.id}/modules/${mod.id}/edit`}
-                                        className="text-indigo-600 hover:text-indigo-900"
                                       >
-                                        Edit
+                                        <ButtonThin type="edit">
+                                          Edit
+                                        </ButtonThin>
                                       </Link>
-                                      <button
-                                        onClick={() => handleDelete(mod.id)}
-                                        className="ml-4 text-red-600 hover:text-red-900"
-                                      >
+                                      <ButtonThin type="delete" onClick={() => handleDelete(mod.id)}>
                                         Delete
-                                      </button>
+                                      </ButtonThin>
                                     </td>
                                   </tr>
                                 )}
@@ -459,14 +463,6 @@ export default function ModuleIndex() {
           <div className="p-8 bg-white border border-gray-200 rounded-lg shadow-sm text-center">
             <h3 className="text-lg font-semibold text-gray-900">No modules yet</h3>
             <p className="text-gray-600 mt-2">Add modules to start building your course</p>
-            {isAdmin && (
-              <Link
-                href={`/courses/${course?.id}/modules/create`}
-                className="mt-4 inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700"
-              >
-                Add Module
-              </Link>
-            )}
           </div>
         )}
       </SectionCard>

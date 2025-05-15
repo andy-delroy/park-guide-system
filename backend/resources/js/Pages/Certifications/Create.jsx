@@ -4,6 +4,7 @@ import { Link, usePage, Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import API_BASE_URL from '../../../../../mobile/api.config';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
 
 const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
@@ -78,6 +79,8 @@ const Create = ({ auth }) => {
                     Add New Certification
                 </h2>
             }
+            showBackButton={true}
+            backHref="/certification"
         >
             <Head title="Add Certification" />
 
@@ -210,18 +213,21 @@ const Create = ({ auth }) => {
                         )}
                     </div>
                     <div className="flex space-x-2">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="inline-block px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded shadow hover:bg-indigo-700 transition"
+                        <Link
+                        href="/certification/create"
+                        method="post"
+                        as="button"
                         >
-                            Create Certification
-                        </button>
+                            <Button type="create" disabled={processing}>
+                                Create Certification
+                            </Button>
+                        </Link>
                         <Link
                             href="/certification"
-                            className="inline-block px-4 py-2 bg-gray-500 text-white font-semibold text-sm rounded shadow hover:bg-gray-600 transition"
                         >
-                            Cancel
+                            <Button type="cancel">
+                                Cancel
+                            </Button>
                         </Link>
                     </div>
                 </form>

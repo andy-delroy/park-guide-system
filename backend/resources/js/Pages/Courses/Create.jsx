@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useForm, usePage, Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
 
 export default function CreateCourse() {
   const { auth } = usePage().props;
@@ -40,6 +41,8 @@ export default function CreateCourse() {
     <AuthenticatedLayout
       user={auth?.user}
       header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Create New Course</h2>}
+      showBackButton={true}
+      backHref="/courses"
     >
       <Head title="Create New Course" />
 
@@ -125,17 +128,14 @@ export default function CreateCourse() {
             <div className="flex justify-end space-x-4">
               <Link
                 href="/courses"
-                className="inline-block rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-gray-700"
               >
-                Cancel
+                <Button type="cancel">
+                  Cancel
+                </Button>
               </Link>
-              <button
-                type="submit"
-                disabled={processing}
-                className="inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:opacity-50"
-              >
-                Create Course
-              </button>
+              <Button type="create" disabled={processing} typeAttr="submit">
+                  Create Course
+              </Button>
             </div>
           </form>
         </div>

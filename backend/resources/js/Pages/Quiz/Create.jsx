@@ -2,6 +2,7 @@ import React from "react";
 import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
+import Button from "@/Components/Button";
 
 export default function Create({ auth }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -26,6 +27,8 @@ export default function Create({ auth }) {
                     Create New Quiz
                 </h2>
             }
+            showBackButton={true}
+            backHref={route("quiz.index")}
         >
             <Head title="Create Quiz" />
             <SectionCard>
@@ -98,13 +101,9 @@ export default function Create({ auth }) {
 
                     {/* Submit Button */}
                     <div className="flex gap-4 px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            disabled={processing}
-                        >
+                        <Button type="create" disabled={processing} typeAttr="submit">
                             Create Quiz
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </SectionCard>

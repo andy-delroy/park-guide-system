@@ -4,6 +4,7 @@ import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import API_BASE_URL from '../../../../../mobile/api.config';
 import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
 
 const Edit = ({ auth, certification }) => {
     const { data, setData, post, processing, errors } = useForm({
@@ -100,6 +101,8 @@ const Edit = ({ auth, certification }) => {
                     Edit Certification "{certification.certification_name}"
                 </h2>
             }
+            showBackButton={true}
+            backHref="/certification"
         >
             <Head title="Edit Certification" />
 
@@ -258,18 +261,16 @@ const Edit = ({ auth, certification }) => {
                     </div>
 
                     <div className="flex space-x-2">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="inline-block px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded shadow hover:bg-indigo-700 transition"
-                        >
+                        <Button type="update" disabled={processing} typeAttr="submit">
                             Update Certification
-                        </button>
+                        </Button>
+
                         <Link
                             href={route('certifications.index')}
-                            className="inline-block px-4 py-2 bg-gray-500 text-white font-semibold text-sm rounded shadow hover:bg-gray-600 transition"
                         >
-                            Cancel
+                            <Button type="cancel">
+                                Cancel
+                            </Button>
                         </Link>
                     </div>
                 </form>

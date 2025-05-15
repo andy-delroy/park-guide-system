@@ -13,6 +13,8 @@ const Show = ({ auth, guide }) => {
                     Guide Details
                 </h2>
             }
+            showBackButton={true}
+            backHref="/guides"
         >
             <Head title="Guide Details" />
 
@@ -24,15 +26,6 @@ const Show = ({ auth, guide }) => {
                     <p className="mb-2"><strong>Phone Number:</strong> {guide.phone_number}</p>
                     <p className="mb-2"><strong>Years of Experience:</strong> {guide.years_of_experience}</p>
                     <p className="mb-2"><strong>Specializations:</strong> {guide.specializations}</p>
-                </div>
-
-                <div className="mt-4">
-                    <Link
-                        href="/guides"
-                        className="inline-block px-4 py-2 bg-gray-500 text-white font-semibold text-sm rounded shadow hover:bg-gray-600 transition"
-                    >
-                        Back to Guides
-                    </Link>
                 </div>
             </SectionCard>
         </AuthenticatedLayout>

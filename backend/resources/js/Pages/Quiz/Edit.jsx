@@ -2,6 +2,7 @@ import React from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
+import Button from "@/Components/Button";
 
 export default function Edit({ auth, quiz, existingQuestions }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -23,6 +24,8 @@ export default function Edit({ auth, quiz, existingQuestions }) {
                     Edit Quiz
                 </h2>
             }
+            showBackButton={true}
+            backHref={route("quiz.index")}
         >
             <Head title="Edit Quiz" />
             <SectionCard>
@@ -132,17 +135,18 @@ export default function Edit({ auth, quiz, existingQuestions }) {
                     <div className="flex gap-4 px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <Link
                             href={route("quizzes.questions.create", quiz.id)}
-                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                         >
-                            Add Question
+                            <Button type="create">
+                                Add Questions
+                            </Button>
                         </Link>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        <Button
+                            type="update"
                             disabled={processing}
+                            typeAttr="submit"
                         >
-                            Update Quiz
-                        </button>
+                            {processing ? "Updating..." : "Update Quiz"}
+                        </Button>
                     </div>
                 </form>
             </SectionCard>
