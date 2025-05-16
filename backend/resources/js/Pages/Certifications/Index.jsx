@@ -26,6 +26,25 @@ export default function Index({ auth, certifications }) {
         }
     };
 
+    const handleRenew = (id) => {
+        if (confirm("Are you sure you want to renew this certification?")) {
+            Inertia.post(`/certification/${id}/renew`, {}, {
+                onSuccess: () => {
+                    setMessage({
+                        success: "Certification renewed successfully.",
+                        error: null,
+                    });
+                },
+                onError: () => {
+                    setMessage({
+                        success: null,
+                        error: "Failed to renew certification. Please try again.",
+                    });
+                },
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -120,7 +139,14 @@ export default function Index({ auth, certifications }) {
                                                                 >
                                                                     Delete
                                                                 </button>
-                                                                
+                                                                {(certification.validity_period_months == 0 || certification.validity_period_months == 1) && (
+                                                                    <button
+                                                                        onClick={() => handleRenew(certification.id)}
+                                                                        className="ml-4 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
+                                                                    >
+                                                                        Renew
+                                                                    </button>
+                                                                )}
                                                             </>
                                                         )}
                                                         <Link
