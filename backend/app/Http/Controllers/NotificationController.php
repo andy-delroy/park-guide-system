@@ -19,15 +19,22 @@ class NotificationController extends Controller
     public function store(Request $request)
     {
         $request->validate(['message' => 'required|string|max:255']);
-
+    
+        $user = $request->user();
+    
         $notification = Notification::create([
-            'user_id' => $request->user()?->id,
+            'user_id' => $user?->id,
+            'role' => $user->role_name ?? 'guest',
             'message' => $request->message,
             'type' => 'info',
+            'created_date' => now(),
+            'is_read' => false,
+            'priority_level' => 'medium',
         ]);
-
-        broadcast(new TestEvent($notification->message))->toOthers();
-
+    
+        broadcast(new TestEvent($notification->role, $notification->message));
+    
         return response()->json($notification);
     }
+    
 }

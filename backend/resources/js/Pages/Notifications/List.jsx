@@ -9,15 +9,15 @@ export default function NotificationList({ auth, notifications }) {
   
     useEffect(() => {
       const channelName = `notifications.${role}`;
-      console.log(`👂 Subscribing to ${channelName}...`);
+      console.log(` Subscribing to ${channelName}...`);
   
       const channel = window.Echo.channel(channelName);
   
       channel.listen('.test', (event) => {
-        console.log('📡 Received broadcast:', event.message);
+        console.log(' Received broadcast:', event.message);
   
         Toastify({
-          text: event.message || "🔔 New notification received",
+          text: event.message || " New notification received",
           duration: 5000,
           close: true,
           gravity: "top",

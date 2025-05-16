@@ -9,6 +9,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\TestEvent;
 use Inertia\Inertia;
@@ -55,20 +56,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
    Route::resource('guides', GuideController::class);
 });
 
-Route::get('/broadcast/test', function () {
+Route::post('/broadcast/test', function (Request $request) {
     $user = Auth::user();
-    $role = $user?->role_name ?? 'guest';
+    $role = $user->role_name ?? 'guest';
     $name = $user?->full_name ?? 'Anonymous';
 
-    $message = "Test notification from {$name} ({$role})";
+    $message = $request->input('message') ?? "Notification from {$name} ({$role})";
 
     Notification::create([
-        'user_id' => $user?->id,
+        'user_id' => $user->id,
+        'role' => $role,
         'message' => $message,
         'type' => 'info',
+        'created_date' => now(),
+        'is_read' => false,
+        'priority_level' => 'medium',
     ]);
 
-    broadcast(new TestEvent($role, $message))->toOthers();
+    broadcast(new TestEvent($role, $message));
 
     return response()->json([
         'status' => 'sent',
@@ -77,6 +82,12 @@ Route::get('/broadcast/test', function () {
         'message' => $message,
     ]);
 })->middleware('auth');
+
+
+// use App\Models\Alert;
+// use App\Events\AlertCreated;
+// use App\Http\Controllers\AlertController;
+// use App\Http\Controllers\Admin\AlertAdminController;
 
 
 Route::get('/notifications', function () {

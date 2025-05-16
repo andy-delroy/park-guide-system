@@ -1,29 +1,30 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import axios from 'axios';
 
 export default function Send({ auth }) {
   const role = auth?.user?.role_name ?? 'guest';
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const channelName = `notifications.${role}`;
-    console.log(`👂 Subscribing to ${channelName}...`);
+    console.log(`Subscribing to ${channelName}...`);
 
     const channel = window.Echo.channel(channelName);
 
     channel.listen('.test', (event) => {
-      console.log('📡 Received broadcast:', event.message);
+      console.log('Received broadcast:', event.message);
 
       Toastify({
-        text: event.message || "🔔 New notification received",
+        text: event.message || 'New notification received',
         duration: 5000,
         close: true,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#4fbe87",
+        gravity: 'top',
+        position: 'right',
+        backgroundColor: '#4fbe87',
       }).showToast();
     });
 
@@ -32,9 +33,12 @@ export default function Send({ auth }) {
     };
   }, [role]);
 
-  const triggerBroadcast = async () => {
+  const triggerBroadcast = async (customMessage) => {
     try {
-      await axios.get('/broadcast/test');
+      await axios.post('/broadcast/test', {
+        message: customMessage,
+      });
+      setMessage('');
     } catch (err) {
       console.error('Broadcast failed:', err.response?.data ?? err.message);
     }
@@ -56,9 +60,19 @@ export default function Send({ auth }) {
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-6">
               <h2 className="text-lg font-semibold mb-4">Broadcast Test</h2>
+
+              <textarea
+                className="w-full border p-2 rounded mb-4"
+                rows="3"
+                placeholder="Enter your broadcast message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              ></textarea>
+
               <button
-                onClick={triggerBroadcast}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
+                onClick={() => triggerBroadcast(message)}
+                disabled={!message.trim()}
+                className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
               >
                 Send Broadcast
               </button>
