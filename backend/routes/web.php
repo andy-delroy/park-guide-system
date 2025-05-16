@@ -23,11 +23,11 @@ use App\Http\Controllers\Admin\AlertAdminController;
 use App\Http\Controllers\NotificationController;
 
 
-use App\Models\Alert;
-use App\Events\AlertCreated;
-use App\Http\Controllers\AlertController;
-use App\Http\Controllers\Admin\AlertAdminController;
-use App\Http\Controllers\NotificationController;
+// use App\Models\Alert;
+// use App\Events\AlertCreated;
+// use App\Http\Controllers\AlertController;
+// use App\Http\Controllers\Admin\AlertAdminController;
+// use App\Http\Controllers\NotificationController;
 
 
 // Redirect root to dashboard
@@ -119,8 +119,8 @@ Route::middleware('auth')->group(function () {
     ->middleware('auth')
     ->name('notifications.markAsRead');
 
-// Alerts for all users
-Route::get('/alerts/list', fn () => Inertia::render('Alerts/AlertList'))->name('alerts.list');
+    // Alerts for all users
+    Route::get('/alerts/list', fn () => Inertia::render('Alerts/AlertList'))->name('alerts.list');
 });
 
 // Alert routes
