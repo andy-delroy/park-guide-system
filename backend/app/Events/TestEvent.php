@@ -12,17 +12,19 @@ class TestEvent implements ShouldBroadcastNow
     use Dispatchable, SerializesModels;
 
     public $message;
-    public $role;
+    public $channel;
+    public $priority;
 
-    public function __construct($role, $message)
+    public function __construct($message, $channel, $priority)
     {
-        $this->role = $role;
         $this->message = $message;
+        $this->channel = $channel;
+        $this->priority = $priority;
     }
 
     public function broadcastOn()
     {
-        return new Channel("notifications.{$this->role}");
+        return new Channel($this->channel);
     }
 
     public function broadcastAs()

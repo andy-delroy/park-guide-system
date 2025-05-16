@@ -22,6 +22,14 @@ use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Admin\AlertAdminController;
 use App\Http\Controllers\NotificationController;
 
+
+use App\Models\Alert;
+use App\Events\AlertCreated;
+use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Admin\AlertAdminController;
+use App\Http\Controllers\NotificationController;
+
+
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
 
@@ -84,12 +92,6 @@ Route::post('/broadcast/test', function (Request $request) {
 })->middleware('auth');
 
 
-// use App\Models\Alert;
-// use App\Events\AlertCreated;
-// use App\Http\Controllers\AlertController;
-// use App\Http\Controllers\Admin\AlertAdminController;
-
-
 Route::get('/notifications', function () {
     $user = Auth::user();
     $role = $user?->role_name ?? 'guest'; 
@@ -103,17 +105,34 @@ Route::get('/notifications', function () {
     ]);
 })->middleware('auth');
 
-
 Route::middleware('auth')->group(function () {
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications', [NotificationController::class, 'store']);
+    // Use this as the only entry point for notification listing
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
+    // Store a new notification
+    Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
+
+    // Show the broadcast test UI
     Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
-    Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
 
-    Route::get('/admin/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
-    Route::put('/admin/alerts/{alert}', [AlertAdminController::class, 'update'])->name('admin.alerts.update');
-    Route::post('/alerts', [AlertController::class, 'store'])->name('alerts.store');
+    Route::put('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
+    ->middleware('auth')
+    ->name('notifications.markAsRead');
+
+// Alerts for all users
+Route::get('/alerts/list', fn () => Inertia::render('Alerts/AlertList'))->name('alerts.list');
+});
+
+// Alert routes
+Route::middleware('auth')->group(function () {
+    Route::post('/alerts', [AlertAdminController::class, 'store'])->name('alerts.store');
+    Route::get('/alerts', [AlertAdminController::class, 'redirectAlerts'])->name('alerts.redirect');
+
+    Route::prefix('admin')->group(function () {
+        Route::get('/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
+        Route::get('/alerts/send', fn () => Inertia::render('Alerts/SendAlert'))->name('admin.alerts.send');
+        Route::delete('/alerts/{alert}', [AlertAdminController::class, 'destroy'])->name('admin.alerts.destroy');
+    });
 });
 
 // User profile routes

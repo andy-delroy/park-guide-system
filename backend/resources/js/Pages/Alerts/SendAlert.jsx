@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import dayjs from 'dayjs';
 import axios from 'axios';
 
-export default function AdminManageAlerts({ alerts }) {
+export default function SendAlert({ auth }) {
   const [weather, setWeather] = useState(null);
   const [weatherError, setWeatherError] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
@@ -12,13 +11,11 @@ export default function AdminManageAlerts({ alerts }) {
     return localStorage.getItem('alertSent') === 'true';
   });
 
-  const { data, setData, post, delete: destroy, processing, errors, reset } = useForm({
-    id: null, // Added for editing
+  const { data, setData, post, processing, errors, reset } = useForm({
     message: '',
     type: 'info',
     park_id: null,
     expiry: null,
-    roles: [],
   });
 
   useEffect(() => {
@@ -79,11 +76,10 @@ export default function AdminManageAlerts({ alerts }) {
         if (checkWeatherConditions(temperature, description) && !alertSent) {
           console.log('Sending automated alert for temperature or rain:', { temperature, description });
           setData({
-            message: `Alert: Temperature is too high or it's raining! ${temperature}°C | Condition: ${description}`,
+            message: `Weather Alert: ${temperature}°C | Condition: ${description}`,
             type: 'emergency',
             park_id: null,
             expiry: null,
-            roles: ['park_guide', 'visitor'],
           });
           post('/alerts', {
             preserveScroll: true,
@@ -115,11 +111,10 @@ export default function AdminManageAlerts({ alerts }) {
         if (checkWeatherConditions(fallbackWeather.temperature, fallbackWeather.description) && !alertSent) {
           console.log('Sending automated alert with fallback data:', fallbackWeather);
           setData({
-            message: `Alert: Temperature is too high or it's raining! ${fallbackWeather.temperature}°C | Condition: ${fallbackWeather.description}`,
+            message: `Weather Alert: ${fallbackWeather.temperature}°C | Condition: ${fallbackWeather.description}`,
             type: 'emergency',
             park_id: null,
             expiry: null,
-            roles: ['park_guide', 'visitor'],
           });
           post('/alerts', {
             preserveScroll: true,
@@ -150,54 +145,13 @@ export default function AdminManageAlerts({ alerts }) {
     post('/alerts', {
       preserveScroll: true,
       onSuccess: () => {
-        console.log(data.id ? 'Alert updated successfully' : 'Alert created successfully');
+        console.log('Alert sent successfully');
         reset();
       },
       onError: (errors) => {
-        console.error('Failed to submit alert:', errors);
-        if (errors.__status === 404) {
-          alert('Alert not found. It may have been deleted.');
-        }
+        console.error('Failed to send alert:', errors);
       },
     });
-  };
-
-  const selectAlertForEdit = (alert) => {
-    console.log('Selecting alert for edit:', alert);
-    setData({
-      id: alert.id,
-      message: alert.message,
-      type: alert.type,
-      park_id: alert.park_id,
-      expiry: alert.expiry,
-      roles: alert.roles || [],
-    });
-  };
-
-  const deleteAlert = (id) => {
-    if (confirm('Are you sure you want to delete this alert?')) {
-      console.log('Deleting alert ID:', id);
-      destroy(`/admin/alerts/${id}`, {
-        preserveScroll: true,
-        onSuccess: () => {
-          console.log('Alert deleted successfully');
-        },
-        onError: (errors) => {
-          console.error('Failed to delete alert:', errors);
-          if (errors.__status === 405) {
-            alert('Method not allowed. Please check the route configuration.');
-          } else if (errors.__status === 404) {
-            alert('Alert not found. It may have been deleted.');
-          }
-        },
-      });
-    }
-  };
-
-  const resetAlertSent = () => {
-    setAlertSent(false);
-    localStorage.setItem('alertSent', 'false');
-    console.log('Alert sent status reset.');
   };
 
   const clearForm = () => {
@@ -207,9 +161,10 @@ export default function AdminManageAlerts({ alerts }) {
 
   return (
     <AuthenticatedLayout
-      header={<h2 className="text-xl font-semibold text-gray-800">Manage Park Alerts</h2>}
+      user={auth.user}
+      header={<h2 className="text-xl font-semibold text-gray-800">Send Park Alert</h2>}
     >
-      <Head title="Manage Alerts" />
+      <Head title="Send Alert" />
 
       <div className="p-6 space-y-8 max-w-4xl mx-auto">
         {/* Weather Section */}
@@ -224,7 +179,11 @@ export default function AdminManageAlerts({ alerts }) {
               <p>Humidity: {weather.humidity}%</p>
               {alertSent && <p className="text-green-600">Alert sent for current conditions.</p>}
               <button
-                onClick={resetAlertSent}
+                onClick={() => {
+                  setAlertSent(false);
+                  localStorage.setItem('alertSent', 'false');
+                  console.log('Alert sent status reset.');
+                }}
                 className="mt-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
               >
                 Reset Alert Status (Testing)
@@ -233,9 +192,9 @@ export default function AdminManageAlerts({ alerts }) {
           )}
         </div>
 
-        {/* Create/Update Alert Form */}
+        {/* Send Alert Form */}
         <div className="bg-white p-4 rounded shadow-sm border">
-          <h3 className="text-lg font-semibold mb-2">{data.id ? 'Update Alert' : 'Create & Broadcast Alert'}</h3>
+          <h3 className="text-lg font-semibold mb-2">Send Alert</h3>
           <form onSubmit={submitAlert} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Message</label>
@@ -281,34 +240,13 @@ export default function AdminManageAlerts({ alerts }) {
               />
               {errors.park_id && <p className="text-red-600 text-sm mt-1">{errors.park_id}</p>}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Roles (Optional)</label>
-              <div className="flex gap-4">
-                {['park_guide', 'visitor'].map((role) => (
-                  <label key={role} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={data.roles.includes(role)}
-                      onChange={(e) => {
-                        const newRoles = e.target.checked
-                          ? [...data.roles, role]
-                          : data.roles.filter((r) => r !== role);
-                        setData('roles', newRoles);
-                      }}
-                    />
-                    <span className="ml-2 capitalize">{role.replace('_', ' ')}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.roles && <p className="text-red-600 text-sm mt-1">{errors.roles}</p>}
-            </div>
             <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={processing}
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
               >
-                {data.id ? 'Update Alert' : 'Send Alert'}
+                Send Alert
               </button>
               <button
                 type="button"
@@ -319,44 +257,6 @@ export default function AdminManageAlerts({ alerts }) {
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Alerts List */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold mb-2">Existing Alerts</h3>
-          {alerts.length === 0 ? (
-            <div className="text-gray-500 text-center">No alerts found.</div>
-          ) : (
-            alerts.map((alert) => {
-              const isExpired = alert.expiry && dayjs(alert.expiry).isBefore(dayjs());
-
-              return (
-                <div key={alert.id} className="border p-4 rounded shadow-sm bg-white">
-                  <div className="mb-2 text-sm text-gray-500">
-                    Type: <span className="font-semibold">{alert.type}</span>
-                    {' | '}
-                    Expires: {alert.expiry ? dayjs(alert.expiry).format('YYYY-MM-DD HH:mm') : 'N/A'}
-                    {isExpired && <span className="text-red-500"> (expired)</span>}
-                  </div>
-                  <p className="text-gray-800">{alert.message}</p>
-                  <div className="flex gap-4 mt-2">
-                    <button
-                      onClick={() => selectAlertForEdit(alert)}
-                      className="text-sm text-blue-600 underline hover:text-blue-800"
-                    >
-                      Select for Edit
-                    </button>
-                    <button
-                      onClick={() => deleteAlert(alert.id)}
-                      className="text-sm text-red-600 underline hover:text-red-800"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
         </div>
       </div>
     </AuthenticatedLayout>

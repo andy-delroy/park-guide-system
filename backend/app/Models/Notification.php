@@ -10,6 +10,7 @@ class Notification extends Model
         'user_id',
         'role',
         'type',
+        'target_channel',
         'message',
         'created_date',
         'is_read',
