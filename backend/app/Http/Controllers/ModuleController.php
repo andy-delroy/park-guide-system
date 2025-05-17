@@ -14,6 +14,12 @@ class ModuleController extends Controller
 {
     public function index(Course $course)
     {
+        $user = auth()->user();
+
+        if ($user->role_name === 'guide' && !$course->users()->where('user_id', $user->id)->exists()) {
+            abort(403, 'You must be enrolled in this course to view its modules.');
+        }
+
         return Inertia::render('Modules/Index', [
             'course' => $course->loadCount('modules'),
             'modules' => Module::where('course_id', $course->id)
@@ -31,6 +37,12 @@ class ModuleController extends Controller
 
     public function show(Course $course, Module $module)
     {
+        $user = auth()->user();
+
+        if ($user->role_name === 'guide' && !$course->users()->where('user_id', $user->id)->exists()) {
+            abort(403, 'You must be enrolled in this course to view this module.');
+        }
+
         $module->load('resources');
 
         return Inertia::render('Modules/Show', [
@@ -95,9 +107,7 @@ class ModuleController extends Controller
 
     public function edit(Course $course, Module $module)
     {
-        if (!in_array(auth()->user()->role_name, ['admin', 'superadmin'])) {
-            abort(403, 'Only admins can edit modules.');
-        }
+        
 
         $module->load('resources');
 
@@ -187,24 +197,20 @@ class ModuleController extends Controller
     }
 
     public function destroy(Course $course, Module $module)
-{
-    if (!in_array(auth()->user()->role_name, ['admin', 'superadmin'])) {
-        abort(403, 'Only admins can delete modules.');
+    {
+        
+
+        if ($module->course_id !== $course->id) {
+            abort(404, 'Module does not belong to this course.');
+        }
+
+        $module->resources()->delete();
+        $module->delete();
+
+        return redirect()
+            ->route('courses.modules.index', $course->id)
+            ->with('success', 'Module deleted successfully.');
     }
-
-    if ($module->course_id !== $course->id) {
-        abort(404, 'Module does not belong to this course.');
-    }
-
-    // Optional: delete related resources (if not handled by cascade)
-    $module->resources()->delete();
-
-    $module->delete();
-
-    return redirect()
-        ->route('courses.modules.index', $course->id)
-        ->with('success', 'Module deleted successfully.');
-}
 
     public function assignGroup(Request $request, Course $course, Module $module)
     {
