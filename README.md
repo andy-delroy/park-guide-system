@@ -59,7 +59,8 @@ You need three terminals and make sure to do `cd backend` for all three.
 ## HOW TO RUN RECOMMENDER MODEL (FLASK)
 ### Make virtual environment
 `python -m venv venv`
-`source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+
+`source venv/bin/activate`  
 ### Install all the dependencies
 1. `pip install tensorflow`
 2. `pip install tensorflow-recommenders`
