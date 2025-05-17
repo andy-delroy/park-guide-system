@@ -3,6 +3,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link, usePage, Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import API_BASE_URL from '../../../../../mobile/api.config';
+import SectionCard from '@/Components/SectionCard';
+import Button from '@/Components/Button';
 
 const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
@@ -77,160 +79,159 @@ const Create = ({ auth }) => {
                     Add New Certification
                 </h2>
             }
+            showBackButton={true}
+            backHref="/certification"
         >
             <Head title="Add Certification" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            {guideError && (
-                                <div className="text-red-500 text-sm mb-4">{guideError}</div>
-                            )}
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
-                                    <select
-                                        value={data.guide_id}
-                                        onChange={(e) => setData('guide_id', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    >
-                                        <option value="">Select a Guide</option>
-                                        {guides.map((guide) => (
-                                            <option key={guide.id} value={guide.id}>
-                                                {guide.full_name || 'Unnamed Guide'}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.guide_id && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
-                                    <input
-                                        type="text"
-                                        value={data.certificate_number}
-                                        onChange={(e) => setData('certificate_number', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.certificate_number && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
-                                    <input
-                                        type="text"
-                                        value={data.certification_name}
-                                        onChange={(e) => setData('certification_name', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.certification_name && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Description</label>
-                                    <textarea
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.description && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.description}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
-                                    <textarea
-                                        value={data.validity_period_months}
-                                        onChange={(e) => setData('validity_period_months', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
-                                    <textarea
-                                        value={data.renewal_requirements}
-                                        onChange={(e) => setData('renewal_requirements', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
-                                    <input
-                                        type="date"
-                                        value={data.issue_date}
-                                        onChange={(e) => setData('issue_date', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.issue_date && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Expiry Date</label>
-                                    <input
-                                        type="date"
-                                        value={data.expiry_date}
-                                        onChange={(e) => setData('expiry_date', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.expiry_date && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
-                                    <select
-                                        value={data.status}
-                                        onChange={(e) => setData('status', e.target.value)}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                    {errors.status && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.status}</div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">Certificate File</label>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,application/pdf"
-                                        onChange={(e) => setData('certificate_file_url', e.target.files[0])}
-                                        className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                    />
-                                    {errors.certificate_file_url && (
-                                        <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>
-                                    )}
-                                </div>
-                                <div className="flex space-x-2">
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="inline-block px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded shadow hover:bg-indigo-700 transition"
-                                    >
-                                        Create Certification
-                                    </button>
-                                    <Link
-                                        href="/certification"
-                                        className="inline-block px-4 py-2 bg-gray-500 text-white font-semibold text-sm rounded shadow hover:bg-gray-600 transition"
-                                    >
-                                        Cancel
-                                    </Link>
-                                </div>
-                            </form>
-                        </div>
+            <SectionCard>
+                {guideError && (
+                    <div className="text-red-500 text-sm mb-4">{guideError}</div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
+                        <select
+                            value={data.guide_id}
+                            onChange={(e) => setData('guide_id', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        >
+                            <option value="">Select a Guide</option>
+                            {guides.map((guide) => (
+                                <option key={guide.id} value={guide.id}>
+                                    {guide.full_name || 'Unnamed Guide'}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.guide_id && (
+                            <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>
+                        )}
                     </div>
-                </div>
-            </div>
+
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
+                        <input
+                            type="text"
+                            value={data.certificate_number}
+                            onChange={(e) => setData('certificate_number', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.certificate_number && (
+                            <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            value={data.certification_name}
+                            onChange={(e) => setData('certification_name', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.certification_name && (
+                            <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={data.description}
+                            onChange={(e) => setData('description', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.description && (
+                            <div className="text-red-500 text-sm mt-1">{errors.description}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
+                        <textarea
+                            value={data.validity_period_months}
+                            onChange={(e) => setData('validity_period_months', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
+                        <textarea
+                            value={data.renewal_requirements}
+                            onChange={(e) => setData('renewal_requirements', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
+                        <input
+                            type="date"
+                            value={data.issue_date}
+                            onChange={(e) => setData('issue_date', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.issue_date && (
+                            <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input
+                            type="date"
+                            value={data.expiry_date}
+                            onChange={(e) => setData('expiry_date', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.expiry_date && (
+                            <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={data.status}
+                            onChange={(e) => setData('status', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        {errors.status && (
+                            <div className="text-red-500 text-sm mt-1">{errors.status}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Certificate File</label>
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,application/pdf"
+                            onChange={(e) => setData('certificate_file_url', e.target.files[0])}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.certificate_file_url && (
+                            <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>
+                        )}
+                    </div>
+                    <div className="flex space-x-2">
+                        <Link
+                        href="/certification/create"
+                        method="post"
+                        as="button"
+                        >
+                            <Button type="create" disabled={processing}>
+                                Create Certification
+                            </Button>
+                        </Link>
+                        <Link
+                            href="/certification"
+                        >
+                            <Button type="cancel">
+                                Cancel
+                            </Button>
+                        </Link>
+                    </div>
+                </form>
+            </SectionCard>
         </AuthenticatedLayout>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
-import Sidebar from './Sidebar';
+import { Link, usePage, router, Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SectionCard from '@/Components/SectionCard';
 
 export default function ModuleShow() {
   const { course, module, auth } = usePage().props;
@@ -100,7 +101,7 @@ export default function ModuleShow() {
     return (
       <a
         href={resourceUrl}
-        className="text-blue-500 underline mt-2 inline-block"
+        className="text-indigo-600 hover:text-indigo-900 mt-2 inline-block"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -110,49 +111,21 @@ export default function ModuleShow() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <Sidebar course={course} activePage="modules" />
+    <AuthenticatedLayout
+      user={auth?.user}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">{module.title}</h2>}
+      showBackButton={true}
+      backHref={`/courses/${course.id}/modules`}
+    >
+      <Head title={module.title} />
 
-      <main className="flex-1 p-8">
-        <Link 
-          href={`/courses/${course.id}/modules`} 
-          className="inline-flex items-center text-blue-600 hover:underline mb-4"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Modules
-        </Link>
-
+      <SectionCard>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h1 className="text-2xl font-bold">{module.title}</h1>
               <p className="text-sm text-gray-500 capitalize">{module.material_type}</p>
             </div>
-
-            {isAdmin && (
-              <div className="space-x-2">
-                <Link
-                  href={`/courses/${course.id}/modules/${module.id}/edit`}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this module?')) {
-                      router.delete(`/courses/${course.id}/modules/${module.id}`, {
-                        onSuccess: () => router.visit(`/courses/${course.id}/modules`)
-                      });
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="text-gray-700 mb-6">{module.description}</div>
@@ -174,7 +147,7 @@ export default function ModuleShow() {
                             type="checkbox"
                             checked={completedResources.includes(res.id)}
                             onChange={() => markResourceCompleted(res.id)}
-                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring focus:ring-blue-200"
+                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200"
                           />
                           <span className="ml-2 text-sm text-gray-600">Mark as completed</span>
                         </label>
@@ -189,7 +162,7 @@ export default function ModuleShow() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }
