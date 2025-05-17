@@ -56,6 +56,19 @@ You need three terminals and make sure to do `cd backend` for all three.
 
 `npx expo start -c`
 
+## HOW TO RUN RECOMMENDER MODEL (FLASK)
+### Make virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+### Install all the dependencies
+pip install tensorflow
+pip install tensorflow-recommenders
+pip install pandas
+pip install numpy
+pip install flask
+pip install flask-cors
+
+
   
 
 
