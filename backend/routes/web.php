@@ -20,6 +20,7 @@ use App\Events\AlertCreated;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Admin\AlertAdminController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RecommenderController;
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
@@ -171,3 +172,6 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
 
 // Route::redirect('/nigga', '/dashboard');
 // Route::redirect('/nigga', '/thehood');
+
+//recommender routes
+Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);
