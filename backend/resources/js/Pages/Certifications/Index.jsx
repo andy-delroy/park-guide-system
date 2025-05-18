@@ -73,14 +73,29 @@ export default function Index({ auth, certifications }) {
                         issue_date: cert.issue_date,
                     }))}
                     columns={[
-                        { field: "certification_name", headerName: "Name", flex: 2 },
+                        {
+                            field: "certification_name",
+                            headerName: "Name",
+                            flex: 2,
+                            renderCell: ({ row }) => (
+                                <Link
+                                    href={`/certification/${row.id}/details`}
+                                >
+                                    <ButtonThin type="detail">
+                                        {row.certification_name}
+                                    </ButtonThin>
+                                </Link>
+                            ),
+                        },
                         { field: "issued_to", headerName: "Issued To", flex: 1 },
                         { field: "issued_by", headerName: "Issued By", flex: 1 },
                         { field: "issue_date", headerName: "Issue Date", flex: 1 },
                         {
                             field: "actions",
                             headerName: "Actions",
-                            flex: 1.5,
+                            flex: 0.7,
+                            sortable: false,
+                            filterable: false,
                             renderCell: ({ row }) => (
                                 <div className="flex space-x-2">
                                     {auth.user.role.role_name === "admin" && (
@@ -108,13 +123,6 @@ export default function Index({ auth, certifications }) {
                                             </Link>
                                         </>
                                     )}
-                                    <Link
-                                        href={`/certification/${row.id}/details`}
-                                    >
-                                        <ButtonThin type="detail">
-                                            Details
-                                        </ButtonThin>
-                                    </Link>
                                 </div>
                             ),
                         },

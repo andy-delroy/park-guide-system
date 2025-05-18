@@ -70,14 +70,28 @@ export default function Index({ guides }) {
                         role: guide.role_name,
                     }))}
                     columns={[
-                        { field: 'full_name', headerName: 'Full Name', flex: 1 },
+                        {
+                            field: 'full_name',
+                            headerName: 'Full Name',
+                            flex: 1,
+                            renderCell: (params) => (
+                                <Link
+                                    href={`/guides/${params.row.id}`}
+                                >
+                                    <ButtonThin type="detail">
+                                        {params.row.full_name}
+                                    </ButtonThin>
+                                </Link>
+                            ),
+                        },
                         { field: 'email', headerName: 'Email', flex: 1 },
                         { field: 'role', headerName: 'Role', flex: 1 },
                         {
                             field: 'actions',
                             headerName: 'Actions',
-                            flex: 1,
+                            flex: 0.7,
                             sortable: false,
+                            filterable: false,
                             renderCell: (params) => (
                                 <div className="space-x-2">
                                     <Link
@@ -99,13 +113,6 @@ export default function Index({ guides }) {
                                     >
                                         <ButtonThin type="delete">
                                             Delete
-                                        </ButtonThin>
-                                    </Link>
-                                    <Link
-                                        href={`/guides/${params.row.id}`}
-                                    >
-                                        <ButtonThin type="detail">
-                                            Details
                                         </ButtonThin>
                                     </Link>
                                 </div>

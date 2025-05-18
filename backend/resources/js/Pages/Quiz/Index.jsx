@@ -60,8 +60,7 @@ export default function Index({ auth, quizzes }) {
                         {
                             field: "actions",
                             headerName: "Actions",
-                            flex: 1,
-                            minWidth: 180,
+                            flex: 0.7,
                             sortable: false,
                             filterable: false,
                             renderCell: (params) => {

@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Support\Facades\Auth;
 
 class MediaController extends Controller
 {
@@ -15,9 +18,24 @@ class MediaController extends Controller
      */
     public function index()
     {
+        $user = Auth::user(); // Get the authenticated user
+
         return MediaResource::collection(
             Media::latest()->take(10)->get()
-        );
+        )->additional([
+            'meta' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role_name,
+                ]
+            ]
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Media/Create');
     }
 
     /**
@@ -27,22 +45,30 @@ class MediaController extends Controller
     {
         $validated = $request->validated();
 
-        // Store the file locally
         $path = $request->file('file')->store('media', 'public');
         $url = asset('storage/' . $path);
 
-        $media = Media::create([
-            'park_id' => $validated['park_id'],
+        Media::create([
             'type' => $validated['type'],
             'url' => $url,
-            'caption' => $validated['caption'],
+            'caption' => $validated['caption'] ?? null,
         ]);
 
-        return redirect()->route('media.index')->with('success', 'Media uploaded!');
+        // For Inertia requests, redirect with Inertia::location
+        return Inertia::location(route('media.index'));
+    }
+
+
+    /**
+     * Display a single media item.
+     */
+    public function show(Media $media)
+    {
+        return new MediaResource($media);
     }
 
     /**
-     * Update an existing media post.
+     * Update an existing media item.
      */
     public function update(Request $request, Media $media)
     {
@@ -51,14 +77,13 @@ class MediaController extends Controller
             'file' => 'nullable|file|mimes:jpeg,png,jpg,mp4,mov|max:10240',
         ]);
 
-        // If file is provided, update the media URL
+        // Update the media URL if a new file is uploaded
         if ($request->hasFile('file')) {
             $path = $request->file('file')->store('media', 'public');
             $media->url = asset('storage/' . $path);
         }
 
-        // Always update caption if present
-        if ($request->has('caption')) {
+        if ($request->filled('caption')) {
             $media->caption = $request->caption;
         }
 
@@ -68,19 +93,14 @@ class MediaController extends Controller
     }
 
     /**
-     * Delete a media post.
+     * Delete a media item.
      */
     public function destroy(Media $media)
     {
         $media->delete();
-        return response()->json(['message' => 'Media deleted']);
-    }
 
-    /**
-     * Show a single media post.
-     */
-    public function show(Media $media)
-    {
-        return new MediaResource($media);
+        return response()->json([
+            'message' => 'Media deleted successfully.'
+        ], 200);
     }
 }
