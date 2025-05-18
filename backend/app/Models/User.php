@@ -172,4 +172,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Course::class, 'course_user');
     }
+
+    //for mobile notification
+    public function expoTokens()
+    {
+        return $this->hasMany(\App\Models\ExpoPushToken::class);
+    }
 }
