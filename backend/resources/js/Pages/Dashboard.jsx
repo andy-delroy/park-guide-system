@@ -60,7 +60,7 @@ export default function Dashboard({ auth }) {
         </h2>
       }
     >
-      <Head title="Dashboard" />
+      <Head title="Home" />
 
       <div className="bg-white min-h-screen px-4 py-6">
         {/* Alert Message */}

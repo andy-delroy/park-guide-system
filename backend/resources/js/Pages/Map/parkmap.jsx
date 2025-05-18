@@ -13,7 +13,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const containerStyle = {
   width: "100vw",
-  height: "100vh",
+  height: "calc(100vh - 88px)",
 };
 
 const center = { lat: 1.40164, lng: 110.31443 }; // Default Park Location
@@ -225,17 +225,18 @@ const ParkMap = () => {
           <div
             style={{
               position: "fixed",
-              left: sidebarOpen ? "0" : "-400px",
-              top: 0,
-              width: "400px",
+              left: "240px", // Always positioned next to navbar
+              top: 88,
+              width: sidebarOpen ? "400px" : "0",
               height: "100%",
               backgroundColor: "#1a1a1a",
               color: "white",
-              padding: "20px",
+              padding: sidebarOpen ? "20px" : "0",
               overflowY: "auto",
-              boxShadow: "2px 0 5px rgba(0, 0, 0, 0.5)",
-              transition: "left 0.3s ease",
+              boxShadow: sidebarOpen ? "2px 0 5px rgba(0, 0, 0, 0.5)" : "none",
+              transition: "width 0.3s ease, padding 0.3s ease",
               zIndex: 2,
+              visibility: sidebarOpen ? "visible" : "hidden",
             }}
           >
             <button

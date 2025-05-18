@@ -1,5 +1,4 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
@@ -7,6 +6,7 @@ import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children, showBackButton = false, backHref = '/' }) {
     const user = usePage().props.auth.user;
+    const role = user?.role_name ?? 'visitor';
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -33,7 +33,41 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                             href={route('dashboard')}
                             active={route().current('dashboard')}
                         >
-                            Dashboard
+                            Home
+                        </NavLink>
+                        {role === 'admin' && (
+                            <>
+                                <NavLink
+                                    href={route('iot.dashboard')}
+                                    active={route().current('iot.dashboard')}
+                                >
+                                    IoT Dashboard
+                                </NavLink>
+                                <NavLink
+                                    href={route('guides.analytics')}
+                                    active={route().current('guides.analytics')}
+                                >
+                                    Guide Analytics
+                                </NavLink>
+                                <NavLink
+                                    href={route('guides.index')}
+                                    active={route().current('guides.index')}
+                                >
+                                    Guides
+                                </NavLink>
+                            </>
+                        )}
+                        <NavLink
+                            href={route('courses.index')}
+                            active={route().current('courses.index')}
+                        >
+                            Courses
+                        </NavLink>
+                        <NavLink
+                            href={route('quiz.index')}
+                            active={route().current('quiz.index')}
+                        >
+                            Quiz
                         </NavLink>
                         <NavLink
                             href={route('trainings.index')}
@@ -48,28 +82,10 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                             Certification
                         </NavLink>
                         <NavLink
-                            href={route('guides.index')}
-                            active={route().current('guides.index')}
-                        >
-                            Guides
-                        </NavLink>
-                        <NavLink
-                            href={route('quiz.index')}
-                            active={route().current('quiz.index')}
-                        >
-                            Quiz
-                        </NavLink>
-                        <NavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}
                         >
                             Map
-                        </NavLink>
-                        <NavLink
-                            href={route('courses.index')}
-                            active={route().current('courses.index')}
-                        >
-                            Courses
                         </NavLink>
                         <NavLink
                             href={route('profile.edit')}
@@ -154,7 +170,41 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                             href={route('dashboard')}
                             active={route().current('dashboard')}
                         >
-                            Dashboard
+                            Home
+                        </ResponsiveNavLink>
+                        {role === 'admin' && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('iot.dashboard')}
+                                    active={route().current('iot.dashboard')}
+                                >
+                                    IoT Dashboard
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('guides.analytics')}
+                                    active={route().current('guides.analytics')}
+                                >
+                                    Guide Analytics
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('guides.index')}
+                                    active={route().current('guides.index')}
+                                >
+                                    Guides
+                                </ResponsiveNavLink>
+                            </>
+                        )}
+                        <ResponsiveNavLink
+                            href={route('courses.index')}
+                            active={route().current('courses.index')}
+                        >
+                            Courses
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('quiz.index')}
+                            active={route().current('quiz.index')}
+                        >
+                            Quiz
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route('trainings.index')}
@@ -169,28 +219,10 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                             Certification
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href={route('guides.index')}
-                            active={route().current('guides.index')}
-                        >
-                            Guides
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('quiz.index')}
-                            active={route().current('quiz.index')}
-                        >
-                            Quiz
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}
                         >
                             Map
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('courses.index')}
-                            active={route().current('courses.index')}
-                        >
-                            Courses
                         </ResponsiveNavLink>
                     </div>
 

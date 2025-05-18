@@ -1,39 +1,31 @@
 <?php
 
-use App\Http\Controllers\GuideController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TrainingsController;
-use App\Http\Controllers\CertificationController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\QuizController;
-use App\Http\Controllers\QuestionController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Events\TestEvent;
-use Inertia\Inertia;
-use App\Models\Notification;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\ModuleController;
-use App\Models\Alert;
 use App\Events\AlertCreated;
+use App\Events\TestEvent;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Admin\AlertAdminController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\RecommenderController;
+use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\MediaController;
-
-
-// use App\Models\Alert;
-// use App\Events\AlertCreated;
-// use App\Http\Controllers\AlertController;
-// use App\Http\Controllers\Admin\AlertAdminController;
-// use App\Http\Controllers\NotificationController;
-
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\RecommenderController;
+use App\Http\Controllers\TrainingsController;
+use App\Http\Controllers\UserController;
+use App\Models\Alert;
+use App\Models\Notification;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // Redirect root to dashboard
-Route::redirect('/', '/dashboard');
+Route::redirect('/', '/home');
 
 // Public route for index (no middleware)
 Route::get('/media', [MediaController::class, 'index'])->name('media.index');
@@ -41,7 +33,8 @@ Route::get('/media', [MediaController::class, 'index'])->name('media.index');
 // Authenticated routes (only for logged-in users)
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/home', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/iotdashboard', fn () => Inertia::render('IOTDashboard'))->name('iot.dashboard');
     Route::resource('certification', CertificationController::class);
     Route::resource('media', MediaController::class)->except(['index']);
 
@@ -65,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
    //guides management
    Route::resource('guides', GuideController::class);
+   Route::get('/guides-analytics', [GuideController::class, 'guideAnalytics'])->name('guides.analytics');
 });
 
 Route::post('/broadcast/test', function (Request $request) {
