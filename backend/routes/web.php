@@ -157,6 +157,10 @@ Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reord
     Route::middleware(['auth'])->group(function () {
         // Course routes
         Route::resource('courses', CourseController::class);
+
+        //for guide enrollment
+    Route::post('/courses/{course}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+    Route::delete('/courses/{course}/unenroll', [CourseController::class, 'unenroll'])->name('courses.unenroll');
     
         // Nested modules under each course
         Route::prefix('courses/{course}')->name('courses.')->group(function () {

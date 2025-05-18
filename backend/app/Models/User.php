@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, SoftDeletes;
+
     protected $fillable = [
         'username', 'password', 'email', 'phone_number', 'full_name',
         'date_of_birth', 'gender', 'address', 'role_id', 'profile_image_url',
@@ -26,13 +27,10 @@ class User extends Authenticatable
         'average_rating' => 'float',
     ];
 
-
     public function getRoleNameAttribute(): string
     {
         return $this->role ? $this->role->role_name : 'Unknown';
     }
-
-
 
     public function routeNotificationForMail(): string
     {
@@ -45,9 +43,7 @@ class User extends Authenticatable
      *        Relationships
      *  ---------------------------- */
 
-
     // ROLE: Each user belongs to a role
-
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -82,7 +78,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Trainings::class, 'training_user', 'user_id', 'training_id')->withTimestamps();
     }
-
 
     // TRAINING SESSIONS: A user may be an instructor
     public function instructedSessions(): HasMany
@@ -170,5 +165,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Quiz::class, 'quiz_guide', 'guide_id', 'quiz_id')
                     ->withPivot('total_score', 'time_taken')
                     ->withTimestamps();
+    }
+
+    
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_user');
     }
 }
