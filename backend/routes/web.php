@@ -20,18 +20,20 @@ use App\Events\AlertCreated;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Admin\AlertAdminController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MediaController;
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
 
-// Public gallery — everyone can view
-Route::get('/media', fn () => Inertia::render('Media/Index'))->name('media.index');
-Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+// Public route for index (no middleware)
+Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+
 // Authenticated routes (only for logged-in users)
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
     Route::resource('certification', CertificationController::class);
+    Route::resource('media', MediaController::class)->except(['index']);
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);
