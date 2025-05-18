@@ -171,4 +171,10 @@ class User extends Authenticatable
                     ->withPivot('total_score', 'time_taken')
                     ->withTimestamps();
     }
+
+    //for mobile notification
+    public function expoTokens()
+    {
+        return $this->hasMany(\App\Models\ExpoPushToken::class);
+    }
 }
