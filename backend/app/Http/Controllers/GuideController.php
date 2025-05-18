@@ -151,4 +151,10 @@ class GuideController extends Controller
         return redirect()->route('guides.index')
             ->with('success', 'Guide deleted successfully');
     }
+
+    public function guideAnalytics(Request $request)
+    {
+        // Placeholder response for future analytics logic
+        return Inertia::render('GuideAnalyticsDashboard');
+    }
 }
