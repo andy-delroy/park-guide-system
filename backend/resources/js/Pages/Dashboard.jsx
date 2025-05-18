@@ -37,6 +37,7 @@ export default function Dashboard({ auth }) {
 
       alertChannel.listen('.alert.created', (e) => {
         console.log('Park alert received:', e.alert);
+        console.log('Recipients:', e.recipients);
         setAlert(e.alert);
       });
 

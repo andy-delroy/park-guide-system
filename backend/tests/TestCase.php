@@ -1,4 +1,4 @@
-tt<?php
+<?php
 
 namespace Tests;
 
