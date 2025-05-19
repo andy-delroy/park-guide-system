@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
+import { Inertia } from '@inertiajs/inertia'; // Added for Inertia.delete
+import { Link, usePage, Head } from '@inertiajs/react'; // Added Head
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
-import Sidebar from './Sidebar';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Added for template
+import SectionCard from '@/Components/SectionCard'; // Added for template
+import Button from '@/Components/Button';
+import ButtonThin from '@/Components/ButtonThin';
 
 export default function ModuleIndex() {
   const { course, modules, groups, auth } = usePage().props;
@@ -15,6 +19,7 @@ export default function ModuleIndex() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [courseProgress, setCourseProgress] = useState(0);
+  const [message, setMessage] = useState({ success: null, error: null }); // Added for messages
 
   useEffect(() => {
     const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', modules: [] };
@@ -130,9 +135,10 @@ export default function ModuleIndex() {
         setModules(newModuleGroups.flatMap(g => g.modules));
       }
 
-      console.log('Module order and group updated.');
+      setMessage({ success: 'Module order and group updated.', error: null }); // Added
     } catch (error) {
       console.error('Failed to update module order or group:', error);
+      setMessage({ success: null, error: 'Failed to update module order or group.' }); // Added
     }
   };
 
@@ -148,7 +154,10 @@ export default function ModuleIndex() {
   };
   
   const createNewGroup = async () => {
-    if (!newGroupName.trim()) return;
+    if (!newGroupName.trim()) {
+      setMessage({ success: null, error: 'Group name cannot be empty.' }); // Added
+      return;
+    }
   
     try {
       const response = await axios.post(`/courses/${course.id}/groups`, {
@@ -159,13 +168,15 @@ export default function ModuleIndex() {
   
       setModuleGroups([
         ...moduleGroups,
-        { id: newGroup.id.toString(), name: newGroup.name, modules: [] }, // FIXED: force string ID
+        { id: newGroup.id.toString(), name: newGroup.name, modules: [] },
       ]);
   
       setNewGroupName('');
       setShowCreateGroup(false);
+      setMessage({ success: 'Group created successfully.', error: null }); // Added
     } catch (error) {
       console.error('Failed to create group:', error);
+      setMessage({ success: null, error: 'Failed to create group.' }); // Added
     }
   };
 
@@ -221,194 +232,230 @@ export default function ModuleIndex() {
     return Math.round((completedResources.length / module.resources.length) * 100);
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar course={course} activePage="modules" />
+  const getGroupName = (groupId) => { // Added for group display
+    if (!groupId) return 'Ungrouped';
+    const group = groups.find((g) => g.id.toString() === groupId.toString());
+    return group ? group.name : 'Ungrouped';
+  };
 
-      <main className="flex-1 p-8">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">{course?.title}</h1>
-          <p className="mt-2 text-gray-600">{course?.description || 'No description available.'}</p>
-          
-          <div className="mt-4 flex items-center">
-            <div className="mr-3 text-sm font-medium">Course Progress: {courseProgress}%</div>
-            <div className="w-48 bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full" 
-                style={{ width: `${courseProgress}%` }}
-              ></div>
-            </div>
+  const handleDelete = (moduleId) => { // Added for Inertia-based deletion
+    if (window.confirm('Are you sure you want to delete this module?')) {
+      Inertia.delete(`/courses/${course?.id}/modules/${moduleId}`, {
+        onSuccess: () => {
+          setModuleGroups(moduleGroups.map(g => ({
+            ...g,
+            modules: g.modules.filter(m => m.id !== moduleId)
+          })));
+          setMessage({ success: 'Module deleted successfully.', error: null });
+        },
+        onError: () => {
+          setMessage({ success: null, error: 'Failed to delete module.' });
+        },
+      });
+    }
+  };
+
+  return (
+    <AuthenticatedLayout
+      user={user}
+      header={
+        <h2 className="text-xl font-semibold leading-tight text-gray-800">
+          Module Management
+        </h2>
+      }
+      showBackButton={true}
+      backHref="/courses"
+    >
+      <Head title="Module Management" />
+
+      <SectionCard>
+        {message.success && (
+          <div className="mb-4 rounded-lg bg-green-100 p-4 text-green-700">
+            {message.success}
           </div>
-          
-          {isAdmin && (
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link 
-                href={`/courses/${course?.id}/modules/create`} 
-                className="inline-flex px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition"
-              >
-                + Add Module
-              </Link>
-              <Link 
-                href={`/courses/${course?.id}/edit`} 
-                className="inline-flex px-4 py-2 border border-blue-600 text-blue-600 text-sm font-semibold rounded-md hover:bg-blue-50 transition"
-              >
-                Edit Course
-              </Link>
-              {!showCreateGroup ? (
-                <button
-                  onClick={() => setShowCreateGroup(true)}
-                  className="inline-flex px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition"
-                >
-                  + Add Group
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newGroupName}
-                    onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="Group name"
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    autoFocus
-                  />
-                  <button
-                    onClick={createNewGroup}
-                    className="px-3 py-2 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setShowCreateGroup(false)}
-                    className="px-3 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
+        )}
+        {message.error && (
+          <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+            {message.error}
+          </div>
+        )}
+
+        <div className="mb-4 flex justify-between">
+          <h3 className="text-lg font-medium text-gray-900">
+            Modules for {course?.title}
+          </h3>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <span className="mr-2 text-sm font-medium">Course Progress: {courseProgress}%</span>
+              <div className="w-24 bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{ width: `${courseProgress}%` }}
+                ></div>
+              </div>
             </div>
-          )}
-        </header>
+            {isAdmin && (
+              <div className="flex space-x-2">
+                <Link
+                  href={`/courses/${course?.id}/modules/create`}
+                >
+                  <Button type="create">
+                    + Create New Module
+                  </Button>
+                </Link>
+                {/* <Link
+                  href={`/courses/${course?.id}/edit`}
+                >
+                  <Button type="edit">
+                    Edit Course
+                  </Button>
+                </Link> */}
+                {!showCreateGroup ? (
+                  <Button type="create" onClick={() => setShowCreateGroup(true)}>
+                    + Create New Group
+                  </Button>
+
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      placeholder="Group name"
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      autoFocus
+                    />
+                    <Button
+                      type="create"
+                      onClick={createNewGroup}
+                    >
+                      Create
+                    </Button>
+                    <Button
+                      type="cancel"
+                      onClick={() => {
+                        setShowCreateGroup(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         <DragDropContext onDragEnd={onDragEnd}>
           {moduleGroups.map((group) => (
-            <section key={group.id} className="mb-6">
-              <div className="flex items-center justify-between bg-white p-3 rounded-t-lg border border-gray-200 cursor-pointer"
-                   onClick={() => toggleGroup(group.id)}>
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <span className="mr-2">{expandedGroups[group.id] ? '▼' : '►'}</span>
+            <div key={group.id} className="mb-6">
+              <div
+                className="flex items-center justify-between bg-gray-50 p-3 rounded-t-lg border border-gray-200 cursor-pointer"
+                onClick={() => toggleGroup(group.id)}
+              >
+                <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                  <span className="mr-2">{expandedGroups[group.id] ? '▼' : '⯈'}</span>
                   {group.name}
                   <span className="ml-2 text-sm text-gray-500">({group.modules.length})</span>
-                </h2>
+                </h3>
               </div>
-              
+
               {expandedGroups[group.id] && (
                 <Droppable droppableId={`group-${group.id}`}>
                   {(provided) => (
-                    <div 
-                      {...provided.droppableProps} 
-                      ref={provided.innerRef} 
-                      className="space-y-2 p-3 bg-gray-50 rounded-b-lg border border-t-0 border-gray-200"
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="overflow-x-auto"
                     >
-                      {group.modules.map((mod, index) => {
-                        const progressPercent = getModuleProgress(mod.id);
-                        return (
-                          <Draggable 
-                            key={mod.id} 
-                            draggableId={`module-${mod.id}`} 
-                            index={index} 
-                            isDragDisabled={!isAdmin}
-                          >
-                            {(provided) => (
-                              <div 
-                                ref={provided.innerRef} 
-                                {...provided.draggableProps} 
-                                {...provided.dragHandleProps} 
-                                className="bg-white border border-gray-200 rounded-lg shadow-sm"
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                              Title
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                              Material Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                              Progress
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {group.modules.length > 0 ? (
+                            group.modules.map((mod, index) => (
+                              <Draggable
+                                key={mod.id}
+                                draggableId={`module-${mod.id}`}
+                                index={index}
+                                isDragDisabled={!isAdmin}
                               >
-                                <div className="p-4">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <Link
-                                      href={`/courses/${course.id}/modules/${mod.id}`}
-                                      className={`flex-1 font-medium ${getModuleColor(mod.material_type)}`}
-                                    >
-                                      {mod.title}
-                                    </Link>
-                                    {isAdmin && (
-                                      <div className="relative">
-                                        <button
-                                          className="text-gray-500 hover:text-gray-700"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            toggleDropdown(mod.id);
-                                          }}
-                                          aria-label="Module actions"
-                                        >
-                                          ⋮
-                                        </button>
-                                        {openDropdownId === mod.id && (
-                                          <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50 border border-gray-200">
-                                            <Link
-                                              href={`/courses/${course?.id}/modules/${mod.id}/edit`}
-                                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                              Edit
-                                            </Link>
-                                            <button
-                                              onClick={() => {
-                                                if (window.confirm('Are you sure you want to delete this module?')) {
-                                                  axios.delete(`/courses/${course?.id}/modules/${mod.id}`)
-                                                    .then(() => {
-                                                      // Update local state
-                                                      const updatedGroups = moduleGroups.map(g => ({
-                                                        ...g,
-                                                        modules: g.modules.filter(m => m.id !== mod.id)
-                                                      }));
-                                                      setModuleGroups(updatedGroups);
-                                                    })
-                                                    .catch(error => {
-                                                      console.error('Failed to delete module:', error);
-                                                      alert('Failed to delete module.');
-                                                    });
-                                                }
-                                              }}
-                                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                            >
-                                              Delete
-                                            </button>
-                                          </div>
-                                        )}
+                                {(provided) => (
+                                  <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                  >
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                                      <Link
+                                        href={`/courses/${course.id}/modules/${mod.id}`}
+                                        className={`text-indigo-600 hover:text-indigo-900 ${getModuleColor(mod.material_type)}`}
+                                      >
+                                        {mod.title}
+                                      </Link>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                      {mod.material_type || 'N/A'}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                      <div className="flex items-center">
+                                        <span className="mr-2">{getModuleProgress(mod.id)}%</span>
+                                        <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                                          <div
+                                            className="bg-blue-600 h-1.5 rounded-full"
+                                            style={{ width: `${getModuleProgress(mod.id)}%` }}
+                                          ></div>
+                                        </div>
                                       </div>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="flex items-center mt-2">
-                                    <span className="text-xs text-gray-500 mr-2">{progressPercent}% complete</span>
-                                    <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                                      <div 
-                                        className="bg-blue-600 h-1.5 rounded-full" 
-                                        style={{ width: `${progressPercent}%` }}
-                                      ></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        );
-                      })}
-                      {provided.placeholder}
-                      
-                      {group.modules.length === 0 && (
-                        <div className="p-4 text-center text-gray-500 italic text-sm">
-                          No modules in this group. {isAdmin && 'Drag modules here.'}
-                        </div>
-                      )}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium space-x-2">
+                                      <Link
+                                        href={`/courses/${course.id}/modules/${mod.id}/edit`}
+                                      >
+                                        <ButtonThin type="edit">
+                                          Edit
+                                        </ButtonThin>
+                                      </Link>
+                                      <ButtonThin type="delete" onClick={() => handleDelete(mod.id)}>
+                                        Delete
+                                      </ButtonThin>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Draggable>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan="4"
+                                className="px-6 py-4 text-center text-sm text-gray-500"
+                              >
+                                No modules in this group. {isAdmin && 'Drag modules here.'}
+                              </td>
+                            </tr>
+                          )}
+                          {provided.placeholder}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </Droppable>
               )}
-            </section>
+            </div>
           ))}
         </DragDropContext>
 
@@ -416,12 +463,9 @@ export default function ModuleIndex() {
           <div className="p-8 bg-white border border-gray-200 rounded-lg shadow-sm text-center">
             <h3 className="text-lg font-semibold text-gray-900">No modules yet</h3>
             <p className="text-gray-600 mt-2">Add modules to start building your course</p>
-            {isAdmin && (
-              <Link href={`/courses/${course?.id}/modules/create`} className="mt-4 inline-flex px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition">Add Module</Link>
-            )}
           </div>
         )}
-      </main>
-    </div>
+      </SectionCard>
+    </AuthenticatedLayout>
   );
 }

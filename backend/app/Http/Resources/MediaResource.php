@@ -10,7 +10,6 @@ class MediaResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'park_id' => $this->park_id,
             'type' => $this->type,
             'url' => $this->url,
             'caption' => $this->caption,

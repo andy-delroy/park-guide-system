@@ -1,5 +1,8 @@
+import SectionCard from "@/Components/SectionCard";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import Button from "@/Components/Button";
+import DataGridTable from '@/Components/DataGridTable';
 
 export default function MyTrainings({ auth, trainings }) {
     return (
@@ -10,56 +13,41 @@ export default function MyTrainings({ auth, trainings }) {
                     My Trainings
                 </h2>
             }
+            showBackButton={true}
+            backHref={route("trainings.index")}
         >
             <Head title="My Trainings" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            {/* 🟦 Download Schedule Button */}
-                            <div className="flex justify-end mb-4">
-                                <a
-                                    href={route("my-trainings.download")}
-                                    className="inline-block px-4 py-2 bg-blue-600 text-white font-semibold text-sm rounded shadow hover:bg-blue-700 transition"
-                                >
-                                    Download Schedule (ICS)
-                                </a>
-                            </div>
-
-                            {/* Training Table */}
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b-2 border-gray-500">
-                                    <tr className="text-nowrap">
-                                        <th className="px-3 py-2">Name of Training</th>
-                                        <th className="px-3 py-2">Start Date</th>
-                                        <th className="px-3 py-2">End Date</th>
-                                        <th className="px-3 py-2">Location</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {trainings.data.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="4" className="text-center py-4">
-                                                You are not enrolled in any trainings.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        trainings.data.map((training) => (
-                                            <tr key={training.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                                <td className="px-3 py-3">{training.title}</td>
-                                                <td className="px-3 py-3">{training.start_date}</td>
-                                                <td className="px-3 py-3">{training.end_date}</td>
-                                                <td className="px-3 py-3">{training.location}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <SectionCard>
+                {/* Download Schedule Button */}
+                <div className="flex justify-end mb-4">
+                    <a
+                        href={route("my-trainings.download")}
+                    >
+                        <Button type="detail">
+                            Download Schedule (ICS)
+                        </Button>
+                    </a>
                 </div>
-            </div>
+
+                {/* Training Table */}
+                <DataGridTable
+                    rows={trainings.data.map((training) => ({
+                        id: training.id,
+                        title: training.title,
+                        start_date: training.start_date,
+                        end_date: training.end_date,
+                        location: training.location,
+                    }))}
+                    columns={[
+                        { field: 'title', headerName: 'Name of Training', flex: 1 },
+                        { field: 'start_date', headerName: 'Start Date', flex: 1 },
+                        { field: 'end_date', headerName: 'End Date', flex: 1 },
+                        { field: 'location', headerName: 'Location', flex: 1 },
+                    ]}
+                />
+
+            </SectionCard>
         </AuthenticatedLayout>
     );
 }

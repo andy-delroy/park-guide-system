@@ -9,7 +9,6 @@ use App\Http\Controllers\TrainingsController;
 // use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuideFeedbackController;
-use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\GuideController;
@@ -55,16 +54,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// ✅ Public route to return authenticated user (still protected if needed)
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// ✅ Company resource routes
 Route::apiResource('companies', CompanyController::class);
-
-// ✅ Media API routes WITHOUT sanctum (TEMP for testing only)
-Route::get('/media', [MediaController::class, 'index']);              // List 10 latest
-Route::post('/media', [MediaController::class, 'store']);             // Upload media
-Route::patch('/media/{media}', [MediaController::class, 'update']);   // Update caption / file
-Route::delete('/media/{media}', [MediaController::class, 'destroy']); // Delete media

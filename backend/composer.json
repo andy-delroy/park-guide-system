@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "eluceo/ical": "^2.14",
+        "guzzlehttp/guzzle": "^7.9",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/breeze": "^2.3",
         "laravel/framework": "^12.0",

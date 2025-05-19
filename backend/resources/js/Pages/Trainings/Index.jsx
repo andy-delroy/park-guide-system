@@ -4,6 +4,8 @@ import Button from "@/Components/Button";
 import { Head, Link } from "@inertiajs/react";
 import axios from "axios";
 import { Inertia } from "@inertiajs/inertia";
+import DataGridTable from "@/Components/DataGridTable";
+import ButtonThin from "@/Components/ButtonThin";
 
 export default function Index({ auth, trainings }) {
     const handleEnroll = async (trainingId) => {
@@ -63,90 +65,85 @@ export default function Index({ auth, trainings }) {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Trainings
+                    Training Management
                 </h2>
             }
         >
-            <Head title="Trainings" />
+            <Head title="Training Management" />
 
             <SectionCard> 
-                <div className="flex justify-end mb-4 space-x-2">
+                <div className="mb-4 flex justify-between">
+                    <h3 className="text-lg font-medium text-gray-900">
+                            Trainings
+                    </h3>
+
                     {auth.user?.role?.role_name === "guide" && (
                         <Link href={route("my-trainings")}>
-                            <Button type="info">View My Trainings</Button>
+                            <Button type="detail">View My Trainings</Button>
                         </Link>
                     )}
 
                     {auth.user?.role?.role_name === "admin" && (
                         <Link href={route("trainings.create")}>
-                            <Button>Add Training</Button>
+                            <Button>+ Create New Training</Button>
                         </Link>
                     )}
                 </div>
 
-                <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead className="sticky top-0 z-10 shadow text-xs text-gray-700 uppercase bg-gray-50 darK:bg-gray-700 dark:text-gray-400 border-b-2 border-gray-500">
-                        <tr className="text-nowrap">
-                            <th className="px-3 py-2">ID</th>
-                            <th className="px-3 py-2">Name of Training</th>
-                            <th className="px-3 py-2">Description</th>
-                            <th className="px-3 py-2">Start Date</th>
-                            <th className="px-3 py-2">End Date</th>
-                            <th className="px-3 py-2">Location</th>
-                            <th className="px-3 py-2">Capacity</th>
-                            {auth.user?.role?.role_name === "guide" && (
-                                <th className="px-3 py-2">Enrolment</th>
-                            )}
-                            {auth.user?.role?.role_name === "admin" && (
-                                <th className="px-3 py-2">Actions</th>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {trainings.data.length === 0 ? (
-                            <tr>
-                                <td colSpan="8" className="text-center py-4">
-                                    No trainings found.
-                                </td>
-                            </tr>
-                        ) : (
-                            trainings.data.map((training) => (
-                                <tr key={training.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td className="px-3 py-3">{training.id}</td>
-                                <td className="px-3 py-3">{training.title}</td>
-                                <td className="px-3 py-3">{training.description}</td>
-                                <td className="px-3 py-3">{training.start_date}</td>
-                                <td className="px-3 py-3">{training.end_date}</td>
-                                <td className="px-3 py-3">{training.location}</td>
-                                <td className="px-3 py-3">{training.capacity}</td>
-                                {auth.user?.role?.role_name === "guide" && (
-                                    <td className="px-3 py-3">
-                                        {training.is_enrolled ? (
-                                            <Button type="danger" onClick={() => handleUnenroll(training.id)}>
-                                                Cancel Enrollment
-                                            </Button>
-                                        ) : (
-                                            <Button type="success" onClick={() => handleEnroll(training.id)}>
-                                                Enroll
-                                            </Button>
-                                        )}
-                                    </td>
-                                )}
-                                {auth.user?.role?.role_name === "admin" && (
-                                    <td className="px-3 py-3 flex space-x-2">
-                                        <Link href={route("trainings.edit", training.id)}>
-                                            <Button type="success">Edit</Button>
+                <DataGridTable
+                    columns={[
+                        { field: "id", headerName: "ID", width: 70 },
+                        { field: "title", headerName: "Name of Training", flex: 1 },
+                        { field: "description", headerName: "Description", flex: 1 },
+                        { field: "start_date", headerName: "Start Date", width: 130 },
+                        { field: "end_date", headerName: "End Date", width: 130 },
+                        { field: "location", headerName: "Location", width: 130 },
+                        { field: "capacity", headerName: "Capacity", width: 100 },
+                        ...(auth.user?.role?.role_name === "guide"
+                            ? [{
+                                field: "enrollment",
+                                headerName: "Enrollment",
+                                width: 200,
+                                sortable: false,
+                                renderCell: (params) => (
+                                    params.row.is_enrolled ? (
+                                        <ButtonThin type="delete" onClick={() => handleUnenroll(params.row.id)}>
+                                            Cancel Enrollment
+                                        </ButtonThin>
+                                    ) : (
+                                        <ButtonThin type="success" onClick={() => handleEnroll(params.row.id)}>
+                                            Enroll
+                                        </ButtonThin>
+                                    )
+                                )
+                            }]
+                            : []),
+                        ...(auth.user?.role?.role_name === "admin"
+                            ? [{
+                                field: "actions",
+                                headerName: "Actions",
+                                flex: 0.7,
+                                sortable: false,
+                                filterable: false,
+                                renderCell: (params) => (
+                                    <div className="flex space-x-2">
+                                        <Link href={route("trainings.edit", params.row.id)}>
+                                            <ButtonThin type="edit">
+                                                Edit
+                                            </ButtonThin>
                                         </Link>
-                                        <Button type="danger" onClick={() => handleDelete(training.id)}>
+                                        <ButtonThin type="delete" onClick={() => handleDelete(params.row.id)}>
                                             Delete
-                                        </Button>
-                                    </td>                                
-                                )}
-                                </tr>   
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                        </ButtonThin>
+                                    </div>
+                                )
+                            }]
+                            : []),
+                    ]}
+                    rows={trainings.data}
+                    checkboxSelection={false}
+                />
+
             </SectionCard> 
         </AuthenticatedLayout>
     );

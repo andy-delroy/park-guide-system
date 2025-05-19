@@ -8,16 +8,26 @@ class MediaRequest extends FormRequest
 {
     public function authorize()
     {
-        return true; // Adjust authorization logic as needed
+        return true; // Adjust this if needed for auth checks
     }
 
     public function rules()
     {
         return [
-            'park_id' => 'required|integer', // temporarily removed 'exists' rule
             'type' => 'required|in:image,video',
-            'file' => 'required|file|mimes:jpeg,png,jpg,mp4,mov|max:10240',
+            'file' => 'required|file|max:10240', // mime validated conditionally below
             'caption' => 'nullable|string|max:255',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->sometimes('file', 'mimes:jpeg,jpg,png', function ($input) {
+            return $input->type === 'image';
+        });
+
+        $validator->sometimes('file', 'mimes:mp4,mov', function ($input) {
+            return $input->type === 'video';
+        });
     }
 }
