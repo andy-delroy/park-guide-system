@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Link } from '@inertiajs/react';
 import SectionCard from '@/Components/SectionCard';
@@ -9,12 +9,14 @@ import 'swiper/css/effect-coverflow';
 
 import SwiperCore from 'swiper';
 import { EffectCoverflow, Autoplay } from 'swiper/modules';
+import Button from '@/Components/Button';
 
 SwiperCore.use([EffectCoverflow]);
 
 const MediaIndex = () => {
   const [media, setMedia] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const videoSwiperRef = useRef(null); // ref for video swiper
 
   useEffect(() => {
     axios.get('/media')
@@ -24,6 +26,25 @@ const MediaIndex = () => {
       })
       .catch(err => console.error('Error fetching media:', err));
   }, []);
+
+  // Play the video of the active slide
+  const handleSlideChange = () => {
+    setTimeout(() => {
+      const swiper = videoSwiperRef.current;
+      if (!swiper) return;
+
+      // Find the currently active slide's video element
+      const currentSlide = swiper.slides[swiper.activeIndex];
+      const video = currentSlide.querySelector('video');
+      if (video) {
+        video.currentTime = 0; // reset to start
+        video.play().catch(() => {
+          // Autoplay might be blocked on some devices without user interaction
+          console.log('Autoplay blocked');
+        });
+      }
+    }, 10); // slight delay ensures DOM is updated
+  };
 
   if (media.length === 0)
     return (
@@ -64,12 +85,22 @@ const MediaIndex = () => {
           Discover the beauty of Sarawak
         </h2>
         {userRole === 'admin' && (
-          <Link
-            href="/media/create"
-            className="bg-[#00693D] text-white px-4 py-2 text-sm rounded-lg shadow hover:bg-green-800 transition"
-          >
-            + Upload New Media
-          </Link>
+          <div className="flex space-x-2">
+            <Link
+              href="/manage-media"
+            >
+              <Button type='edit'>
+                Manage Media
+              </Button>
+            </Link>
+            <Link
+              href="/media/create"
+            >
+              <Button>
+                + Upload New Media
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
 
@@ -87,6 +118,7 @@ const MediaIndex = () => {
             slideShadows: false,
           }}
           loop={true}
+          allowTouchMove={false}
           speed={4000}
           autoplay={{
             delay: 0,
@@ -95,9 +127,9 @@ const MediaIndex = () => {
           modules={[Autoplay]}
           className="media-swiper"
         >
-          {media.map((item) => (
+          {media.filter(item => item.type === 'image').map((item) => (
             <SwiperSlide key={item.id} style={{ width: '80%' }}>
-              <div className="overflow-hidden rounded-lg shadow-lg relative">
+              <div className="overflow-hidden rounded-lg relative">
                 <img
                   src={item.url}
                   alt={item.caption || 'Media item'}
@@ -105,6 +137,43 @@ const MediaIndex = () => {
                 />
                 {item.caption && (
                   <div className="caption-overlay">
+                    {item.caption}
+                  </div>
+                )}
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+
+      <div className="relative w-full h-[500px]">
+        <Swiper
+          onSwiper={(swiper) => (videoSwiperRef.current = swiper)}
+          onSlideChange={handleSlideChange}
+          spaceBetween={0}
+          centeredSlides={false}
+          slidesPerView={1}
+          allowTouchMove={false}
+          loop={true}
+          autoplay={false}
+          className="w-full h-full"
+        >
+          {media.filter(item => item.type === 'video').map((item) => (
+            <SwiperSlide key={item.id} className="w-full h-full">
+              <div className="w-full h-full relative overflow-hidden rounded-lg">
+                <video
+                  src={item.url}
+                  autoPlay
+                  muted
+                  className="w-full h-full object-cover"
+                  onEnded={() => {
+                    if (videoSwiperRef.current) {
+                      videoSwiperRef.current.slideNext();
+                    }
+                  }}
+                />
+                {item.caption && (
+                  <div className="caption-overlay absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4 text-center text-lg font-medium">
                     {item.caption}
                   </div>
                 )}

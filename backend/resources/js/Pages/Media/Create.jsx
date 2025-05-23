@@ -7,10 +7,25 @@ import Button from '@/Components/Button';
 const Create = ({ auth }) => {
   const { data, setData, post, processing, errors, reset } = useForm({
     caption: '',
-    type: 'image',
+    type: '',
     file: null,
     park_id: '', // Add park_id if needed
   });
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const mime = file.type;
+      const inferredType = mime.startsWith('image/') ? 'image' :
+                           mime.startsWith('video/') ? 'video' :
+                           '';
+      setData({
+        ...data,
+        type: inferredType,
+        file,
+      });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,7 +45,7 @@ const Create = ({ auth }) => {
         </h2>
       }
       showBackButton={true}
-      backHref="/dashboard"
+      backHref="/home"
     >
       <Head title="Upload Media" />
 
@@ -48,7 +63,7 @@ const Create = ({ auth }) => {
             {errors.caption && <div className="text-red-500 text-sm mt-1">{errors.caption}</div>}
           </div>
 
-          <div>
+          {/* <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
             <select
               name="type"
@@ -60,15 +75,15 @@ const Create = ({ auth }) => {
               <option value="video">Video</option>
             </select>
             {errors.type && <div className="text-red-500 text-sm mt-1">{errors.type}</div>}
-          </div>
+          </div> */}
 
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">File</label>
             <input
               type="file"
               name="file"
-              accept={data.type === 'image' ? 'image/jpeg,image/png,image/jpg' : 'video/mp4,video/quicktime'}
-              onChange={(e) => setData('file', e.target.files[0])}
+              accept="image/*,video/*"
+              onChange={handleFileChange}
               className="w-full dark:text-gray-100"
             />
             {errors.file && <div className="text-red-500 text-sm mt-1">{errors.file}</div>}
@@ -78,7 +93,7 @@ const Create = ({ auth }) => {
             <Button typeAttr="submit" disabled={processing}>
               {processing ? 'Uploading...' : 'Upload'}
             </Button>
-            <Link href="/dashboard">
+            <Link href="/home">
               <Button type="button">Cancel</Button>
             </Link>
           </div>

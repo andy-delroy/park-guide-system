@@ -21,7 +21,7 @@ class MediaController extends Controller
         $user = Auth::user(); // Get the authenticated user
 
         return MediaResource::collection(
-            Media::latest()->take(10)->get()
+            Media::latest()->get()
         )->additional([
             'meta' => [
                 'user' => [
@@ -41,23 +41,39 @@ class MediaController extends Controller
     /**
      * Store a newly created media in storage.
      */
-    public function store(MediaRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validated();
-
-        $path = $request->file('file')->store('media', 'public');
-        $url = asset('storage/' . $path);
-
-        Media::create([
-            'type' => $validated['type'],
-            'url' => $url,
-            'caption' => $validated['caption'] ?? null,
+        $request->validate([
+            'file' => 'required|file|mimes:jpeg,png,jpg,mp4,qt',
+            'caption' => 'nullable|string|max:255',
         ]);
 
-        // For Inertia requests, redirect with Inertia::location
-        return Inertia::location(route('media.index'));
-    }
+        $file = $request->file('file');
+        $mime = $file->getMimeType();
 
+        // Automatically determine type
+        $type = str_starts_with($mime, 'image/') ? 'image' :
+                (str_starts_with($mime, 'video/') ? 'video' : null);
+
+        if (!$type) {
+            return response()->json(['error' => 'Unsupported file type.'], 422);
+        }
+
+        // ✅ Correct way: store on 'public' disk to get accessible path via /storage link
+        $path = $file->store('media', 'public');
+
+        // ✅ Generate correct public URL (via storage:link)
+        $url = asset('storage/' . $path); // e.g. /storage/media/example.jpg
+
+        // ✅ Save to DB
+        Media::create([
+            'caption' => $request->caption,
+            'type' => $type,
+            'url' => $url,
+        ]);
+
+        return Inertia::location(route('dashboard'));
+    }
 
     /**
      * Display a single media item.
@@ -70,37 +86,53 @@ class MediaController extends Controller
     /**
      * Update an existing media item.
      */
-    public function update(Request $request, Media $media)
+    
+    public function update(Request $request, $id)
     {
+        $media = Media::findOrFail($id);
         $request->validate([
             'caption' => 'nullable|string|max:255',
-            'file' => 'nullable|file|mimes:jpeg,png,jpg,mp4,mov|max:10240',
         ]);
-
-        // Update the media URL if a new file is uploaded
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('media', 'public');
-            $media->url = asset('storage/' . $path);
+        $updated = $media->update([
+            'caption' => $request->input('caption'),
+        ]);
+        if ($updated) {
+            return back()->with('flash.success', 'Media updated successfully.');
+        } else {
+            return back()->with('flash.error', 'Failed to update media.');
         }
-
-        if ($request->filled('caption')) {
-            $media->caption = $request->caption;
-        }
-
-        $media->save();
-
-        return new MediaResource($media);
     }
 
-    /**
-     * Delete a media item.
-     */
-    public function destroy(Media $media)
+    public function destroy($id)
     {
-        $media->delete();
-
-        return response()->json([
-            'message' => 'Media deleted successfully.'
-        ], 200);
+        $media = Media::findOrFail($id);
+        $deleted = $media->delete();
+        if ($deleted) {
+            return back()->with('flash.success', 'Media deleted successfully.');
+        } else {
+            return back()->with('flash.error', 'Failed to delete media.');
+        }
     }
+
+    public function manage()
+    {
+        $user = Auth::user();
+
+        // Get all media as a collection of resources
+        $mediaCollection = MediaResource::collection(Media::latest()->get());
+
+        // Return an Inertia page with the media data and user info
+        return Inertia::render('Media/Manage', [
+            'media' => $mediaCollection,
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role_name,
+                ],
+            ],
+        ]);
+    }
+
+
 }

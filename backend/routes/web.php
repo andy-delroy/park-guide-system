@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/iotdashboard', fn () => Inertia::render('IOTDashboard'))->name('iot.dashboard');
     Route::resource('certification', CertificationController::class);
     Route::resource('media', MediaController::class)->except(['index']);
+    Route::get('/manage-media', [MediaController::class, 'manage'])->name('media.manage');
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);

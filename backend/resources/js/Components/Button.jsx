@@ -1,4 +1,4 @@
-export default function Button({ children, type = 'create', typeAttr = 'button', ...props }) {
+export default function Button({ children, type = 'create', typeAttr = 'button', className = '', ...props }) {
     const base = "inline-block px-4 py-2 text-sm font-semibold rounded shadow transition";
     const variants = {
         create: "bg-[--forest-green] text-white hover:bg-green-700",
@@ -10,7 +10,7 @@ export default function Button({ children, type = 'create', typeAttr = 'button',
     };
 
     return (
-        <button type={typeAttr} className={`${base} ${variants[type]}`} {...props}>
+        <button type={typeAttr} className={`${base} ${variants[type]} ${className}`} {...props}>
             {children}
         </button>
     );
