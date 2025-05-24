@@ -10,10 +10,13 @@ class CourseController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        $enrolledIds = $user->courses()->pluck('courses.id')->toArray(); 
         return Inertia::render('Courses/Index', [
             'courses' => Course::withCount('modules')->latest()->get(),
+            'enrolled' => $enrolledIds,
             'auth' => [
-                'user' => auth()->user(),
+                'user' => $user,
             ],
         ]);
     }
@@ -77,5 +80,22 @@ class CourseController extends Controller
         $course->delete();
 
         return redirect()->route('courses.index')->with('success', 'Course deleted.');
+    }
+
+    public function enroll(Request $request, Course $course)
+    {
+        $user = auth()->user();
+
+        if ($user->role_name !== 'guide') {
+            return response()->json(['message' => 'Only guides can enroll in courses.'], 403);
+        }
+
+        if ($course->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Already enrolled.'], 409);
+        }
+
+        $course->users()->attach($user->id);
+
+        return response()->json(['message' => 'Enrolled successfully.']);
     }
 }

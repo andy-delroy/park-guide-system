@@ -1,37 +1,43 @@
 <?php
 
-use App\Http\Controllers\GuideController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TrainingsController;
-use App\Http\Controllers\CertificationController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\QuizController;
-use App\Http\Controllers\QuestionController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Events\TestEvent;
-use Inertia\Inertia;
-use App\Models\Notification;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\ModuleController;
-use App\Models\Alert;
 use App\Events\AlertCreated;
+use App\Events\TestEvent;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Admin\AlertAdminController;
+use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\GuideController;
+use App\Http\Controllers\MediaController;
+use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\RecommenderController;
+use App\Http\Controllers\TrainingsController;
+use App\Http\Controllers\UserController;
+use App\Models\Alert;
+use App\Models\Notification;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // Redirect root to dashboard
-Route::redirect('/', '/dashboard');
+Route::redirect('/', '/home');
 
-// Public gallery — everyone can view
-Route::get('/media', fn () => Inertia::render('Media/Index'))->name('media.index');
-Route::get('/media/upload', fn () => Inertia::render('Media/Upload'))->name('media.upload');
+// Public route for index (no middleware)
+Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+
 // Authenticated routes (only for logged-in users)
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/home', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/iotdashboard', fn () => Inertia::render('IOTDashboard'))->name('iot.dashboard');
     Route::resource('certification', CertificationController::class);
+    Route::resource('media', MediaController::class)->except(['index']);
+    Route::get('/manage-media', [MediaController::class, 'manage'])->name('media.manage');
 
    //what are resouces?
     Route::resource('trainings', TrainingsController::class);
@@ -53,22 +59,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
    //guides management
    Route::resource('guides', GuideController::class);
+   Route::get('/guides-analytics', [GuideController::class, 'guideAnalytics'])->name('guides.analytics');
 });
 
-Route::get('/broadcast/test', function () {
+Route::post('/broadcast/test', function (Request $request) {
     $user = Auth::user();
-    $role = $user?->role_name ?? 'guest';
+    $role = $user->role_name ?? 'guest';
     $name = $user?->full_name ?? 'Anonymous';
 
-    $message = "Test notification from {$name} ({$role})";
+    $message = $request->input('message') ?? "Notification from {$name} ({$role})";
 
     Notification::create([
-        'user_id' => $user?->id,
+        'user_id' => $user->id,
+        'role' => $role,
         'message' => $message,
         'type' => 'info',
+        'created_date' => now(),
+        'is_read' => false,
+        'priority_level' => 'medium',
     ]);
 
-    broadcast(new TestEvent($role, $message))->toOthers();
+    broadcast(new TestEvent($role, $message));
 
     return response()->json([
         'status' => 'sent',
@@ -92,17 +103,34 @@ Route::get('/notifications', function () {
     ]);
 })->middleware('auth');
 
-
 Route::middleware('auth')->group(function () {
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications', [NotificationController::class, 'store']);
+    // Use this as the only entry point for notification listing
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
+    // Store a new notification
+    Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
+
+    // Show the broadcast test UI
     Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
-    Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
 
-    Route::get('/admin/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
-    Route::put('/admin/alerts/{alert}', [AlertAdminController::class, 'update'])->name('admin.alerts.update');
-    Route::post('/alerts', [AlertController::class, 'store'])->name('alerts.store');
+    Route::put('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
+    ->middleware('auth')
+    ->name('notifications.markAsRead');
+
+    // Alerts for all users
+    Route::get('/alerts/list', fn () => Inertia::render('Alerts/AlertList'))->name('alerts.list');
+});
+
+// Alert routes
+Route::middleware('auth')->group(function () {
+    Route::post('/alerts', [AlertAdminController::class, 'store'])->name('alerts.store');
+    Route::get('/alerts', [AlertAdminController::class, 'redirectAlerts'])->name('alerts.redirect');
+
+    Route::prefix('admin')->group(function () {
+        Route::get('/alerts', [AlertAdminController::class, 'index'])->name('admin.alerts.index');
+        Route::get('/alerts/send', fn () => Inertia::render('Alerts/SendAlert'))->name('admin.alerts.send');
+        Route::delete('/alerts/{alert}', [AlertAdminController::class, 'destroy'])->name('admin.alerts.destroy');
+    });
 });
 
 // User profile routes
@@ -117,6 +145,7 @@ Route::get('/map', function () {
 })->name('map.parkmap');
 Route::get('/certification/{id}/details', [CertificationController::class, 'show'])->name('certifications.show');
 Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
+Route::post('/certification/{id}/renew', [CertificationController::class, 'renew']);
 
 Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reorder'])
     ->name('courses.modules.reorder');
@@ -124,6 +153,10 @@ Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reord
     Route::middleware(['auth'])->group(function () {
         // Course routes
         Route::resource('courses', CourseController::class);
+
+        //for guide enrollment
+    Route::post('/courses/{course}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+    Route::delete('/courses/{course}/unenroll', [CourseController::class, 'unenroll'])->name('courses.unenroll');
     
         // Nested modules under each course
         Route::prefix('courses/{course}')->name('courses.')->group(function () {
@@ -171,3 +204,6 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
 
 // Route::redirect('/nigga', '/dashboard');
 // Route::redirect('/nigga', '/thehood');
+
+//recommender routes
+Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);

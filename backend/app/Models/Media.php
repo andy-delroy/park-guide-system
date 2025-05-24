@@ -10,7 +10,6 @@ class Media extends Model
     use HasFactory;
 
     protected $fillable = [
-        'park_id',
         'type',
         'url',
         'caption',

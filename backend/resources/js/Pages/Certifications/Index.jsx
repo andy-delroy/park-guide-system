@@ -30,6 +30,25 @@ export default function Index({ auth, certifications }) {
         }
     };
 
+    const handleRenew = (id) => {
+        if (confirm("Are you sure you want to renew this certification?")) {
+            Inertia.post(`/certification/${id}/renew`, {}, {
+                onSuccess: () => {
+                    setMessage({
+                        success: "Certification renewed successfully.",
+                        error: null,
+                    });
+                },
+                onError: () => {
+                    setMessage({
+                        success: null,
+                        error: "Failed to renew certification. Please try again.",
+                    });
+                },
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -71,16 +90,32 @@ export default function Index({ auth, certifications }) {
                         issued_to: cert.guide.full_name,
                         issued_by: cert.issuer.full_name,
                         issue_date: cert.issue_date,
+                        validity_period_months: cert.validity_period_months,
                     }))}
                     columns={[
-                        { field: "certification_name", headerName: "Name", flex: 2 },
+                        {
+                            field: "certification_name",
+                            headerName: "Name",
+                            flex: 2,
+                            renderCell: ({ row }) => (
+                                <Link
+                                    href={`/certification/${row.id}/details`}
+                                >
+                                    <ButtonThin type="detail">
+                                        {row.certification_name}
+                                    </ButtonThin>
+                                </Link>
+                            ),
+                        },
                         { field: "issued_to", headerName: "Issued To", flex: 1 },
                         { field: "issued_by", headerName: "Issued By", flex: 1 },
                         { field: "issue_date", headerName: "Issue Date", flex: 1 },
                         {
                             field: "actions",
                             headerName: "Actions",
-                            flex: 1.5,
+                            flex: 0.7,
+                            sortable: false,
+                            filterable: false,
                             renderCell: ({ row }) => (
                                 <div className="flex space-x-2">
                                     {auth.user.role.role_name === "admin" && (
@@ -106,15 +141,16 @@ export default function Index({ auth, certifications }) {
                                                     Delete
                                                 </ButtonThin>
                                             </Link>
+                                            {(row.validity_period_months == 0 || row.validity_period_months == 1) && (
+                                                <button
+                                                    onClick={() => handleRenew(row.id)}
+                                                    className="ml-4 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
+                                                >
+                                                    Renew
+                                                </button>
+                                            )}
                                         </>
                                     )}
-                                    <Link
-                                        href={`/certification/${row.id}/details`}
-                                    >
-                                        <ButtonThin type="detail">
-                                            Details
-                                        </ButtonThin>
-                                    </Link>
                                 </div>
                             ),
                         },

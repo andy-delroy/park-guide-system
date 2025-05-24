@@ -288,4 +288,13 @@ class CertificationController extends Controller
             return redirect()->route('certification.index')->with('error', 'Failed to delete certification.');
         }
     }
+
+    public function renew($id)
+    {
+        $cert = Certification::findOrFail($id);
+        $cert->validity_period_months += 12;
+        $cert->save();
+
+        return redirect()->back()->with('success', 'Certification renewed successfully.');
+    }
 }

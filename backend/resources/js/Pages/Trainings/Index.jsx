@@ -122,8 +122,9 @@ export default function Index({ auth, trainings }) {
                             ? [{
                                 field: "actions",
                                 headerName: "Actions",
-                                width: 200,
+                                flex: 0.7,
                                 sortable: false,
+                                filterable: false,
                                 renderCell: (params) => (
                                     <div className="flex space-x-2">
                                         <Link href={route("trainings.edit", params.row.id)}>
