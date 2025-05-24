@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Events\SensorDataUpdated;
 
 use App\Models\SensorLog;
 
@@ -22,6 +23,8 @@ class SensorLogController extends Controller
         ]);
 
         $log = SensorLog::create($data);
+        //fire boradcast when new sensor data is logged
+        event(new SensorDataUpdated($sensorLog));
 
         return response()->json([
             'message' => 'Sensor log stored.',

@@ -15,6 +15,9 @@ class SensorLog extends Model
         'distance_cm',
         'recorded_at',
     ];
+    protected $casts = [
+        'recorded_at' => 'datetime',
+    ];
 
     public $timestamps = true;
 }

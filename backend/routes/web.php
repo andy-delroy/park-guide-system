@@ -17,6 +17,7 @@ use App\Http\Controllers\RecommenderController;
 use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IoTDashBoardController;
 use App\Models\Alert;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
@@ -53,7 +54,8 @@ Route::get('/media', [MediaController::class, 'index'])->name('media.index');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/home', fn () => Inertia::render('Dashboard'))->name('dashboard');
-    Route::get('/iotdashboard', fn () => Inertia::render('IOTDashboard'))->name('iot.dashboard');
+    //this route displays stuff received from IoT edge
+    Route::get('/iot-dashboard', [IoTDashBoardController::class, 'index'])->name('iot.dashboard');
     Route::resource('certification', CertificationController::class);
     Route::resource('media', MediaController::class)->except(['index']);
     Route::get('/manage-media', [MediaController::class, 'manage'])->name('media.manage');
@@ -226,3 +228,7 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
 
 //recommender routes
 Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);
+
+//IOT web
+// Route::get('')
+// Route::get('/IOT/sensor-data')
