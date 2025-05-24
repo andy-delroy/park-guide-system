@@ -14,8 +14,6 @@ class Certification extends Model
         'certificate_number',
         'description',
         'certificate_file_url',
-        'renewal_requirements',
-        'validity_period_months',
         'issued_by',
         'issue_date',
         'expiry_date',

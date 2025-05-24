@@ -14,7 +14,6 @@ const Edit = ({ auth, certification }) => {
         description: certification.description || '',
         certificate_file_url: certification.certificate_file_url || '',
         renewal_requirements: certification.renewal_requirements || '',
-        validity_period_months: certification.validity_period_months || '',
         issue_date: certification.issue_date || '',
         expiry_date: certification.expiry_date || '',
         status: certification.status || 'active',
@@ -204,16 +203,6 @@ const Edit = ({ auth, certification }) => {
                             className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                         />
                         {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
-                    </div>
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
-                        <input
-                            type="number"
-                            value={data.validity_period_months}
-                            onChange={(e) => setData('validity_period_months', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
                     </div>
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>

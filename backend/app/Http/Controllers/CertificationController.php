@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str; 
 use Illuminate\Support\Facades\Validator;     
+use Carbon\Carbon;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class CertificationController extends Controller
 {
@@ -20,11 +23,14 @@ class CertificationController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-    
+
         if ($user->role->role_name === 'guide') {
-            $certifications = Certification::with(['guide', 'issuer'])->where('guide_id', $user->id)->paginate(10);
+            $certifications = Certification::with(['guide', 'issuer'])
+                ->where('guide_id', $user->id)
+                ->get(); // removed pagination
         } else if ($user->role->role_name === 'admin') {
-            $certifications = Certification::with(['guide', 'issuer'])->paginate(10);
+            $certifications = Certification::with(['guide', 'issuer'])
+                ->get(); // removed pagination
         } else {
             abort(403, 'Unauthorized');
         }
@@ -32,12 +38,11 @@ class CertificationController extends Controller
         if ($request->expectsJson()) {
             return CertificationResource::collection($certifications);
         }
-    
+
         return inertia('Certifications/Index', [
             'certifications' => $certifications,
         ]);
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -57,11 +62,9 @@ class CertificationController extends Controller
             'certification_name' => 'required|string|unique:guide_certifications',
             'certificate_number' => 'required|string|unique:guide_certifications',
             'description' => 'required|string',
-            'renewal_requirements' => 'nullable|string',
-            'validity_period_months' => 'nullable|integer',
             'certificate_file_url' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'issue_date' => 'required|date',
-            'expiry_date' => 'nullable|date|after:issue_date',
+            'expiry_date' => 'required|date|after:issue_date',
             'status' => 'required|string|in:active,inactive',
             'base_url' => 'required|url', // Require base_url to match API_BASE_URL
         ]);
@@ -82,12 +85,10 @@ class CertificationController extends Controller
             'certification_name' => $validated['certification_name'],
             'certificate_number' => $validated['certificate_number'],
             'description' => $validated['description'],
-            'renewal_requirements' => $validated['renewal_requirements'],
-            'validity_period_months' => $validated['validity_period_months'],
             'certificate_file_url' => $fileUrl, // Store the full URL
             'issued_by' => auth()->id(), // Assuming the user creating the certification is the issuer
             'issue_date' => $validated['issue_date'],
-            'expiry_date' => $validated['expiry_date'] ?? null,
+            'expiry_date' => $validated['expiry_date'],
             'status' => $validated['status'],
         ]);
 
@@ -148,13 +149,10 @@ class CertificationController extends Controller
                     'certificate_number' => 'nullable|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
                     'certification_name' => 'nullable|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
                     'description' => 'nullable|string',
-                    'renewal_requirements' => 'nullable|string',
-                    'validity_period_months' => 'nullable|integer',
                     'certificate_file' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
                     'issue_date' => 'nullable|date',
                     'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                     'status' => 'nullable|in:active,inactive',
-                    'program_name' => 'nullable|string|max:255',
                 ]);
 
                 if ($validator->fails()) {
@@ -178,12 +176,9 @@ class CertificationController extends Controller
                     'certificate_number',
                     'certification_name',
                     'description',
-                    'renewal_requirements',
-                    'validity_period_months',
                     'issue_date',
                     'expiry_date',
                     'status',
-                    'program_name',
                 ]));
 
                 $certification->save();
@@ -199,8 +194,6 @@ class CertificationController extends Controller
                     'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
                     'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
                     'description' => 'nullable|string',
-                    'renewal_requirements' => 'nullable|string',
-                    'validity_period_months' => 'nullable|integer',
                     'certificate_file_url' => 'nullable', // Allow null or file
                     'issue_date' => 'required|date',
                     'expiry_date' => 'nullable|date|after_or_equal:issue_date',
@@ -292,9 +285,66 @@ class CertificationController extends Controller
     public function renew($id)
     {
         $cert = Certification::findOrFail($id);
-        $cert->validity_period_months += 12;
+
+        // Add 12 months to current expiry date or now
+        $currentExpiry = $cert->expiry_date ? Carbon::parse($cert->expiry_date) : Carbon::now();
+        $newExpiry = $currentExpiry->copy()->addMonths(12);
+
+        // Store only the date part (Y-m-d), no time
+        $cert->expiry_date = $newExpiry->format('Y-m-d');
+
+        // Increment renewal count
+        $cert->renewal_count = $cert->renewal_count + 1;
+
         $cert->save();
 
         return redirect()->back()->with('success', 'Certification renewed successfully.');
+    }
+
+    public function generateCertificateImage($certification, $baseUrl)
+    {
+        // Validate file paths
+        $templatePath = public_path('storage/templates/certificate_template.png');
+        $outputDir = public_path('certificates');
+
+        if (!file_exists($templatePath)) {
+            \Log::error('Certificate template not found at: ' . $templatePath);
+            throw new \Exception('Certificate template not found');
+        }
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        // Create an ImageManager instance with GD driver
+        $manager = new ImageManager(new Driver());
+
+        // Load the base certificate template image
+        $img = $manager->read($templatePath);
+
+        // Set text properties
+        $guideName = $certification->guide->full_name;
+        $programName = $certification->certification_name;
+
+        $img->text($guideName, 600, 450, function ($font) {
+            $font->size(48);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($programName, 600, 520, function ($font) {
+            $font->size(36);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        // Save to the same public path as uploaded certificates
+        $filename = time() . '_certificate_' . $certification->id . '.png';
+        $path = public_path('certificates/' . $filename);
+        $img->save($path);
+
+        // Return the full public URL
+        return $baseUrl . '/certificates/' . $filename;
     }
 }

@@ -13,7 +13,6 @@ const Create = ({ auth }) => {
         certification_name: '',
         description: '',
         certificate_file_url: null,
-        validity_period_months: '',
         renewal_requirements: '',
         issue_date: '',
         expiry_date: '',
@@ -49,6 +48,13 @@ const Create = ({ auth }) => {
         };
 
         fetchGuides();
+    }, []);
+
+    // Set default issue_date to today
+    useEffect(() => {
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        setData('issue_date', formattedDate);
     }, []);
 
     const handleSubmit = (e) => {
@@ -145,15 +151,6 @@ const Create = ({ auth }) => {
                         )}
                     </div>
                     <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Validity months</label>
-                        <textarea
-                            value={data.validity_period_months}
-                            onChange={(e) => setData('validity_period_months', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.validity_period_months && <div className="text-red-500 text-sm mt-1">{errors.validity_period_months}</div>}
-                    </div>
-                    <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
                         <textarea
                             value={data.renewal_requirements}
@@ -213,15 +210,9 @@ const Create = ({ auth }) => {
                         )}
                     </div>
                     <div className="flex space-x-2">
-                        <Link
-                        href="/certification/create"
-                        method="post"
-                        as="button"
-                        >
-                            <Button type="create" disabled={processing}>
-                                Create Certification
-                            </Button>
-                        </Link>
+                        <Button type="create" typeAttr="submit" disabled={processing}>
+                            Create Certification
+                        </Button>
                         <Link
                             href="/certification"
                         >
