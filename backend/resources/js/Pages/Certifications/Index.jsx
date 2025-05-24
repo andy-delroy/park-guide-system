@@ -142,12 +142,12 @@ export default function Index({ auth, certifications }) {
                                                 </ButtonThin>
                                             </Link>
                                             {(row.validity_period_months == 0 || row.validity_period_months == 1) && (
-                                                <button
+                                                <ButtonThin
+                                                    type="success"
                                                     onClick={() => handleRenew(row.id)}
-                                                    className="ml-4 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
                                                 >
                                                     Renew
-                                                </button>
+                                                </ButtonThin>
                                             )}
                                         </>
                                     )}
