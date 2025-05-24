@@ -7,21 +7,15 @@ import TextInput from '@/Components/TextInput';
 
 const ManageMedia = ({ auth, media }) => {
   const [inputCaptions, setInputCaptions] = useState({});
-
-  console.log('Auth:', auth);
-  console.log('Media:', media);
-
   const handleInputChange = (id, value) => {
     setInputCaptions(prev => ({ ...prev, [id]: value }));
   };
 
   const handleUpdate = (id) => {
     const caption = inputCaptions[id] ?? '';
-    console.log('Updating media', id, 'with caption:', caption);
     router.put(`/media/${id}`, { caption }, {
       preserveScroll: true,
       onSuccess: (page) => {
-        console.log('Update successful for media', id, 'Response:', page);
         router.reload({ only: ['media'] });
         setInputCaptions(prev => {
           const next = { ...prev };
@@ -38,11 +32,9 @@ const ManageMedia = ({ auth, media }) => {
 
   const handleDelete = (id) => {
     if (confirm('Are you sure you want to delete this media?')) {
-      console.log('Deleting media', id);
       router.delete(`/media/${id}`, {
         preserveScroll: true,
         onSuccess: (page) => {
-          console.log('Delete successful for media', id, 'Response:', page);
           router.reload({ only: ['media'] });
           setInputCaptions(prev => {
             const next = { ...prev };

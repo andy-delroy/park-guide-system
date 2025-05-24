@@ -35,17 +35,32 @@ class CourseController extends Controller
             'duration' => 'nullable|string|max:255',
         ]);
 
-        $path = $request->file('thumbnail')?->store('thumbnails', 'public');
+        $url = null;
+
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $mime = $file->getMimeType();
+
+            // Ensure it's an image
+            if (!str_starts_with($mime, 'image/')) {
+                return back()->withErrors(['thumbnail' => 'Unsupported file type.']);
+            }
+
+            $path = $file->store('thumbnails', 'public');
+
+            $url = asset('storage/' . $path); // e.g., /storage/thumbnails/example.jpg
+        }
 
         Course::create([
             'title' => $request->title,
             'description' => $request->description,
-            'thumbnail' => $path ? '/storage/' . $path : null,
+            'thumbnail' => $url,
             'duration' => $request->duration,
         ]);
 
         return redirect()->route('courses.index')->with('success', 'Course created.');
     }
+
 
     public function edit(Course $course)
     {

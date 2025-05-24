@@ -12,8 +12,8 @@ class Course extends Model
     protected $fillable = [
         'title',
         'description',
-        'category',
         'duration',
+        'thumbnail',
     ];
     
     public function modules()
