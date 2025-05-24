@@ -495,7 +495,6 @@ const styles = StyleSheet.create({
     fontSize: fonts.fontSizeMedium,
     color: colors.textPrimary,
   },
-
 });
 
 export default styles;

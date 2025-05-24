@@ -8,6 +8,8 @@ import Home from '../Pages/home';
 import Map from '../Pages/map';
 import Camera from '../Pages/camera';
 import Profile from '../Pages/profile';
+import PlantClassifier from '../Pages/plantclassifier';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -38,6 +40,7 @@ const BottomTabs = () => {
             Map: 'map',
             Camera: 'camera',
             Guide: 'tree',
+            Classifier: 'leaf', //KIM TESTING
             Profile: 'user',
           }[route.name];
           return <Icon name={iconName} size={size} color={color} />;
@@ -63,6 +66,14 @@ const BottomTabs = () => {
           component={Camera}
         />
       )}
+
+        {role && (
+          <Tab.Screen
+            name="Classifier"
+            component={PlantClassifier}
+            options={{ tabBarLabel: 'Classifier' }}
+          />
+        )}
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
