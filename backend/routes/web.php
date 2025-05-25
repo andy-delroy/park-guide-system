@@ -30,20 +30,20 @@ Route::redirect('/', '/home');
 // Public route for index (no middleware)
 Route::get('/media', [MediaController::class, 'index'])->name('media.index');
 
-use App\Models\Certification;
+// use App\Models\Certification;
 
-Route::get('/test-generate-certificate/{id}', function ($id) {
-    $certification = Certification::with('guide')->findOrFail($id);
-    $baseUrl = url('/'); // or config('app.url')
+// Route::get('/test-generate-certificate/{id}', function ($id) {
+//     $certification = Certification::with('guide')->findOrFail($id);
+//     $baseUrl = url('/'); // or config('app.url')
 
-    $controller = app()->make(\App\Http\Controllers\CertificationController::class);
-    $imageUrl = $controller->generateCertificateImage($certification, $baseUrl);
+//     $controller = app()->make(\App\Http\Controllers\CertificationController::class);
+//     $imageUrl = $controller->generateCertificateImage($certification, $baseUrl);
 
-    return response()->json([
-        'message' => 'Certificate generated successfully',
-        'image_url' => $imageUrl,
-    ]);
-});
+//     return response()->json([
+//         'message' => 'Certificate generated successfully',
+//         'image_url' => $imageUrl,
+//     ]);
+// });
 
 
 // Authenticated routes (only for logged-in users)
