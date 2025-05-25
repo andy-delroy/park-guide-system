@@ -1,0 +1,107 @@
+{
+    "columns": [
+        {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1
+        },
+        {
+            "cid": 1,
+            "name": "course_id",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 2,
+            "name": "title",
+            "type": "varchar",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 3,
+            "name": "description",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 4,
+            "name": "material_type",
+            "type": "varchar",
+            "notnull": 1,
+            "dflt_value": "'video'",
+            "pk": 0
+        },
+        {
+            "cid": 5,
+            "name": "resource_url",
+            "type": "varchar",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 6,
+            "name": "created_at",
+            "type": "datetime",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 7,
+            "name": "updated_at",
+            "type": "datetime",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+        },
+        {
+            "cid": 8,
+            "name": "position",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": "'0'",
+            "pk": 0
+        },
+        {
+            "cid": 9,
+            "name": "group_id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+        }
+    ],
+    "foreign_keys": [
+        {
+            "id": 0,
+            "seq": 0,
+            "table": "module_groups",
+            "from": "group_id",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "SET NULL",
+            "match": "NONE"
+        },
+        {
+            "id": 1,
+            "seq": 0,
+            "table": "courses",
+            "from": "course_id",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "CASCADE",
+            "match": "NONE"
+        }
+    ],
+    "indexes": []
+}

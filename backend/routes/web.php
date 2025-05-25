@@ -171,6 +171,10 @@ Route::post('/certification/{id}/renew', [CertificationController::class, 'renew
 Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reorder'])
     ->name('courses.modules.reorder');
 
+Route::post('/courses/{course}/quizzes/{quiz}/group', [QuizController::class, 'assignGroup'])->middleware('auth');
+Route::post('/courses/{course}/quizzes/reorder', [QuizController::class, 'reorder'])->middleware('auth');
+
+
     Route::middleware(['auth'])->group(function () {
         // Course routes
         Route::resource('courses', CourseController::class);
@@ -223,8 +227,6 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
     ]);
 })->name('quizzes.questions.create');
 
-// Route::redirect('/nigga', '/dashboard');
-// Route::redirect('/nigga', '/thehood');
 
 //recommender routes
 Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);

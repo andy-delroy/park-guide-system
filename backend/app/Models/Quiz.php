@@ -17,7 +17,10 @@ class Quiz extends Model
         'description',    // Quiz description
         'time_duration',  // Time duration in minutes
         'total_score',    // Total score for the quiz
+        'course_id',
+        'group_id',
         'created_by',     // ID of the user who created the quiz
+        'position', // add this if using mass-assignment
     ];
 
     /**
@@ -49,5 +52,16 @@ class Quiz extends Model
 
         $guide = $this->guides()->where('guide_id', $user->id)->first();
         return $guide ? $guide->pivot->total_score : null; // Return the score from the pivot table
+    }
+
+    //failing relationships
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(ModuleGroup::class, 'group_id');
     }
 }

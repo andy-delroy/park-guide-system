@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Quiz;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -33,9 +34,12 @@ class QuizController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('Quiz/Create');
+        $courseId = $request->query('course_id');
+            return Inertia::render('Quiz/Create', [
+            'course_id' => $courseId,
+        ]);
     }
 
     /**
@@ -48,6 +52,7 @@ class QuizController extends Controller
             'description' => 'nullable|string',
             'time_duration' => 'nullable|integer',
             'total_score' => 'nullable|integer',
+            'course_id' => 'required|exists:courses,id',
         ]);
 
         Quiz::create([
@@ -55,6 +60,7 @@ class QuizController extends Controller
             'description' => $validated['description'],
             'time_duration' => $validated['time_duration'],
             'total_score' => $validated['total_score'],
+            'course_id' => $validated['course_id'],
             'created_by' => auth()->id(),
         ]);
         return redirect()->route('quiz.index')->with('success', 'Quiz created successfully.');
@@ -300,4 +306,45 @@ class QuizController extends Controller
 
         return redirect()->route('quiz.index')->with('success', 'Quiz deleted successfully.');
     }
+
+    public function assignGroup(Request $request, Course $course, Quiz $quiz)
+    {
+        $request->validate([
+            'group_id' => 'nullable|integer|exists:module_groups,id',
+        ]);
+
+        if ($quiz->course_id !== $course->id) {
+            return response()->json(['message' => 'Quiz does not belong to this course.'], 403);
+        }
+
+        $quiz->group_id = $request->input('group_id');
+        $quiz->save();
+
+        return response()->json(['message' => 'Quiz group updated.']);
+    }
+
+    public function reorder(Request $request, Course $course)
+    {
+        logger()->info('Received quiz reorder request', [
+            'course_id' => $course->id,
+            'payload' => $request->all(),
+        ]);
+
+        $request->validate([
+            'quizzes' => 'required|array',
+            'quizzes.*.id' => 'required|integer|exists:quizzes,id',
+            'quizzes.*.position' => 'required|integer',
+        ]);
+
+        foreach ($request->input('quizzes') as $quizData) {
+            $quiz = Quiz::where('id', $quizData['id'])->where('course_id', $course->id)->first();
+            if ($quiz) {
+                $quiz->position = $quizData['position'];
+                $quiz->save();
+            }
+        }
+
+        return response()->json(['message' => 'Quiz positions updated.']);
+    }
+
 }

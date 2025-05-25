@@ -1,19 +1,22 @@
 import React from "react";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
 import Button from "@/Components/Button";
 
 export default function Create({ auth }) {
+    const { course_id } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         title: "",
         description: "",
         time_duration: "",
         total_score: "",
+        course_id: course_id || null,
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log(data); // 👀 Confirm course_id is here
 
         // Send the POST request to create the quiz
         post(route("quiz.store"));
@@ -92,6 +95,7 @@ export default function Create({ auth }) {
                             onChange={(e) => setData("time_duration", e.target.value)}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         />
+                        <input type="hidden" name="course_id" value={data.course_id} />
                         {errors.time_duration && (
                             <div className="text-red-500 text-sm mt-1">
                                 {errors.time_duration}

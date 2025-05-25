@@ -20,8 +20,20 @@ class ModuleController extends Controller
             abort(403, 'You must be enrolled in this course to view its modules.');
         }
 
+        // Load quizzes and modules with their group relations
+        $modules = Module::where('course_id', $course->id)
+            ->with(['resources', 'group'])
+            ->orderBy('position')
+            ->get();
+
+        $quizzes = $course->quizzes()
+            ->with('group')
+            ->orderBy('position') // assuming you’ll add position to quizzes too (highly recommended)
+            ->get();
+
         return Inertia::render('Modules/Index', [
             'course' => $course->loadCount('modules'),
+            'quizzes' => $quizzes,
             'modules' => Module::where('course_id', $course->id)
                 ->with(['resources', 'group'])
                 ->orderBy('position')

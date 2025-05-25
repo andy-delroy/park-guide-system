@@ -9,42 +9,51 @@ import Button from '@/Components/Button';
 import ButtonThin from '@/Components/ButtonThin';
 
 export default function ModuleIndex() {
-  const { course, modules, groups, auth } = usePage().props;
+  const { course, modules, quizzes, groups, auth } = usePage().props;
   const user = auth?.user;
   const isAdmin = user?.role_name === 'admin' || user?.role_name === 'superadmin' || false;
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const [modulesState, setModules] = useState(modules || []);
+  // const [modulesState, setModules] = useState(modules || []);
+
+  const [itemsState, setItemsState] = useState(() => {
+    const taggedModules = modules.map(m => ({ ...m, type: 'module' }));
+    const taggedQuizzes = quizzes.map(q => ({ ...q, type: 'quiz' }));
+    return [...taggedModules, ...taggedQuizzes];
+  });
   const [moduleGroups, setModuleGroups] = useState([]);
   const [expandedGroups, setExpandedGroups] = useState({});
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [courseProgress, setCourseProgress] = useState(0);
   const [message, setMessage] = useState({ success: null, error: null }); // Added for messages
+  const [localGroups, setLocalGroups] = useState(groups || []);
+
 
   useEffect(() => {
-    const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', modules: [] };
+    const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', items: [] };
 
     let allGroups = Array.isArray(groups)
-      ? groups.map(g => ({ id: g.id.toString(), name: g.name, modules: [] }))
+      ? localGroups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }))
       : [];
 
     allGroups.push(ungroupedGroup);
 
     if (Array.isArray(groups) && groups.length > 0) {
-      const customGroups = groups.map(g => ({ id: g.id.toString(), name: g.name, modules: [] }));
+      const customGroups = groups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }));
       allGroups = [...customGroups, ...allGroups.filter(g => g.id === 'ungrouped')];
     }
 
-    const groupedModules = allGroups.map(group => {
-      const modulesInGroup = modulesState.filter(m => 
-        group.id === 'ungrouped' ? !m.group_id : m.group_id?.toString() === group.id
+    const groupedItems = allGroups.map(group => {
+      const itemsInGroup = itemsState.filter(item =>
+        group.id === 'ungrouped' ? !item.group_id : item.group_id?.toString() === group.id
       );
-      return { ...group, modules: modulesInGroup };
+      return { ...group, items: itemsInGroup };
     });
 
-    const filteredGroups = groupedModules.filter(g => 
-      g.id === 'ungrouped' || g.modules.length > 0
-    );
+    // const filteredGroups = groupedItems.filter(g =>
+    //   g.id === 'ungrouped' || g.items.length > 0
+    // );
+    const filteredGroups = groupedItems;
 
     setModuleGroups(filteredGroups);
 
@@ -55,32 +64,37 @@ export default function ModuleIndex() {
     setExpandedGroups(initialExpandedState);
 
     calculateCourseProgress();
-  }, [modulesState]);
+  }, [itemsState]);
 
   const calculateCourseProgress = () => {
     let completedCount = 0;
     let totalResources = 0;
 
-    modulesState.forEach(module => {
-      if (module.resources) {
-        module.resources.forEach(resource => {
-          totalResources++;
-          const moduleProgress = localStorage.getItem(`course_${course.id}_module_${module.id}_progress`);
-          if (moduleProgress) {
-            const completedResources = JSON.parse(moduleProgress);
-            if (completedResources.includes(resource.id)) {
-              completedCount++;
+    itemsState
+      .filter(item => item.type === 'module')
+      .forEach(module => {
+        if (module.resources) {
+          module.resources.forEach(resource => {
+            totalResources++;
+            const moduleProgress = localStorage.getItem(`course_${course.id}_module_${module.id}_progress`);
+            if (moduleProgress) {
+              const completedResources = JSON.parse(moduleProgress);
+              if (completedResources.includes(resource.id)) {
+                completedCount++;
+              }
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      });
 
-    const progress = totalResources > 0 ? Math.round((completedCount / totalResources) * 100) : 0;
+    const progress = totalResources > 0
+      ? Math.round((completedCount / totalResources) * 100)
+      : 0;
+
     setCourseProgress(progress);
   };
 
-  const onDragEnd = async (result) => {
+    const onDragEnd = async (result) => {
     if (!result.destination || !isAdmin) return;
 
     const sourceGroupId = result.source.droppableId.replace('group-', '');
@@ -88,57 +102,69 @@ export default function ModuleIndex() {
 
     const sourceGroup = moduleGroups.find(g => g.id === sourceGroupId);
     const destGroup = moduleGroups.find(g => g.id === destGroupId);
-
     if (!sourceGroup || !destGroup) return;
 
-    const moduleIndex = result.source.index;
-    const movedModule = sourceGroup.modules[moduleIndex];
+    const movedItem = sourceGroup.items[result.source.index];
+    if (!movedItem) return;
 
-    if (!movedModule) return;
+    const newGroups = [...moduleGroups];
+    const sourceIndex = newGroups.findIndex(g => g.id === sourceGroupId);
+    const destIndex = newGroups.findIndex(g => g.id === destGroupId);
 
-    const newModuleGroups = [...moduleGroups];
-
-    const sourceGroupIndex = newModuleGroups.findIndex(g => g.id === sourceGroupId);
-    newModuleGroups[sourceGroupIndex].modules.splice(moduleIndex, 1);
-
-    const destGroupIndex = newModuleGroups.findIndex(g => g.id === destGroupId);
-    newModuleGroups[destGroupIndex].modules.splice(result.destination.index, 0, {
-      ...movedModule,
-      group_id: destGroupId === 'ungrouped' ? null : destGroupId
+    // Remove from source, insert into destination
+    newGroups[sourceIndex].items.splice(result.source.index, 1);
+    newGroups[destIndex].items.splice(result.destination.index, 0, {
+      ...movedItem,
+      group_id: destGroupId === 'ungrouped' ? null : destGroupId,
     });
 
-    setModuleGroups(newModuleGroups);
+    setModuleGroups(newGroups);
+    // Update itemsState so useEffect can reflect new group state
+    //update itemSGroup right here in this useEffect so the page dont gotta manual reload
+    const updatedItems = itemsState.map(item => {
+      if (item.id === movedItem.id && item.type === movedItem.type) {
+        return { ...item, group_id: destGroupId === 'ungrouped' ? null : destGroupId };
+      }
+      return item;
+    });
+    setItemsState(updatedItems);
 
     try {
-      await axios.post(`/courses/${course.id}/modules/${movedModule.id}/group`, {
-        group_id: destGroupId === 'ungrouped' ? null : destGroupId
+      // Update group assignment
+      const url =
+        movedItem.type === 'module'
+          ? `/courses/${course.id}/modules/${movedItem.id}/group`
+          : `/courses/${course.id}/quizzes/${movedItem.id}/group`;
+
+      await axios.post(url, {
+        group_id: destGroupId === 'ungrouped' ? null : destGroupId,
       });
 
-      setModules(prev =>
-        prev.map(m =>
-          m.id === movedModule.id
-            ? { ...m, group_id: destGroupId === 'ungrouped' ? null : destGroupId }
-            : m
-        )
-      );
-
+      // Reordering logic (within same group)
       if (sourceGroupId === destGroupId) {
-        const reorderedModules = newModuleGroups[destGroupIndex].modules.map((m, index) => ({
-          id: m.id,
-          position: index + 1
+        const reordered = newGroups[destIndex].items.map((item, index) => ({
+          id: item.id,
+          position: index + 1,
+          type: item.type,
         }));
 
-        await axios.post(`/courses/${course.id}/modules/reorder`, {
-          modules: reorderedModules
-        });
+        const modules = reordered.filter(i => i.type === 'module');
+        const quizzes = reordered.filter(i => i.type === 'quiz');
 
-        setModules(newModuleGroups.flatMap(g => g.modules));
+        if (modules.length) {
+          await axios.post(`/courses/${course.id}/modules/reorder`, { modules });
+        }
+        if (quizzes.length) {
+          console.log("Reordering quizzes:", quizzes);
+          await axios.post(`/courses/${course.id}/quizzes/reorder`, { quizzes });
+        }
       }
 
-      setMessage({ success: 'Module order and group updated.', error: null }); // Added
+      setItemsState(newGroups.flatMap(g => g.items));
+      setMessage({ success: 'Content reordered successfully.', error: null });
     } catch (error) {
-      console.error('Failed to update module order or group:', error);
-      setMessage({ success: null, error: 'Failed to update module order or group.' }); // Added
+      console.error('Drag update failed:', error);
+      setMessage({ success: null, error: 'Failed to update order or group.' });
     }
   };
 
@@ -168,8 +194,9 @@ export default function ModuleIndex() {
   
       setModuleGroups([
         ...moduleGroups,
-        { id: newGroup.id.toString(), name: newGroup.name, modules: [] },
+        { id: newGroup.id.toString(), name: newGroup.name, items: [] },
       ]);
+      setLocalGroups(prev => [...prev, newGroup]);
   
       setNewGroupName('');
       setShowCreateGroup(false);
@@ -216,6 +243,7 @@ export default function ModuleIndex() {
       'Assignment': 'bg-yellow-100 text-yellow-800',
       'Reading': 'bg-purple-100 text-purple-800',
       'Interactive': 'bg-pink-100 text-pink-800',
+      'quiz': 'bg-green-100 text-green-800', // support lowercase fallback for safety
       'Other': 'bg-gray-100 text-gray-800',
     };
     return colors[type] || colors['Other'];
@@ -225,8 +253,8 @@ export default function ModuleIndex() {
     const savedProgress = localStorage.getItem(`course_${course.id}_module_${moduleId}_progress`);
     if (!savedProgress) return 0;
     
-    const completedResources = JSON.parse(savedProgress);
-    const module = modulesState.find(m => m.id === moduleId);
+    const completedResources = JSON.parse(savedProgress); 
+    const module = itemsState.find(m => m.id === moduleId && m.type === 'module');
     
     if (!module || !module.resources || module.resources.length === 0) return 0;
     return Math.round((completedResources.length / module.resources.length) * 100);
@@ -238,18 +266,23 @@ export default function ModuleIndex() {
     return group ? group.name : 'Ungrouped';
   };
 
-  const handleDelete = (moduleId) => { // Added for Inertia-based deletion
-    if (window.confirm('Are you sure you want to delete this module?')) {
-      Inertia.delete(`/courses/${course?.id}/modules/${moduleId}`, {
+  const handleDelete = (id, type = 'module') => {
+    const label = type === 'quiz' ? 'quiz' : 'module';
+    if (window.confirm(`Are you sure you want to delete this ${label}?`)) {
+      const deleteUrl = type === 'quiz'
+        ? `/quizzes/${id}`
+        : `/courses/${course?.id}/modules/${id}`;
+
+      Inertia.delete(deleteUrl, {
         onSuccess: () => {
           setModuleGroups(moduleGroups.map(g => ({
             ...g,
-            modules: g.modules.filter(m => m.id !== moduleId)
+            items: g.items.filter(i => i.id !== id),
           })));
-          setMessage({ success: 'Module deleted successfully.', error: null });
+          setMessage({ success: `${label.charAt(0).toUpperCase() + label.slice(1)} deleted successfully.`, error: null });
         },
         onError: () => {
-          setMessage({ success: null, error: 'Failed to delete module.' });
+          setMessage({ success: null, error: `Failed to delete ${label}.` });
         },
       });
     }
@@ -302,6 +335,10 @@ export default function ModuleIndex() {
                   <Button type="create">
                     + Create New Module
                   </Button>
+                </Link>
+
+                <Link href={route("quiz.create") + `?course_id=${course.id}`}>
+                  <Button type="create">+ Create New Quiz</Button>
                 </Link>
                 {/* <Link
                   href={`/courses/${course?.id}/edit`}
@@ -356,7 +393,7 @@ export default function ModuleIndex() {
                 <h3 className="text-lg font-medium text-gray-900 flex items-center">
                   <span className="mr-2">{expandedGroups[group.id] ? '▼' : '⯈'}</span>
                   {group.name}
-                  <span className="ml-2 text-sm text-gray-500">({group.modules.length})</span>
+                  <span className="ml-2 text-sm text-gray-500">({group.items.length})</span>
                 </h3>
               </div>
 
@@ -386,11 +423,11 @@ export default function ModuleIndex() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                          {group.modules.length > 0 ? (
-                            group.modules.map((mod, index) => (
+                          {group.items.length > 0 ? (
+                            group.items.map((item, index) => (
                               <Draggable
-                                key={mod.id}
-                                draggableId={`module-${mod.id}`}
+                                key={`${item.type}-${item.id}`}
+                                draggableId={`${item.type}-${item.id}`}
                                 index={index}
                                 isDragDisabled={!isAdmin}
                               >
@@ -402,35 +439,56 @@ export default function ModuleIndex() {
                                   >
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                                       <Link
-                                        href={`/courses/${course.id}/modules/${mod.id}`}
-                                        className={`text-indigo-600 hover:text-indigo-900 ${getModuleColor(mod.material_type)}`}
+                                        href={
+                                          item.type === 'module'
+                                            ? `/courses/${course.id}/modules/${item.id}`
+                                            : `/quizzes/${item.id}/edit`
+                                        }
+                                        className={`text-indigo-600 hover:text-indigo-900 ${getModuleColor(
+                                          item.material_type || item.type
+                                        )}`}
                                       >
-                                        {mod.title}
+                                        {item.title}
                                       </Link>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                      {mod.material_type || 'N/A'}
+                                      {item.type === 'module'
+                                        ? item.material_type || 'N/A'
+                                        : 'Quiz'}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                      <div className="flex items-center">
-                                        <span className="mr-2">{getModuleProgress(mod.id)}%</span>
-                                        <div className="w-24 bg-gray-200 rounded-full h-1.5">
-                                          <div
-                                            className="bg-blue-600 h-1.5 rounded-full"
-                                            style={{ width: `${getModuleProgress(mod.id)}%` }}
-                                          ></div>
+                                      {item.type === 'module' ? (
+                                        <div className="flex items-center">
+                                          <span className="mr-2">
+                                            {getModuleProgress(item.id)}%
+                                          </span>
+                                          <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                                            <div
+                                              className="bg-blue-600 h-1.5 rounded-full"
+                                              style={{
+                                                width: `${getModuleProgress(item.id)}%`,
+                                              }}
+                                            ></div>
+                                          </div>
                                         </div>
-                                      </div>
+                                      ) : (
+                                        <span className="italic text-gray-400">N/A</span>
+                                      )}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium space-x-2">
                                       <Link
-                                        href={`/courses/${course.id}/modules/${mod.id}/edit`}
+                                        href={
+                                          item.type === 'module'
+                                            ? `/courses/${course.id}/modules/${item.id}/edit`
+                                            : `/quizzes/${item.id}/edit`
+                                        }
                                       >
-                                        <ButtonThin type="edit">
-                                          Edit
-                                        </ButtonThin>
+                                        <ButtonThin type="edit">Edit</ButtonThin>
                                       </Link>
-                                      <ButtonThin type="delete" onClick={() => handleDelete(mod.id)}>
+                                      <ButtonThin
+                                        type="delete"
+                                        onClick={() => handleDelete(item.id, item.type)}
+                                      >
                                         Delete
                                       </ButtonThin>
                                     </td>
@@ -444,7 +502,7 @@ export default function ModuleIndex() {
                                 colSpan="4"
                                 className="px-6 py-4 text-center text-sm text-gray-500"
                               >
-                                No modules in this group. {isAdmin && 'Drag modules here.'}
+                                No content in this group. {isAdmin && 'Drag items here.'}
                               </td>
                             </tr>
                           )}
@@ -459,12 +517,13 @@ export default function ModuleIndex() {
           ))}
         </DragDropContext>
 
-        {(!moduleGroups.length || (moduleGroups.length === 1 && moduleGroups[0].id === 'ungrouped' && moduleGroups[0].modules.length === 0)) && (
-          <div className="p-8 bg-white border border-gray-200 rounded-lg shadow-sm text-center">
-            <h3 className="text-lg font-semibold text-gray-900">No modules yet</h3>
-            <p className="text-gray-600 mt-2">Add modules to start building your course</p>
-          </div>
-        )}
+
+        {(!moduleGroups.length || (moduleGroups.length === 1 && moduleGroups[0].id === 'ungrouped' && moduleGroups[0].items.length === 0)) && (
+      <div className="p-8 bg-white border border-gray-200 rounded-lg shadow-sm text-center">
+        <h3 className="text-lg font-semibold text-gray-900">No content yet</h3>
+        <p className="text-gray-600 mt-2">Add modules or quizzes to start building your course</p>
+      </div>
+      )}
       </SectionCard>
     </AuthenticatedLayout>
   );
