@@ -11,7 +11,7 @@ import {
   TextInput,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import * as ImagePicker from 'expo-image-picker';
 import styles from '../Styles/styles'; // Import your styles
 

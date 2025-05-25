@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import Swiper from 'react-native-swiper';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import styles from '../Styles/styles'; 
 
 const Home = () => {

@@ -16,7 +16,7 @@ import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { colors, fonts } from '../Styles/theme';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 
 const CreateTraining = () => {
   const navigation = useNavigation();

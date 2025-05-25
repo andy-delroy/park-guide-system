@@ -16,7 +16,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fonts } from '../Styles/theme';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 
 // Format date to match CertificateDetails
 const formatDate = (date) =>

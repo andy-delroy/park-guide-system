@@ -3,7 +3,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { View, Text, Button, TouchableOpacity, ActivityIndicator, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, ScrollView } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import { TextInput } from 'react-native';
 import styles from '../Styles/styles';
 

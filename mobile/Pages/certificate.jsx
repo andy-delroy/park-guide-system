@@ -14,7 +14,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, fonts } from '../Styles/theme';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import { Ionicons } from '@expo/vector-icons';
 
 const Certificate = () => {

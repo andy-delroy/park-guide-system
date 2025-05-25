@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { colors, fonts } from '../Styles/theme';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import Checkbox from 'expo-checkbox';
 
 const ManageGuides = () => {

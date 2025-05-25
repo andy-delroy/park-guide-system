@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'; // optional for secure token storage
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 import styles from '../Styles/styles';
 
 const Login = ({ navigation }) => {

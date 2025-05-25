@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'; // optional for secure token storage
-import API_BASE_URL from '../api.config'; // Make sure this imports your API base URL
+import {API_BASE_URL} from '../api.config'; // Make sure this imports your API base URL
 import styles from '../Styles/styles'; // Adjust the import path as needed
 
 const Register = ({ navigation }) => {

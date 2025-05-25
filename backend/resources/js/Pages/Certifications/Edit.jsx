@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import API_BASE_URL from '../../../../../mobile/api.config';
+import { API_BASE_URL } from '../../../../../mobile/api.config';
 import SectionCard from '@/Components/SectionCard';
 import Button from '@/Components/Button';
 
@@ -33,7 +33,13 @@ const Edit = ({ auth, certification }) => {
         if (!url) return null;
         try {
             const parsedUrl = new URL(url);
-            return parsedUrl.pathname; // e.g., /certificates/filename.pdf
+            let path = parsedUrl.pathname;
+
+            // Ensure the path starts with /storage
+            if (!path.startsWith('/storage')) {
+                path = '/storage' + (path.startsWith('/') ? path : '/' + path);
+            }
+            return path;
         } catch (error) {
             console.error('Invalid URL:', url, error);
             return null;

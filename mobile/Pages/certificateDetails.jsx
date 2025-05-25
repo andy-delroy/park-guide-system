@@ -19,7 +19,7 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts } from '../Styles/theme';
-import API_BASE_URL from '../api.config';
+import {API_BASE_URL} from '../api.config';
 
 // Stub for formatDate (matches Certificate.js)
 const formatDate = (date) =>

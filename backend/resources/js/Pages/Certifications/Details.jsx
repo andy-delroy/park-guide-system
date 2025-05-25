@@ -8,7 +8,13 @@ export default function Details({ auth, certification }) {
         if (!url) return null;
         try {
             const parsedUrl = new URL(url);
-            return parsedUrl.pathname;
+            let path = parsedUrl.pathname;
+
+            // Ensure the path starts with /storage
+            if (!path.startsWith('/storage')) {
+                path = '/storage' + (path.startsWith('/') ? path : '/' + path);
+            }
+            return path;
         } catch (error) {
             console.error('Invalid URL:', url, error);
             return null;

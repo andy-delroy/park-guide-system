@@ -281,7 +281,7 @@ class CertificationController extends Controller
     {
         // Validate file paths
         $templatePath = public_path('storage/templates/certificate_template.png');
-        $outputDir = public_path('certificates');
+        $outputDir = public_path('storage/certificates');
 
         if (!file_exists($templatePath)) {
             \Log::error('Certificate template not found at: ' . $templatePath);
@@ -337,7 +337,7 @@ class CertificationController extends Controller
 
         // Save to the same public path as uploaded certificates
         $filename = time() . '_certificate_' . $certification->id . '.png';
-        $path = public_path('certificates/' . $filename);
+        $path = public_path('storage/certificates/' . $filename);
         $img->save($path);
 
         // Return the full public URL
