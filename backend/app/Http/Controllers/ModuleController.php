@@ -261,4 +261,11 @@ class ModuleController extends Controller
 
         return response()->json($group);
     }
+
+    public function destroyGroup(ModuleGroup $group)
+    {
+        $group->delete();
+
+        return response()->json(['message' => 'Group deleted']);
+    }
 }

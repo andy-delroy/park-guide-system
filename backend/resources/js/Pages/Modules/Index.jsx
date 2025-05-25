@@ -29,6 +29,40 @@ export default function ModuleIndex() {
   const [localGroups, setLocalGroups] = useState(groups || []);
 
 
+  const rebuildModuleGroups = (items) => {
+    const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', items: [] };
+
+    let allGroups = Array.isArray(groups)
+      ? groups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }))
+      : [];
+
+    allGroups.push(ungroupedGroup);
+
+    if (Array.isArray(groups) && groups.length > 0) {
+      const customGroups = groups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }));
+      allGroups = [...customGroups, ...allGroups.filter(g => g.id === 'ungrouped')];
+    }
+
+    const groupedItems = allGroups.map(group => {
+      const itemsInGroup = items.filter(item =>
+        group.id === 'ungrouped' ? !item.group_id : item.group_id?.toString() === group.id
+      );
+      return { ...group, items: itemsInGroup };
+    });
+
+    const filteredGroups = groupedItems.filter(g =>
+      g.id === 'ungrouped' || g.items.length > 0
+    );
+
+    setModuleGroups(filteredGroups);
+
+    const initialExpanded = {};
+    filteredGroups.forEach(g => {
+      initialExpanded[g.id] = true;
+    });
+    setExpandedGroups(initialExpanded);
+  };
+
   useEffect(() => {
     const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', items: [] };
 
@@ -38,8 +72,8 @@ export default function ModuleIndex() {
 
     allGroups.push(ungroupedGroup);
 
-    if (Array.isArray(groups) && groups.length > 0) {
-      const customGroups = groups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }));
+    if (Array.isArray(localGroups) && localGroups.length > 0) {
+      const customGroups = localGroups.map(g => ({ id: g.id.toString(), name: g.name, items: [] }));
       allGroups = [...customGroups, ...allGroups.filter(g => g.id === 'ungrouped')];
     }
 
@@ -92,6 +126,20 @@ export default function ModuleIndex() {
       : 0;
 
     setCourseProgress(progress);
+  };
+
+  const handleDeleteGroup = async (groupId) => {
+    if (!window.confirm("Delete this empty group?")) return;
+
+    try {
+      await axios.delete(`/groups/${groupId}`);
+      setModuleGroups(prev => prev.filter(g => g.id !== groupId));
+      setItemsState(prev => prev.filter(i => i.group_id?.toString() !== groupId)); //remove assigned items
+      setMessage({ success: 'Group deleted.', error: null });
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+      setMessage({ success: null, error: 'Failed to delete group.' });
+    }
   };
 
     const onDragEnd = async (result) => {
@@ -262,7 +310,7 @@ export default function ModuleIndex() {
 
   const getGroupName = (groupId) => { // Added for group display
     if (!groupId) return 'Ungrouped';
-    const group = groups.find((g) => g.id.toString() === groupId.toString());
+    const group = localGroups.find((g) => g.id.toString() === groupId.toString());
     return group ? group.name : 'Ungrouped';
   };
 
@@ -386,16 +434,26 @@ export default function ModuleIndex() {
         <DragDropContext onDragEnd={onDragEnd}>
           {moduleGroups.map((group) => (
             <div key={group.id} className="mb-6">
-              <div
-                className="flex items-center justify-between bg-gray-50 p-3 rounded-t-lg border border-gray-200 cursor-pointer"
-                onClick={() => toggleGroup(group.id)}
-              >
-                <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                  <span className="mr-2">{expandedGroups[group.id] ? '▼' : '⯈'}</span>
-                  {group.name}
-                  <span className="ml-2 text-sm text-gray-500">({group.items.length})</span>
-                </h3>
-              </div>
+              <div className="flex items-center justify-between bg-gray-50 p-3 rounded-t-lg border border-gray-200">
+  <div className="flex items-center cursor-pointer" onClick={() => toggleGroup(group.id)}>
+    <span className="mr-2">{expandedGroups[group.id] ? '▼' : '⯈'}</span>
+    <h3 className="text-lg font-medium text-gray-900">
+      {group.name}
+      <span className="ml-2 text-sm text-gray-500">({group.items.length})</span>
+    </h3>
+  </div>
+
+  {isAdmin && group.items.length === 0 && group.id !== 'ungrouped' && (
+    <button
+      onClick={() => handleDeleteGroup(group.id)}
+      className="text-red-500 hover:text-red-700 text-sm"
+      title="Delete group"
+    >
+      ❌
+    </button>
+  )}
+</div>
+
 
               {expandedGroups[group.id] && (
                 <Droppable droppableId={`group-${group.id}`}>

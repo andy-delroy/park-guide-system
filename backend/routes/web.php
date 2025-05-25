@@ -168,6 +168,7 @@ Route::get('/certification/{id}/details', [CertificationController::class, 'show
 Route::get('/certifications', [CertificationController::class, 'index'])->name('certifications.index');
 Route::post('/certification/{id}/renew', [CertificationController::class, 'renew']);
 
+Route::delete('/groups/{group}', [ModuleController::class, 'destroyGroup'])->middleware('auth');
 Route::post('courses/{course}/modules/reorder', [ModuleController::class, 'reorder'])
     ->name('courses.modules.reorder');
 
