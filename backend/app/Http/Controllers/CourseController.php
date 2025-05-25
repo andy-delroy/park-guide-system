@@ -8,18 +8,32 @@ use Inertia\Inertia;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $enrolledIds = $user->courses()->pluck('courses.id')->toArray(); 
+        $courses = Course::withCount('modules')
+            ->select('id', 'title', 'description', 'thumbnail', 'duration', 'created_at') // Only safe fields
+            ->latest()
+            ->get();
+
+        $enrolledIds = $user->courses()->pluck('courses.id')->toArray();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'courses' => $courses,
+                'enrolled' => $enrolledIds,
+            ]);
+        }
+
         return Inertia::render('Courses/Index', [
-            'courses' => Course::withCount('modules')->latest()->get(),
+            'courses' => $courses->toArray(),
             'enrolled' => $enrolledIds,
             'auth' => [
                 'user' => $user,
             ],
         ]);
     }
+
 
     public function create()
     {

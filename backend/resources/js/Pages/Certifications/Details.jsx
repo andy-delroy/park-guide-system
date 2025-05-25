@@ -78,10 +78,10 @@ export default function Details({ auth, certification }) {
                 <div className="space-y-6">
                     {/* Guide Info */}
                     <div>
-                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Guide Info</h3>
+                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Certificate Info</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <DetailItem label="Guide Name" value={certification.guide?.full_name || 'Unknown'} />
-                            <DetailItem label="Guide ID" value={certification.guide_id} />
+                            <DetailItem label="Course Name" value={certification.course?.title || 'N/A'} />
                         </div>
                     </div>
 

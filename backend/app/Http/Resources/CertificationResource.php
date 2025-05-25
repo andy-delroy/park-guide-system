@@ -18,6 +18,7 @@ class CertificationResource extends JsonResource
         return[
         'id' => $this->id,
         'guide_id' => $this->guide_id,
+        'course_id' => $this->course_id,
         'certification_name' => $this->certification_name,
         'description' => $this->description,
         'issue_date' => Carbon::parse($this->issue_date)->format('Y-m-d'),

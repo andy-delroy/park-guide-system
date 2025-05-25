@@ -9,10 +9,9 @@ import Button from '@/Components/Button';
 const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
         guide_id: '',
+        course_id: '',
         certificate_number: '',
-        certification_name: '',
         description: '',
-        certificate_file_url: null,
         renewal_requirements: '',
         issue_date: '',
         expiry_date: '',
@@ -22,6 +21,9 @@ const Create = ({ auth }) => {
 
     const [guides, setGuides] = useState([]);
     const [guideError, setGuideError] = useState(null);
+
+    const [courses, setCourses] = useState([]);
+    const [courseError, setCourseError] = useState(null);
 
     // Fetch guides when the component mounts
     useEffect(() => {
@@ -50,6 +52,31 @@ const Create = ({ auth }) => {
         fetchGuides();
     }, []);
 
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await axios.get('/courses', {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                const courseData = response.data.courses || response.data.data || response.data || [];
+                if (!Array.isArray(courseData)) {
+                    console.warn('Course data is not an array:', courseData);
+                    setCourses([]);
+                } else {
+                    setCourses(courseData);
+                }
+            } catch (error) {
+                console.error('Error fetching courses:', error.response?.data || error.message);
+                setCourseError(error.response?.data?.message || 'Failed to fetch courses.');
+            }
+        };
+
+        fetchCourses();
+    }, []);
+
     // Set default issue_date to today
     useEffect(() => {
         const today = new Date();
@@ -62,7 +89,7 @@ const Create = ({ auth }) => {
         const formData = new FormData();
         // Append all form fields to FormData
         Object.keys(data).forEach((key) => {
-            if (key === 'certificate_file_url' && data[key]) {
+            if (data[key]) {
                 formData.append(key, data[key]); // Append file
             } else if (data[key] !== null && data[key] !== '') {
                 formData.append(key, data[key]); // Append non-empty fields
@@ -115,6 +142,28 @@ const Create = ({ auth }) => {
                     </div>
 
                     <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Course</label>
+                        <select
+                            value={data.course_id}
+                            onChange={(e) => setData('course_id', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        >
+                            <option value="">Select a Course</option>
+                            {courses.map((course) => (
+                                <option key={course.id} value={course.id}>
+                                    {course.title || 'Untitled Course'}
+                                </option>
+                            ))}
+                        </select>
+                        {courseError && (
+                            <div className="text-red-500 text-sm mt-1">{courseError}</div>
+                        )}
+                        {errors.course_id && (
+                            <div className="text-red-500 text-sm mt-1">{errors.course_id}</div>
+                        )}
+                    </div>
+
+                    <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
                         <input
                             type="text"
@@ -126,18 +175,7 @@ const Create = ({ auth }) => {
                             <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>
                         )}
                     </div>
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
-                        <input
-                            type="text"
-                            value={data.certification_name}
-                            onChange={(e) => setData('certification_name', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.certification_name && (
-                            <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>
-                        )}
-                    </div>
+                    
 
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Description</label>
@@ -197,18 +235,7 @@ const Create = ({ auth }) => {
                             <div className="text-red-500 text-sm mt-1">{errors.status}</div>
                         )}
                     </div>
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Certificate File</label>
-                        <input
-                            type="file"
-                            accept="image/jpeg,image/png,application/pdf"
-                            onChange={(e) => setData('certificate_file_url', e.target.files[0])}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.certificate_file_url && (
-                            <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>
-                        )}
-                    </div>
+                    
                     <div className="flex space-x-2">
                         <Button type="create" typeAttr="submit" disabled={processing}>
                             Create Certification

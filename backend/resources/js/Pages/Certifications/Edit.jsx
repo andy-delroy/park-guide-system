@@ -9,6 +9,7 @@ import Button from '@/Components/Button';
 const Edit = ({ auth, certification }) => {
     const { data, setData, post, processing, errors } = useForm({
         guide_id: certification.guide_id || '',
+        course_id: certification.course_id || '',
         certificate_number: certification.certificate_number || '',
         certification_name: certification.certification_name || '',
         description: certification.description || '',
@@ -23,6 +24,8 @@ const Edit = ({ auth, certification }) => {
 
     const [guides, setGuides] = useState([]);
     const [guideError, setGuideError] = useState(null);
+    const [courses, setCourses] = useState([]);
+    const [courseError, setCourseError] = useState(null);
     const [newCertificateFile, setNewCertificateFile] = useState(null)
 
     // Extract relative path for existing certificate
@@ -65,6 +68,31 @@ const Edit = ({ auth, certification }) => {
         };
     
         fetchGuides();
+    }, []);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await axios.get('/courses', {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                const courseData = response.data.courses || response.data.data || response.data || [];
+                if (!Array.isArray(courseData)) {
+                    console.warn('Course data is not an array:', courseData);
+                    setCourses([]);
+                } else {
+                    setCourses(courseData);
+                }
+            } catch (error) {
+                console.error('Error fetching courses:', error.response?.data || error.message);
+                setCourseError(error.response?.data?.message || 'Failed to fetch courses.');
+            }
+        };
+
+        fetchCourses();
     }, []);
 
     const handleSubmit = (e) => {
@@ -111,7 +139,6 @@ const Edit = ({ auth, certification }) => {
                 )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Current Certificate File</label>
                         {relativePath ? (
                             <div className="mb-2">
                                 {isImage ? (
@@ -119,7 +146,7 @@ const Edit = ({ auth, certification }) => {
                                         src={relativePath}
                                         alt="Current Certificate"
                                         className="max-w-full h-auto rounded shadow"
-                                        style={{ maxHeight: '200px' }}
+                                        style={{ maxHeight: '400px' }}
                                     />
                                 ) : isPdf ? (
                                     <embed
@@ -145,23 +172,14 @@ const Edit = ({ auth, certification }) => {
                         ) : (
                             <p className="text-sm text-gray-500 mb-2">No file uploaded.</p>
                         )}
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Upload New Certificate File (Optional)</label>
-                        <input
-                            type="file"
-                            accept="image/jpeg,image/png,application/pdf"
-                            onChange={(e) => setData('certificate_file_url', e.target.files[0])}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.certificate_file_url && (
-                            <div className="text-red-500 text-sm mt-1">{errors.certificate_file_url}</div>
-                        )}
                     </div>
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Guide</label>
                         <select
                             value={data.guide_id}
+                            disabled
                             onChange={(e) => setData('guide_id', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="w-full border p-2 rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
                         >
                             <option value="">Select a Guide</option>
                             {guides.map((guide) => (
@@ -171,6 +189,29 @@ const Edit = ({ auth, certification }) => {
                             ))}
                         </select>
                         {errors.guide_id && <div className="text-red-500 text-sm mt-1">{errors.guide_id}</div>}
+                    </div>
+
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Course</label>
+                        <select
+                            value={data.course_id}
+                            disabled
+                            onChange={(e) => setData('course_id', e.target.value)}
+                            className="w-full border p-2 rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
+                        >
+                            <option value="">Select a Course</option>
+                            {courses.map((course) => (
+                                <option key={course.id} value={course.id}>
+                                    {course.title || 'Untitled Course'}
+                                </option>
+                            ))}
+                        </select>
+                        {courseError && (
+                            <div className="text-red-500 text-sm mt-1">{courseError}</div>
+                        )}
+                        {errors.course_id && (
+                            <div className="text-red-500 text-sm mt-1">{errors.course_id}</div>
+                        )}
                     </div>
 
                     <div>
@@ -188,9 +229,10 @@ const Edit = ({ auth, certification }) => {
                         <label className="block mb-1 text-sm font-medium text-gray-700">Name</label>
                         <input
                             type="text"
+                            readOnly
                             value={data.certification_name}
                             onChange={(e) => setData('certification_name', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="w-full border p-2 rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
                         />
                         {errors.certification_name && <div className="text-red-500 text-sm mt-1">{errors.certification_name}</div>}
                     </div>
