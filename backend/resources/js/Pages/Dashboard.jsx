@@ -10,7 +10,7 @@ import 'swiper/css';
 import 'swiper/css/parallax';
 import MediaIndex from './Media/Index';
 
-export default function Dashboard({ auth }) {
+export default function Dashboard({ auth, recentImages = [] }) {
   const role = auth?.user?.role_name ?? 'guest';
   const [alert, setAlert] = useState(null); // For inline alert display
 
@@ -154,6 +154,21 @@ export default function Dashboard({ auth }) {
         </SectionCard>
         <MediaIndex />
       </div>
+
+      {/* recent captures */}
+      {role === 'admin' && recentImages?.length > 0 && (
+        <div className="mx-4 mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">🧟 Recent Captures</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {recentImages.map((img, idx) => (
+              <div key={idx} className="bg-white border shadow rounded overflow-hidden">
+                <img src={img.url} alt={img.filename} className="w-full h-48 object-cover" />
+                <div className="text-sm p-2 text-gray-600 text-center">{img.filename}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </AuthenticatedLayout>
   );
 }

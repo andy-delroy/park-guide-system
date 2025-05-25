@@ -16,6 +16,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\RecommenderController;
 use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 use App\Models\Alert;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+
 
 // Redirect root to dashboard
 Route::redirect('/', '/home');
