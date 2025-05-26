@@ -24,17 +24,25 @@ const formatDate = (date) =>
       })
     : 'N/A';
 
-const CertificateDetails = ({ route }) => {
+const LicenseDetails = ({ route }) => {
   const { certification } = route.params;
   const navigation = useNavigation();
   const [formData, setFormData] = useState({
     ...certification,
     guide_id: certification.guide?.id ? String(certification.guide.id) : '',
+    program_name: certification.program?.name || '',
+    status: certification.status || 'active',
     issue_date: certification.issue_date || new Date().toISOString().split('T')[0],
-
   });
   const [guides, setGuides] = useState([]);
   const [guidesLoading, setGuidesLoading] = useState(true);
+  
+  const expiryDate = new Date(certification.expiry_date);
+    const today = new Date();
+    const oneMonthFromToday = new Date();
+    oneMonthFromToday.setMonth(oneMonthFromToday.getMonth() + 1);
+
+    const showRenewButton = expiryDate <= oneMonthFromToday;
 
   // Fetch guides
   useEffect(() => {
@@ -72,6 +80,40 @@ const CertificateDetails = ({ route }) => {
     };
     fetchGuides();
   }, []);
+    
+  const handleRenew = async (id) => {
+    try {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+        Alert.alert('Unauthorized', 'No user token found.');
+        return;
+        }
+
+        const response = await axios.post(`${API_BASE_URL}/api/auth/certification/${id}/renew`, {}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+        });
+
+        Alert.alert('Success', 'License renewed successfully.');
+
+        // Optionally navigate back or refresh
+        navigation.navigate('MainStack', {
+        screen: 'Tabs',
+        params: {
+            screen: 'License',
+            params: { refresh: true },
+        },
+        });
+    } catch (error) {
+        console.error('Error renewing license:', error.response?.data || error.message);
+        Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Failed to renew license.'
+        );
+    }
+    };
 
   // Handle Delete
   const handleDelete = async (id) => {
@@ -89,26 +131,26 @@ const CertificateDetails = ({ route }) => {
         },
       });
 
-      Alert.alert('Success', 'Certification deleted successfully.');
+      Alert.alert('Success', 'License deleted successfully.');
       navigation.navigate('MainStack', {
         screen: 'Tabs',
         params: {
-          screen: 'Certificate',
+          screen: 'License',
           params: { refresh: true },
         },
       });
     } catch (error) {
-      console.error('Error deleting certification:', error.response?.data || error.message);
+      console.error('Error deleting license:', error.response?.data || error.message);
       Alert.alert(
         'Error',
-        error.response?.data?.message || 'Failed to delete certification.'
+        error.response?.data?.message || 'Failed to delete license.'
       );
     }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Certificate Image */}
+      {/* License Image */}
       <View style={styles.imageContainer}>
         {certification.certificate_file_url ? (
           <Image
@@ -118,88 +160,117 @@ const CertificateDetails = ({ route }) => {
             onError={() => console.log('Certificate image URI:', certification.certificate_file_url)}
           />
         ) : (
-          <Text style={styles.noImage}>No Certificate Image Available</Text>
+          <Text style={styles.noImage}>No License Image Available</Text>
         )}
       </View>
 
-      {/* Cert Info Card */}
+      {/* Guide Info Card */}
       <TouchableOpacity style={styles.card} activeOpacity={0.95}>
-        <Text style={styles.cardTitle}>Certificate Info</Text>
+        <Text style={styles.cardTitle}>Guide Info</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Guide ID:</Text>
+          <Text style={styles.value}>
+                {formData.guide?.identification_number || 'Unknown'}
+            </Text>
+        </View>
         <View style={styles.field}>
           <Text style={styles.label}>Guide Name:</Text>
           <Text style={styles.value}>
-              {formData.guide?.full_name || 'Unknown'}
-          </Text>
+                {formData.guide?.full_name || 'Unknown'}
+            </Text>
         </View>
         <View style={styles.field}>
-          <Text style={styles.label}>Course Name:</Text>
+          <Text style={styles.label}>Phone Number:</Text>
           <Text style={styles.value}>
-              {formData.course?.name || 'N/A'}
-          </Text>
+                {formData.guide?.phone_number || 'Unknown'}
+            </Text>
         </View>
       </TouchableOpacity>
+          <TouchableOpacity style={styles.card} activeOpacity={0.95}>
+            <Text style={styles.cardTitle}>License</Text>
+            <View style={styles.field}>
+                <Text style={styles.label}>License Name:</Text>
+                <Text style={styles.value}>
+                    {formData.certification_name || 'Unnamed License'}
+                </Text>
+            </View>
+            <View style={styles.field}>
+                <Text style={styles.label}>License Number:</Text>
+                <Text style={styles.value}>
+                    {formData.certificate_number || 'N/A'}
+                </Text>
+            </View>
+            <View style={styles.field}>
+                <Text style={styles.label}>Description:</Text>
+                <Text style={styles.value}>
+                    {formData.description || 'N/A'}
+                </Text>
+            </View>
+            <View style={styles.field}>
+                <Text style={styles.label}>Issued By:</Text>
+                <Text style={styles.value}>
+                    {formData.issuer?.full_name || 'Unknown'}
+                </Text>
+            </View>
+        </TouchableOpacity>
 
-      {/* Certification Card */}
-      <TouchableOpacity style={styles.card} activeOpacity={0.95}>
-        <Text style={styles.cardTitle}>Certification</Text>
-        <View style={styles.field}>
-          <Text style={styles.label}>Certificate Name:</Text>
-          <Text style={styles.value}>
-            {formData.certification_name || 'Unnamed Certification'}
-          </Text>
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>Certificate Number:</Text>
-          <Text style={styles.value}>
-            {formData.certificate_number || 'N/A'}
-          </Text>
-        </View>
-        
-        <View style={styles.field}>
-          <Text style={styles.label}>Description:</Text>
-          <Text style={styles.value}>
-            {formData.description || 'N/A'}
-          </Text>
-        </View>
-        <View style={styles.field}>
-          <Text style={styles.label}>Issued By:</Text>
-          <Text style={styles.value}>
-            {formData.issuer?.full_name || 'Unknown'}
-          </Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* Dates Card */}
+      {/* Dates & Status Card */}
       <TouchableOpacity style={styles.card} activeOpacity={0.95}>
         <Text style={styles.cardTitle}>Dates</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Issue Date:</Text>
           <Text style={styles.value}>
-            {formatDate(formData.issue_date)}
-          </Text>
+              {formatDate(formData.issue_date)}
+            </Text>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Expiry Date:</Text>
+          <Text style={styles.value}>
+              {formatDate(formData.expiry_date)}
+            </Text>
         </View>
       </TouchableOpacity>
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
+        {showRenewButton && (
+            <TouchableOpacity
+                style={[styles.button, styles.renewButton]}
+                onPress={() => {
+                Alert.alert(
+                    'Confirm Renew',
+                    `Are you sure you want to renew "${certification.certification_name}"?`,
+                    [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Renew',
+                        onPress: () => handleRenew(certification.id),
+                    },
+                    ]
+                );
+                }}
+            >
+                <Text style={styles.buttonText}>Renew</Text>
+            </TouchableOpacity>
+        )}
         <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => {
+            style={[styles.button, styles.deleteButton]}
+            onPress={() => {
             Alert.alert(
-              'Confirm Delete',
-              `Are you sure you want to delete "${certification.certification_name}"?`,
-              [
+                'Confirm Delete',
+                `Are you sure you want to delete "${certification.certification_name}"?`,
+                [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                  text: 'Delete',
-                  style: 'destructive',
-                  onPress: () => handleDelete(certification.id),
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => handleDelete(certification.id),
                 },
-              ]
+                ]
             );
-          }}
+            }}
         >
-          <Text style={styles.buttonText}>Delete</Text>
+            <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -289,6 +360,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  renewButton: {
+    backgroundColor: colors.primary || '#00693D',
+    },
+
   deleteButton: {
     backgroundColor: colors.error || '#d32f2f',
   },
@@ -299,4 +374,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CertificateDetails;
+export default LicenseDetails;

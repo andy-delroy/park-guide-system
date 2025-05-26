@@ -17,7 +17,7 @@ import { colors, fonts } from '../Styles/theme';
 import {API_BASE_URL} from '../api.config';
 import { Ionicons } from '@expo/vector-icons';
 
-const Certificate = () => {
+const License = () => {
   const [certifications, setCertifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,7 +35,7 @@ const Certificate = () => {
         return;
       }
 
-      const response = await axios.get(`${API_BASE_URL}/api/auth/certification?type=certificate`, {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/certification?type=license`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
@@ -75,7 +75,7 @@ const Certificate = () => {
   // Handle updated certification from EditCertificate
   useEffect(() => {
     if (route.params?.updatedCertification) {
-      console.log('Certificate: Received updated certification', route.params.updatedCertification);
+      console.log('License: Received updated license', route.params.updatedCertification);
       setCertifications((prev) =>
         prev.map((cert) =>
           cert.id === route.params.updatedCertification.id
@@ -138,22 +138,22 @@ const Certificate = () => {
     });
   };
 
-  const renderCertification = ({ item }) => (
+  const renderLicense = ({ item }) => (
     <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('CertificateDetails', { certification: item })}
+    style={styles.card}
+    onPress={() => navigation.navigate('LicenseDetails', { certification: item })}
     >
       <ScrollView style={styles.info}>
         <Text style={styles.name}>{item.certification_name || 'Unnamed Certification'}</Text>
-        <Text style={styles.detail}>Certificate Number: {item.certificate_number || 'N/A'}</Text>
+        <Text style={styles.detail}>License Number: {item.certificate_number || 'N/A'}</Text>
         <Text style={styles.detail}>Issued to: {item.guide?.full_name || 'Unknown'}</Text>
       </ScrollView>
       <Ionicons name="chevron-forward" size={24} color="black" style={styles.arrow} />
     </TouchableOpacity>
   );
 
-  const handleAddCertification = () => {
-    navigation.navigate('CreateCertificate');
+  const handleAddLicense = () => {
+    navigation.navigate('CreateLicense');
   };
 
   if (loading) {
@@ -177,15 +177,15 @@ const Certificate = () => {
       <FlatList
         data={certifications}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderCertification}
+        renderItem={renderLicense}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No certifications found.</Text>
+          <Text style={styles.emptyText}>No licenses found.</Text>
         }
       />
       <TouchableOpacity
         style={styles.fab}
-        onPress={handleAddCertification}
+        onPress={handleAddLicense}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
@@ -274,4 +274,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Certificate;
+export default License;

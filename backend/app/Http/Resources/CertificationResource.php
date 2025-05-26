@@ -35,12 +35,20 @@ class CertificationResource extends JsonResource
             return [
                 'id' => $this->guide->id,
                 'full_name' => $this->guide->full_name,
+                'identification_number' => $this->guide->identification_number,
+                'phone_number' => $this->guide->phone_number,
             ];
         }),
         'issuer' => $this->whenLoaded('issuer', function () {
             return [
                 'id' => $this->issuer->id,
                 'full_name' => $this->issuer->full_name,
+            ];
+        }),
+        'course' => $this->whenLoaded('course', function () {
+            return [
+                'id' => $this->course->id,
+                'name' => $this->course->title,
             ];
         }),
         ];

@@ -23,12 +23,6 @@ const BottomTabs = () => {
     };
     fetchRole();
   }, []);
-
-  const getCameraLabel = () => {
-    if (role === 'visitor') return 'Guide';
-    if (role === 'admin' || role === 'guide') return 'Camera';
-    return 'Scan'; // fallback
-  };
   
   return (
     <Tab.Navigator
@@ -38,8 +32,7 @@ const BottomTabs = () => {
           const iconName = {
             Home: 'home',
             Map: 'map',
-            Camera: 'camera',
-            Guide: 'tree',
+            Rate: 'star',
             Classifier: 'leaf', //KIM TESTING
             Profile: 'user',
           }[route.name];
@@ -60,14 +53,10 @@ const BottomTabs = () => {
     >
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Map" component={Map} />
-      {role && (
-        <Tab.Screen
-          name={getCameraLabel()} // Either 'Guide' or 'Camera'
-          component={Camera}
-        />
+      {(role && role === "visitor") && (
+        <Tab.Screen name="Rate" component={Camera} />
       )}
-
-        {role && (
+        {(role && role !== "visitor") && (
           <Tab.Screen
             name="Classifier"
             component={PlantClassifier}

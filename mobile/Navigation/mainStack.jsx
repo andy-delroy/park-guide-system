@@ -13,7 +13,9 @@ import GenerateQR from '../Pages/generateQR';
 import ManageGuides from '../Pages/manageGuides';
 import GuideQR from '../Pages/guideQR';
 import PlantClassifier from "../Pages/plantclassifier";
-
+import License from '../Pages/license';
+import LicenseDetails from '../Pages/licenseDetails';
+import CreateLicense from '../Pages/createLicense';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +27,10 @@ const MainStack = ({ role }) => (
         <Stack.Screen name="Certificate" component={Certificate} />
         <Stack.Screen name="CertificateDetails" component={CertificateDetails} />
         <Stack.Screen name="CreateCertificate" component={CreateCertificate} />
+
+        <Stack.Screen name="License" component={License} />
+        <Stack.Screen name="LicenseDetails" component={LicenseDetails} />
+        <Stack.Screen name="CreateLicense" component={CreateLicense} />
 
         <Stack.Screen name="Training" component={Training} />
         <Stack.Screen name="TrainingDetails" component={TrainingDetails} />

@@ -14,6 +14,7 @@ use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\SensorLogController;
 use App\Http\Controllers\IoTAlertController;
+use App\Http\Controllers\CourseController;
 
 use App\Http\Controllers\NotificationController;
 use App\Models\ExpoPushToken;
@@ -54,9 +55,12 @@ Route::prefix('auth')->group(function () {
         // Certification routes
         Route::resource('certification', CertificationController::class);
         Route::post('certification/{id}/update', [CertificationController::class, 'update']);
+        Route::post('certification/{id}/renew', [CertificationController::class, 'renew']);
 
         // Guide routes
         Route::resource('guides', GuideController::class);
+
+        Route::resource('courses', CourseController::class);
     });
 });
 

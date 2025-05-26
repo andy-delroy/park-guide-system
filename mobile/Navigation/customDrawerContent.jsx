@@ -59,6 +59,15 @@ const CustomDrawerContent = ({ navigation, role }) => {
                 }
                 labelStyle={styles.drawerLabel}
             />
+            <DrawerItem
+                label="License"
+                onPress={() =>
+                navigation.navigate('MainStack', {
+                    screen: 'License',
+                })
+                }
+                labelStyle={styles.drawerLabel}
+            />
             {(role === 'admin') && (
                 <>
                   <DrawerItem

@@ -33,7 +33,7 @@ class CertificationController extends Controller
         }
 
         // Base query
-        $query = Certification::with(['guide', 'issuer'])->where('type', $type);
+        $query = Certification::with(['guide', 'issuer', 'course'])->where('type', $type);
 
         // Role-based filtering
         if ($user->role->role_name === 'guide') {
@@ -346,7 +346,7 @@ class CertificationController extends Controller
         }
     }
 
-    public function renew($id)
+    public function renew(Request $request, $id)
     {
         $cert = Certification::findOrFail($id);
 
@@ -358,9 +358,15 @@ class CertificationController extends Controller
         $cert->expiry_date = $newExpiry->format('Y-m-d');
 
         // Increment renewal count
-        $cert->renewal_count = $cert->renewal_count + 1;
-
+        $cert->renewal_count += 1;
         $cert->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Certification renewed successfully.',
+                'certification' => $cert,
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Certification renewed successfully.');
     }
@@ -429,7 +435,7 @@ class CertificationController extends Controller
         $img->save($path);
 
         // Return the full public URL
-        return $baseUrl . '/certificates/' . $filename;
+        return $baseUrl . '/storage/certificates/' . $filename;
     }
 
     public function generateLicenseImage($certification, $baseUrl, $parkName)
@@ -513,6 +519,6 @@ class CertificationController extends Controller
         $img->save($path);
 
         // Return the full public URL
-        return $baseUrl . '/licenses/' . $filename;
+        return $baseUrl . '/storage/licenses/' . $filename;
     }
 }

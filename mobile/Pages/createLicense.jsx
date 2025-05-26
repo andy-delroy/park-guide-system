@@ -20,29 +20,28 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fonts } from '../Styles/theme';
 import {API_BASE_URL} from '../api.config';
 
-const CreateCertificate = () => {
+const CreateLicense = () => {
   const navigation = useNavigation();
   const scrollViewRef = useRef(null);
   const [contentHeight, setContentHeight] = useState(0);
   const [formData, setFormData] = useState({
     guide_id: '',
-    course_id: '',
+    park_name: '',
     description: '',
+    renewal_requirements: '',
     issue_date: new Date().toISOString().split('T')[0],
+    expiry_date: '',
     status: 'active',
     base_url: API_BASE_URL,
-    type: 'certificate',
+    type: 'license',
   });
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(false);
   const [guidesLoading, setGuidesLoading] = useState(true);
   const [showIssueDatePicker, setShowIssueDatePicker] = useState(false);
+  const [showExpiryDatePicker, setShowExpiryDatePicker] = useState(false);
   const [showGuidePicker, setShowGuidePicker] = useState(false);
-
-  const [courses, setCourses] = useState([]);
-  const [coursesLoading, setCoursesLoading] = useState(true);
-  const [showCoursePicker, setShowCoursePicker] = useState(false);
-
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
 
   // Fetch guides for guide_id dropdown
   useEffect(() => {
@@ -83,38 +82,6 @@ const CreateCertificate = () => {
     fetchGuides();
   }, []);
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setCoursesLoading(true);
-        const token = await SecureStore.getItemAsync('userToken');
-        if (!token) {
-          Alert.alert('Unauthorized', 'No user token found.');
-          return;
-        }
-
-        const response = await axios.get(`${API_BASE_URL}/api/auth/courses`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-        });
-
-        const coursesData = response.data.courses || [];
-
-        setCourses(coursesData);
-      } catch (error) {
-        console.error('Error fetching courses:', error.response?.data || error.message);
-        Alert.alert('Error', 'Failed to fetch courses.');
-        setCourses([]);
-      } finally {
-        setCoursesLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, []);
-
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -123,6 +90,7 @@ const CreateCertificate = () => {
     const currentDate = selectedDate || new Date();
     if (Platform.OS === 'android') {
       if (field === 'issue_date') setShowIssueDatePicker(false);
+        if (field === 'expiry_date') setShowExpiryDatePicker(false);
     }
     if (event.type !== 'dismissed') {
       const formattedDate = currentDate.toISOString().split('T')[0];
@@ -139,6 +107,8 @@ const CreateCertificate = () => {
   // Toggle pickers and ensure layout recalculation
   const handlePickerToggle = (pickerType, isVisible) => {
     if (pickerType === 'issue_date') setShowIssueDatePicker(isVisible);
+    if (pickerType === 'expiry_date') setShowExpiryDatePicker(isVisible);
+    if (pickerType === 'status') setShowStatusPicker(isVisible);
     // Force layout recalculation
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -146,8 +116,8 @@ const CreateCertificate = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.guide_id || !formData.course_id || !formData.description) {
-      Alert.alert('Validation Error', 'Guide, Course, and Description are required.');
+    if (!formData.guide_id || !formData.description) {
+      Alert.alert('Validation Error', 'Guide, and Description are required.');
       return;
     }
 
@@ -164,6 +134,7 @@ const CreateCertificate = () => {
       const payload = {
         ...formData,
         guide_id: formData.guide_id || null,
+        expiry_date: formData.expiry_date || null,
       };
 
       const response = await axios.post(
@@ -185,7 +156,7 @@ const CreateCertificate = () => {
           text: 'OK',
           onPress: () => {
             try {
-              navigation.navigate('Certificate', { refresh: true });
+              navigation.navigate('License', { refresh: true });
             } catch (navError) {
               console.error('Navigation error:', navError);
               navigation.goBack();
@@ -221,17 +192,6 @@ const CreateCertificate = () => {
   const handleGuideSelect = (value) => {
     handleInputChange('guide_id', value);
     setShowGuidePicker(false);
-  };
-
-  const getSelectedCourseName = () => {
-    if (coursesLoading) return 'Loading courses...';
-    const selectedCourse = courses.find((course) => String(course.id) === formData.course_id);
-    return selectedCourse ? selectedCourse.title : 'Select a Course';
-  };
-
-  const handleCourseSelect = (value) => {
-    handleInputChange('course_id', value);
-    setShowCoursePicker(false);
   };
 
   return (
@@ -289,49 +249,15 @@ const CreateCertificate = () => {
                 </View>
               </View>
             </Modal>
-
-            <Text style={styles.label}>Course</Text>
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => !coursesLoading && setShowCoursePicker(true)}
-              disabled={coursesLoading}
-            >
-              <Text style={styles.inputText}>{getSelectedCourseName()}</Text>
-            </TouchableOpacity>
-
-            <Modal
-              visible={showCoursePicker}
-              animationType="fade"
-              transparent={true}
-              onRequestClose={() => setShowCoursePicker(false)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <View style={styles.modalButtonContainer}>
-                    <TouchableOpacity
-                      style={styles.modalButton}
-                      onPress={() => setShowCoursePicker(false)}
-                    >
-                      <Text style={styles.modalButtonText}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Picker
-                    selectedValue={formData.course_id}
-                    onValueChange={handleCourseSelect}
-                    style={styles.modalPicker}
-                  >
-                    <Picker.Item label="Select a Course" value="" />
-                    {courses.map((course) => (
-                      <Picker.Item
-                        key={course.id}
-                        label={course.title || 'Untitled Course'}
-                        value={String(course.id)}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-            </Modal>
+            
+            {/* Park Name */}
+            <Text style={styles.label}>Park Name</Text>
+            <TextInput
+            style={styles.input}
+            value={formData.park_name}
+            onChangeText={(text) => handleInputChange('park_name', text)}
+            placeholder="Enter park name"
+            />
 
             <Text style={styles.label}>Description</Text>
             <TextInput
@@ -340,6 +266,16 @@ const CreateCertificate = () => {
               onChangeText={(text) => handleInputChange('description', text)}
               placeholder="Enter description"
               multiline
+            />
+            
+            {/* Renewal Requirements */}
+            <Text style={styles.label}>Requirements for renewal</Text>
+            <TextInput
+            style={[styles.input, { height: 80 }]}
+            value={formData.renewal_requirements}
+            onChangeText={(text) => handleInputChange('renewal_requirements', text)}
+            placeholder="Enter renewal requirements"
+            multiline
             />
 
             <Text style={styles.label}>Issue Date</Text>
@@ -369,6 +305,71 @@ const CreateCertificate = () => {
                 )}
               </View>
             )}
+            
+            {/* Expiry Date */}
+            <Text style={styles.label}>Expiry Date</Text>
+            <TouchableOpacity
+            style={styles.input}
+            onPress={() => handlePickerToggle('expiry_date', true)}
+            >
+            <Text style={styles.dateText}>
+                {formData.expiry_date || 'Select expiry date'}
+            </Text>
+            </TouchableOpacity>
+            {showExpiryDatePicker && (
+            <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                value={formData.expiry_date ? new Date(formData.expiry_date) : new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                onChange={(event, date) => handleDateChange(event, date, 'expiry_date')}
+                />
+                {Platform.OS === 'ios' && (
+                <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => handlePickerToggle('expiry_date', false)}
+                >
+                    <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+                )}
+            </View>
+            )}
+            
+            {/* Status Picker */}
+            <Text style={styles.label}>Status</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => handlePickerToggle('status', true)}
+            >
+              <Text style={styles.inputText}>{formData.status}</Text>
+            </TouchableOpacity>
+            <Modal
+              visible={showStatusPicker}
+              animationType="fade"
+              transparent={true}
+              onRequestClose={() => setShowStatusPicker(false)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalButtonContainer}>
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => setShowStatusPicker(false)}
+                    >
+                      <Text style={styles.modalButtonText}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Picker
+                    selectedValue={formData.status}
+                    onValueChange={(value) => handleInputChange('status', value)}
+                    style={styles.modalPicker}
+                  >
+                    <Picker.Item label="Active" value="active" />
+                    <Picker.Item label="Inactive" value="inactive" />
+                  </Picker>
+                </View>
+              </View>
+            </Modal>
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -536,4 +537,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateCertificate;
+export default CreateLicense;
