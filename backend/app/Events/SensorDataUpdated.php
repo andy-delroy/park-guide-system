@@ -40,7 +40,7 @@ class SensorDataUpdated implements ShouldBroadcast
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
         return new Channel('sensor-data');
     }
@@ -48,5 +48,10 @@ class SensorDataUpdated implements ShouldBroadcast
     public function broadcastAs()
     {
         return 'sensor-data-updated';
+    }
+
+    public function broadcastWith()
+    {
+        return $this->sensorData;
     }
 }

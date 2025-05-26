@@ -1,5 +1,6 @@
 <?php
 
+file_put_contents(storage_path('logs/broadcasting_check.log'), "✅ broadcasting.php loaded at " . now());
 return [
 
     /*b
@@ -15,7 +16,8 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    
+    'default' => 'reverb',
 
     /*
     |--------------------------------------------------------------------------

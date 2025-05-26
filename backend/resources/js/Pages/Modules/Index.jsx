@@ -29,7 +29,7 @@ export default function ModuleIndex() {
   const [localGroups, setLocalGroups] = useState(groups || []);
 
 
-  const rebuildModuleGroups = (items) => {
+  const rebuildModuleGroups = (items = itemsState) => {
     const ungroupedGroup = { id: 'ungrouped', name: 'Ungrouped', items: [] };
 
     let allGroups = Array.isArray(groups)
@@ -50,10 +50,10 @@ export default function ModuleIndex() {
       return { ...group, items: itemsInGroup };
     });
 
-    const filteredGroups = groupedItems.filter(g =>
-      g.id === 'ungrouped' || g.items.length > 0
-    );
-
+    // const filteredGroups = groupedItems.filter(g =>
+    //   g.id === 'ungrouped' || g.items.length > 0
+    // );
+    const filteredGroups = groupedItems;
     setModuleGroups(filteredGroups);
 
     const initialExpanded = {};
@@ -96,7 +96,7 @@ export default function ModuleIndex() {
       initialExpandedState[g.id] = true;
     });
     setExpandedGroups(initialExpandedState);
-
+    // rebuildModuleGroups();
     calculateCourseProgress();
   }, [itemsState]);
 
@@ -134,8 +134,16 @@ export default function ModuleIndex() {
     try {
       await axios.delete(`/groups/${groupId}`);
       setModuleGroups(prev => prev.filter(g => g.id !== groupId));
-      setItemsState(prev => prev.filter(i => i.group_id?.toString() !== groupId)); //remove assigned items
+      // setItemsState(prev => prev.filter(i => i.group_id?.toString() !== groupId)); //remove assigned items
+      setItemsState(prev => {
+        const updated = prev.filter(i => i.group_id?.toString() !== groupId);
+        rebuildModuleGroups(updated); // force re-group after state update
+        return updated;
+      });
       setMessage({ success: 'Group deleted.', error: null });
+      // prune this sitch
+      Inertia.reload(); // for soft refresh
+      // window.location.reload(); // for hard refresh
     } catch (error) {
       console.error('Failed to delete group:', error);
       setMessage({ success: null, error: 'Failed to delete group.' });

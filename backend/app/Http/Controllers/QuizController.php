@@ -63,7 +63,8 @@ class QuizController extends Controller
             'course_id' => $validated['course_id'],
             'created_by' => auth()->id(),
         ]);
-        return redirect()->route('quiz.index')->with('success', 'Quiz created successfully.');
+        // return redirect()->route('quiz.index')->with('success', 'Quiz created successfully.');
+        return redirect()->route('courses.modules.index', ['course' => $validated['course_id']])->with('success', 'Quiz created successfully.');
     }
 
     /**
