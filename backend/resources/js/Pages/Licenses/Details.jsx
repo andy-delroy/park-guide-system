@@ -30,13 +30,13 @@ export default function Details({ auth, certification }) {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Certification Details
+                    License Details
                 </h2>
             }
             showBackButton={true}
-            backHref="/certification?type=certificate"
+            backHref="/certification?type=license"
         >
-            <Head title="Certification Details" />
+            <Head title="License Details" />
 
             <SectionCard>
                 {/* File Preview */}
@@ -45,7 +45,7 @@ export default function Details({ auth, certification }) {
                         {isImage ? (
                             <img
                                 src={relativePath}
-                                alt="Certificate"
+                                alt="License"
                                 className="max-w-full h-auto rounded shadow border"
                                 style={{ maxHeight: '400px' }}
                             />
@@ -73,9 +73,9 @@ export default function Details({ auth, certification }) {
                     </div>
                 ) : (
                     <div className="mb-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Certificate</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">License</h3>
                         <div className="w-full h-[400px] bg-gray-100 border border-dashed border-gray-300 rounded shadow flex items-center justify-center">
-                            <p className="text-sm text-gray-500">No certificate file uploaded.</p>
+                            <p className="text-sm text-gray-500">No license file uploaded.</p>
                         </div>
                     </div>
                 )}
@@ -84,19 +84,20 @@ export default function Details({ auth, certification }) {
                 <div className="space-y-6">
                     {/* Guide Info */}
                     <div>
-                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Certificate Info</h3>
+                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Guide Info</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <DetailItem label="Guide ID" value={certification.guide?.identification_number || 'Unknown'} />
                             <DetailItem label="Guide Name" value={certification.guide?.full_name || 'Unknown'} />
-                            <DetailItem label="Course Name" value={certification.course?.title || 'N/A'} />
+                            <DetailItem label="Phone Number" value={certification.guide?.phone_number || 'N/A'} />
                         </div>
                     </div>
 
-                    {/* Certification Info */}
+                    {/* License Info */}
                     <div>
-                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Certification</h3>
+                        <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">License</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <DetailItem label="Certification Name" value={certification.certification_name} />
-                            <DetailItem label="Certificate Number" value={certification.certificate_number} />
+                            <DetailItem label="License Name" value={certification.certification_name} />
+                            <DetailItem label="License Number" value={certification.certificate_number} />
                             <DetailItem label="Description" value={certification.description || "No description provided."} />
                             <DetailItem label="Issued By" value={certification.issuer?.full_name || 'N/A'} />
                         </div>
@@ -107,6 +108,7 @@ export default function Details({ auth, certification }) {
                         <h3 className="text-md font-semibold text-gray-700 border-b pb-1 mb-3">Dates</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <DetailItem label="Issue Date" value={certification.issue_date} />
+                            <DetailItem label="Expiry Date" value={certification.expiry_date || 'N/A'} />
                         </div>
                     </div>
                 </div>

@@ -25,34 +25,81 @@ class CertificationController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $type = $request->query('type', 'certificate'); // Default to 'certificate'
 
+        // Validate type
+        if (!in_array($type, ['certificate', 'license'])) {
+            abort(400, 'Invalid type.');
+        }
+
+        // Base query
+        $query = Certification::with(['guide', 'issuer'])->where('type', $type);
+
+        // Role-based filtering
         if ($user->role->role_name === 'guide') {
-            $certifications = Certification::with(['guide', 'issuer'])
-                ->where('guide_id', $user->id)
-                ->get(); // removed pagination
-        } else if ($user->role->role_name === 'admin') {
-            $certifications = Certification::with(['guide', 'issuer'])
-                ->get(); // removed pagination
-        } else {
+            $query->where('guide_id', $user->id);
+        } elseif ($user->role->role_name !== 'admin') {
             abort(403, 'Unauthorized');
         }
 
+        $certifications = $query->get();
+
+        // JSON for API consumers
         if ($request->expectsJson()) {
             return CertificationResource::collection($certifications);
         }
 
-        return inertia('Certifications/Index', [
+        // Inertia page selection based on type
+        return inertia($type === 'license' ? 'Licenses/Index' : 'Certifications/Index', [
             'certifications' => $certifications,
         ]);
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        $type = $request->query('type', 'certificate'); // default to certificate
+
+        if ($type === 'license') {
+            return inertia('Licenses/Create');
+        }
+
         return inertia('Certifications/Create');
     }
+
+    private function getInitials(string $text): string
+    {
+        return collect(explode(' ', $text))
+            ->filter() // remove empty elements
+            ->map(fn($word) => strtoupper($word[0]))
+            ->implode('');
+    }
+
+    private function generateNextCertificateNumber(string $type): string
+    {
+        $prefix = $type === 'certificate' ? 'CERT' : 'LIC';
+
+        // Fetch all certificate numbers of this type
+        $latestNumber = Certification::where('type', $type)
+            ->whereNotNull('certificate_number')
+            ->pluck('certificate_number')
+            ->map(function ($number) use ($prefix) {
+                if (preg_match('/' . $prefix . '(\d{8})/', $number, $matches)) {
+                    return (int) $matches[1];
+                }
+                return 0;
+            })
+            ->max();
+
+        $nextNumber = $latestNumber ? $latestNumber + 1 : 1;
+
+        return $prefix . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+    }
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -61,39 +108,57 @@ class CertificationController extends Controller
     {
         $validated = $request->validate([
             'guide_id' => 'required|exists:users,id',
-            'course_id' => 'required|exists:courses,id',
-            'certificate_number' => 'required|string|unique:guide_certifications',
+            'course_id' => 'nullable|exists:courses,id',
+            'park_name' => 'nullable|string|max:255',
             'description' => 'required|string',
             'issue_date' => 'required|date',
-            'expiry_date' => 'required|date|after:issue_date',
+            'expiry_date' => 'nullable|date|after:issue_date',
             'status' => 'required|string|in:active,inactive',
             'base_url' => 'required|url',
+            'type' => 'required|string',
         ]);
 
-        $course = Course::findOrFail($validated['course_id']);
         $guide = User::findOrFail($validated['guide_id']);
 
-        // Generate certification name
+        // Generate certification name based on type
         $guideName = strtok($guide->full_name, ' ');
-        $shortCourseName = \Str::limit($course->title, 20, '');
-        $certificationName = "{$guideName} - {$shortCourseName} Cert";
+
+        if ($validated['type'] === 'certificate') {
+            $course = Course::findOrFail($validated['course_id']);
+            $courseInitials = $this->getInitials($course->title);
+            $certificationName = "{$guideName} - {$courseInitials} Cert";
+        } else {
+            $parkName = $validated['park_name'] ?? 'Unknown';
+            $parkInitials = $this->getInitials($parkName);
+            $certificationName = "{$guideName} - {$parkInitials} License";
+        }
+
+        $certificateNumber = $this->generateNextCertificateNumber($validated['type']);
 
         // First, create the Certification (without image URL yet)
         $certification = Certification::create([
             'guide_id' => $validated['guide_id'],
-            'course_id' => $validated['course_id'],
+            'course_id' => $validated['course_id'] ?? null,
             'certification_name' => $certificationName,
-            'certificate_number' => $validated['certificate_number'],
+            'certificate_number' => $certificateNumber,
             'description' => $validated['description'],
             'certificate_file_url' => null, // temporarily null
             'issued_by' => auth()->id(),
             'issue_date' => $validated['issue_date'],
-            'expiry_date' => $validated['expiry_date'],
+            'expiry_date' => $validated['expiry_date'] ?? null,
             'status' => $validated['status'],
+            'type' => $validated['type'],
         ]);
 
-        // Generate the certificate image and get its public URL
-        $imageUrl = $this->generateCertificateImage($certification->fresh(['guide', 'course', 'issuer']), $validated['base_url']);
+        if ($certification->type === 'certificate') {
+            // Generate the certificate image and get its public URL
+            $imageUrl = $this->generateCertificateImage($certification->fresh(['guide', 'course', 'issuer']), $validated['base_url']);
+        }
+
+        if ($certification->type === 'license') {
+            // Generate the license image and get its public URL
+            $imageUrl = $this->generateLicenseImage($certification->fresh(['guide', 'course', 'issuer']), $validated['base_url'], $validated['park_name'] ?? 'Unknown');
+        }
 
         // Update the certificate record with the image URL
         $certification->update([
@@ -108,6 +173,16 @@ class CertificationController extends Controller
             ], 201);
         }
 
+        // Redirect based on type
+        if ($certification->type === 'certificate') {
+            return to_route('certification.index', ['type' => 'certificate'])
+                ->with('success', "Certificate \"{$certification->certification_name}\" created and image generated successfully.");
+        } elseif ($certification->type === 'license') {
+            return to_route('certification.index', ['type' => 'license'])
+                ->with('success', "License \"{$certification->certification_name}\" created and image generated successfully.");
+        }
+
+        // Fallback
         return to_route('certification.index')
             ->with('success', "Certification \"{$certification->certification_name}\" created and image generated successfully.");
     }
@@ -123,6 +198,12 @@ class CertificationController extends Controller
             abort(403, 'Unauthorized');
         }
     
+        if ($certification->type === 'license') {
+            return inertia('Licenses/Details', [
+                'certification' => $certification,
+            ]);
+        }
+
         return inertia('Certifications/Details', [
             'certification' => $certification,
         ]);
@@ -245,6 +326,13 @@ class CertificationController extends Controller
                 ], 200);
             }
 
+            // Redirect based on type
+            if ($certification->type === 'certificate') {
+                return redirect()->route('certification.index', ['type' => 'certificate'])->with('success', 'Certification deleted successfully.');
+            } elseif ($certification->type === 'license') {
+                return redirect()->route('certification.index', ['type' => 'license'])->with('success', 'License deleted successfully.');
+            }
+
             return redirect()->route('certification.index')->with('success', 'Certification deleted successfully.');
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
@@ -342,5 +430,89 @@ class CertificationController extends Controller
 
         // Return the full public URL
         return $baseUrl . '/certificates/' . $filename;
+    }
+
+    public function generateLicenseImage($certification, $baseUrl, $parkName)
+    {
+        // Validate file paths
+        $templatePath = public_path('storage/templates/license_template.png');
+        $outputDir = public_path('storage/licenses');
+
+        if (!file_exists($templatePath)) {
+            \Log::error('License template not found at: ' . $templatePath);
+            throw new \Exception('License template not found');
+        }
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        // Create an ImageManager instance with GD driver
+        $manager = new ImageManager(new Driver());
+
+        // Load the base certificate template image
+        $img = $manager->read($templatePath);
+
+        // Set text properties
+        $guideID = $certification->guide->identification_number;
+        $guideName = $certification->guide->full_name;
+        $phoneNumber = $certification->guide->phone_number ?? 'N/A';
+        $issueDate = $certification->issue_date ? Carbon::parse($certification->issue_date)->format('F j, Y') : 'N/A';
+        $expiryDate = $certification->expiry_date ? Carbon::parse($certification->expiry_date)->format('F j, Y') : 'N/A';
+
+        $img->text($parkName, 400, 130, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(60);
+            $font->color('#ffffff');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($guideID, 180, 444, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(30);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($guideName, 270, 480, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(30);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($phoneNumber, 370, 520, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(30);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($issueDate, 290, 560, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(30);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($expiryDate, 300, 600, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(30);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        // Save to the same public path as uploaded certificates
+        $filename = time() . '_license_' . $certification->id . '.png';
+        $path = public_path('storage/licenses/' . $filename);
+        $img->save($path);
+
+        // Return the full public URL
+        return $baseUrl . '/licenses/' . $filename;
     }
 }

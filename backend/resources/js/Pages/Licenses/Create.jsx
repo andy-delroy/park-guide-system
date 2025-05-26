@@ -9,19 +9,18 @@ import Button from '@/Components/Button';
 const Create = ({ auth }) => {
     const { data, setData, post, processing, errors } = useForm({
         guide_id: '',
-        course_id: '',
+        park_name: '',
         description: '',
+        renewal_requirements: '',
         issue_date: '',
+        expiry_date: '',
         status: 'active',
         base_url: API_BASE_URL,
-        type: 'certificate',
+        type: 'license',
     });
 
     const [guides, setGuides] = useState([]);
     const [guideError, setGuideError] = useState(null);
-
-    const [courses, setCourses] = useState([]);
-    const [courseError, setCourseError] = useState(null);
 
     // Fetch guides when the component mounts
     useEffect(() => {
@@ -50,31 +49,6 @@ const Create = ({ auth }) => {
         fetchGuides();
     }, []);
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const response = await axios.get('/courses', {
-                    headers: {
-                        Accept: 'application/json',
-                    },
-                });
-
-                const courseData = response.data.courses || response.data.data || response.data || [];
-                if (!Array.isArray(courseData)) {
-                    console.warn('Course data is not an array:', courseData);
-                    setCourses([]);
-                } else {
-                    setCourses(courseData);
-                }
-            } catch (error) {
-                console.error('Error fetching courses:', error.response?.data || error.message);
-                setCourseError(error.response?.data?.message || 'Failed to fetch courses.');
-            }
-        };
-
-        fetchCourses();
-    }, []);
-
     // Set default issue_date to today
     useEffect(() => {
         const today = new Date();
@@ -92,13 +66,13 @@ const Create = ({ auth }) => {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Add New Certification
+                    Add New License
                 </h2>
             }
             showBackButton={true}
-            backHref="/certification?type=certificate"
+            backHref="/certification?type=license"
         >
-            <Head title="Add Certification" />
+            <Head title="Add License" />
 
             <SectionCard>
                 {guideError && (
@@ -125,24 +99,15 @@ const Create = ({ auth }) => {
                     </div>
 
                     <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Course</label>
-                        <select
-                            value={data.course_id}
-                            onChange={(e) => setData('course_id', e.target.value)}
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Park Name</label>
+                        <input
+                            type="text"
+                            value={data.park_name}
+                            onChange={(e) => setData('park_name', e.target.value)}
                             className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        >
-                            <option value="">Select a Course</option>
-                            {courses.map((course) => (
-                                <option key={course.id} value={course.id}>
-                                    {course.title || 'Untitled Course'}
-                                </option>
-                            ))}
-                        </select>
-                        {courseError && (
-                            <div className="text-red-500 text-sm mt-1">{courseError}</div>
-                        )}
-                        {errors.course_id && (
-                            <div className="text-red-500 text-sm mt-1">{errors.course_id}</div>
+                        />
+                        {errors.park_name && (
+                            <div className="text-red-500 text-sm mt-1">{errors.park_name}</div>
                         )}
                     </div>
 
@@ -158,6 +123,15 @@ const Create = ({ auth }) => {
                         )}
                     </div>
                     <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
+                        <textarea
+                            value={data.renewal_requirements}
+                            onChange={(e) => setData('renewal_requirements', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
+                    </div>
+                    <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
                         <input
                             type="date"
@@ -169,13 +143,39 @@ const Create = ({ auth }) => {
                             <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>
                         )}
                     </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input
+                            type="date"
+                            value={data.expiry_date}
+                            onChange={(e) => setData('expiry_date', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        />
+                        {errors.expiry_date && (
+                            <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={data.status}
+                            onChange={(e) => setData('status', e.target.value)}
+                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        {errors.status && (
+                            <div className="text-red-500 text-sm mt-1">{errors.status}</div>
+                        )}
+                    </div>
                     
                     <div className="flex space-x-2">
                         <Button type="create" typeAttr="submit" disabled={processing}>
-                            Create Certification
+                            Create License
                         </Button>
                         <Link
-                            href="/certification?type=certificate"
+                            href="/certification?type=license"
                         >
                             <Button type="cancel">
                                 Cancel

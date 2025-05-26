@@ -13,21 +13,21 @@ export default function Index({ auth, certifications }) {
     const isAdmin = auth.user.role.role_name === 'admin';
     const isGuide = auth.user.role.role_name === 'guide';
 
-    const certificateOnly = certifications.filter(cert => cert.type === 'certificate');
+    const licenseOnly = certifications.filter(cert => cert.type === 'license');
 
     const handleDelete = (id) => {
-        if (confirm("Are you sure you want to delete this certification?")) {
+        if (confirm("Are you sure you want to delete this license?")) {
             Inertia.delete(`/certification/${id}`, {
                 onSuccess: () => {
                     setMessage({
-                        success: "Certification deleted successfully.",
+                        success: "License deleted successfully.",
                         error: null,
                     });
                 },
                 onError: (errors) => {
                     setMessage({
                         success: null,
-                        error: "Failed to delete certification. Please try again.",
+                        error: "Failed to delete license. Please try again.",
                     });
                 },
             });
@@ -35,18 +35,18 @@ export default function Index({ auth, certifications }) {
     };
 
     const handleRenew = (id) => {
-        if (confirm("Are you sure you want to renew this certification?")) {
+        if (confirm("Are you sure you want to renew this license?")) {
             Inertia.post(`/certification/${id}/renew`, {}, {
                 onSuccess: () => {
                     setMessage({
-                        success: "Certification renewed successfully.",
+                        success: "License renewed successfully.",
                         error: null,
                     });
                 },
                 onError: () => {
                     setMessage({
                         success: null,
-                        error: "Failed to renew certification. Please try again.",
+                        error: "Failed to renew license. Please try again.",
                     });
                 },
             });
@@ -69,11 +69,11 @@ export default function Index({ auth, certifications }) {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    {isAdmin ? "Certification Management" : "My Certifications"}
+                    {isAdmin ? "License Management" : "My Licenses"}
                 </h2>
             }
         >
-            <Head title={isAdmin ? "Certification Management" : "My Certifications"} />
+            <Head title={isAdmin ? "License Management" : "My Licenses"} />
 
             <SectionCard>
                 {message.success && (
@@ -90,24 +90,25 @@ export default function Index({ auth, certifications }) {
                 <div className="mb-4 flex justify-between">
                     {isAdmin && (
                         <h3 className="text-lg font-medium text-gray-900">
-                        Certifications
+                        Licenses
                         </h3>
                     )}
                     {auth.user.role.role_name === 'admin' && (
-                        <Link href="/certification/create?type=certificate">
-                            <Button>+ Create New Certificate</Button>
+                        <Link href="/certification/create?type=license">
+                            <Button>+ Create New License</Button>
                         </Link>
                     )}
                 </div>
 
                 {isAdmin && (
                     <DataGridTable
-                        rows={certificateOnly.map((cert) => ({
+                        rows={licenseOnly.map((cert) => ({
                             id: cert.id,
                             certification_name: cert.certification_name,
                             issued_to: cert.guide.full_name,
                             issued_by: cert.issuer.full_name,
                             issue_date: cert.issue_date,
+                            expiry_date: cert.expiry_date,
                         }))}
                         columns={[
                             {
@@ -127,6 +128,7 @@ export default function Index({ auth, certifications }) {
                             { field: "issued_to", headerName: "Issued To", flex: 1 },
                             { field: "issued_by", headerName: "Issued By", flex: 1 },
                             { field: "issue_date", headerName: "Issue Date", flex: 1 },
+                            { field: "expiry_date", headerName: "Expiry Date", flex: 1 },
                             {
                                 field: "actions",
                                 headerName: "Actions",
@@ -151,6 +153,20 @@ export default function Index({ auth, certifications }) {
                                                         Delete
                                                     </ButtonThin>
                                                 </Link>
+                                                {row.expiry_date && (() => {
+                                                    const expiry = new Date(row.expiry_date);
+                                                    const now = new Date();
+                                                    const daysToExpiry = (expiry - now) / (1000 * 60 * 60 * 24); // difference in days
+
+                                                    return daysToExpiry <= 30 && daysToExpiry >= 0;
+                                                })() && (
+                                                    <ButtonThin
+                                                        type="success"
+                                                        onClick={() => handleRenew(row.id)}
+                                                    >
+                                                        Renew
+                                                    </ButtonThin>
+                                                )}
                                             </>
                                         )}
                                     </div>
@@ -162,7 +178,7 @@ export default function Index({ auth, certifications }) {
 
                 {isGuide && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                        {certificateOnly.map((cert) => {
+                        {licenseOnly.map((cert) => {
                             const relativePath = getRelativePath(cert.certificate_file_url);
                             const isImage = relativePath && /\.(jpg|jpeg|png)$/i.test(relativePath);
 

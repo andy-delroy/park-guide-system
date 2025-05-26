@@ -34,20 +34,21 @@ Route::redirect('/', '/home');
 // Public route for index (no middleware)
 Route::get('/media', [MediaController::class, 'index'])->name('media.index');
 
-// use App\Models\Certification;
+use App\Models\Certification;
 
-// Route::get('/test-generate-certificate/{id}', function ($id) {
-//     $certification = Certification::with('guide')->findOrFail($id);
-//     $baseUrl = url('/'); // or config('app.url')
+Route::get('/test-generate-certificate/{id}', function ($id) {
+    $certification = Certification::with('guide')->findOrFail($id);
+    $baseUrl = url('/'); // or config('app.url')
+    $parkName = "Lee"; // Replace with your park name or fetch dynamically if needed
 
-//     $controller = app()->make(\App\Http\Controllers\CertificationController::class);
-//     $imageUrl = $controller->generateCertificateImage($certification, $baseUrl);
+    $controller = app()->make(\App\Http\Controllers\CertificationController::class);
+    $imageUrl = $controller->generateLicenseImage($certification, $baseUrl, $parkName);
 
-//     return response()->json([
-//         'message' => 'Certificate generated successfully',
-//         'image_url' => $imageUrl,
-//     ]);
-// });
+    return response()->json([
+        'message' => 'Certificate generated successfully',
+        'image_url' => $imageUrl,
+    ]);
+});
 
 
 // Authenticated routes (only for logged-in users)

@@ -67,15 +67,6 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('companies', CompanyController::class);
 
 
-// ✅ Media API routes WITHOUT sanctum (TEMP for testing only)
-Route::get('/media', [MediaController::class, 'index']);              // List 10 latest
-Route::post('/media', [MediaController::class, 'store']);             // Upload media
-Route::patch('/media/{media}', [MediaController::class, 'update']);   // Update caption / file
-Route::delete('/media/{media}', [MediaController::class, 'destroy']); // Delete media
-
-
-
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);

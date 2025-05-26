@@ -65,12 +65,12 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                 >
                                     Courses
                                 </NavLink>
-                                <NavLink
+                                {/* <NavLink
                                     href={route('quiz.index')}
                                     active={route().current('quiz.index')}
                                 >
                                     Quiz
-                                </NavLink>
+                                </NavLink> */}
                                 <NavLink
                                     href={route('trainings.index')}
                                     active={route().current('trainings.index')}
@@ -78,10 +78,17 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     Trainings
                                 </NavLink>
                                 <NavLink
-                                    href={route('certification.index')}
-                                    active={route().current('certification.index')}
+                                    href={route('certification.index', { type: 'certificate' })}
+                                    active={route().current('certification.index') && route().params.type !== 'license'}
                                 >
                                     Certification
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('certification.index', { type: 'license' })}
+                                    active={route().current('certification.index') && route().params.type === 'license'}
+                                >
+                                    License
                                 </NavLink>
                             </>
                         )}
@@ -206,12 +213,12 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                 >
                                     Courses
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink
+                                {/* <ResponsiveNavLink
                                     href={route('quiz.index')}
                                     active={route().current('quiz.index')}
                                 >
                                     Quiz
-                                </ResponsiveNavLink>
+                                </ResponsiveNavLink> */}
                                 <ResponsiveNavLink
                                     href={route('trainings.index')}
                                     active={route().current('trainings.index')}
@@ -219,10 +226,17 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     Trainings
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('certification.index')}
-                                    active={route().current('certification.index')}
+                                    href={route('certification.index', { type: 'certificate' })}
+                                    active={route().current('certification.index') && route().params.type !== 'license'}
                                 >
                                     Certification
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    href={route('certification.index', { type: 'license' })}
+                                    active={route().current('certification.index') && route().params.type === 'license'}
+                                >
+                                    License
                                 </ResponsiveNavLink>
                             </>
                         )}

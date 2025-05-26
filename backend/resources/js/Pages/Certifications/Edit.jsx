@@ -14,9 +14,7 @@ const Edit = ({ auth, certification }) => {
         certification_name: certification.certification_name || '',
         description: certification.description || '',
         certificate_file_url: certification.certificate_file_url || '',
-        renewal_requirements: certification.renewal_requirements || '',
         issue_date: certification.issue_date || '',
-        expiry_date: certification.expiry_date || '',
         status: certification.status || 'active',
         base_url: API_BASE_URL,
         _method: 'PUT',
@@ -135,7 +133,7 @@ const Edit = ({ auth, certification }) => {
                 </h2>
             }
             showBackButton={true}
-            backHref="/certification"
+            backHref="/certification?type=certification"
         >
             <Head title="Edit Certification" />
 
@@ -224,9 +222,10 @@ const Edit = ({ auth, certification }) => {
                         <label className="block mb-1 text-sm font-medium text-gray-700">Certification Number</label>
                         <input
                             type="text"
+                            readOnly
                             value={data.certificate_number}
                             onChange={(e) => setData('certificate_number', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="w-full border p-2 rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
                         />
                         {errors.certificate_number && <div className="text-red-500 text-sm mt-1">{errors.certificate_number}</div>}
                     </div>
@@ -252,49 +251,17 @@ const Edit = ({ auth, certification }) => {
                         />
                         {errors.description && <div className="text-red-500 text-sm mt-1">{errors.description}</div>}
                     </div>
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Requirements for renewal</label>
-                        <textarea
-                            value={data.renewal_requirements}
-                            onChange={(e) => setData('renewal_requirements', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.renewal_requirements && <div className="text-red-500 text-sm mt-1">{errors.renewal_requirements}</div>}
-                    </div>
 
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Issue Date</label>
                         <input
                             type="date"
+                            disabled
                             value={data.issue_date}
                             onChange={(e) => setData('issue_date', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="w-full border p-2 rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed"
                         />
                         {errors.issue_date && <div className="text-red-500 text-sm mt-1">{errors.issue_date}</div>}
-                    </div>
-
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Expiry Date</label>
-                        <input
-                            type="date"
-                            value={data.expiry_date}
-                            onChange={(e) => setData('expiry_date', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        {errors.expiry_date && <div className="text-red-500 text-sm mt-1">{errors.expiry_date}</div>}
-                    </div>
-
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
-                        <select
-                            value={data.status}
-                            onChange={(e) => setData('status', e.target.value)}
-                            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                        {errors.status && <div className="text-red-500 text-sm mt-1">{errors.status}</div>}
                     </div>
 
                     <div className="flex space-x-2">

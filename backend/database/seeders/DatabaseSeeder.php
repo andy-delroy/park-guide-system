@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\{
     Role, User, Park, ParkActivity, ParkAttraction, ParkAccommodation, ParkRoute,
     Species, SpeciesObservation, TrainingProgram, TrainingModule, ModuleContent,
-    TrainingSession, GuideEnrollment, GuideModuleProgress, GuideCertification,
+    TrainingSession, GuideEnrollment, GuideModuleProgress,
     GuideFeedback, GuidePerformanceMetric, License, IoTDevice, IoTReading, IoTAlert,
     AIIdentificationLog, MediaLibrary,
     Trainings
@@ -151,11 +151,6 @@ class DatabaseSeeder extends Seeder
                     'module_id' => $module->id
                 ]);
             }
-
-            GuideCertification::factory()->create([
-                'guide_id' => $guide->id,
-                'program_id' => $session->program->id
-            ]);
         }
 
         // Feedback

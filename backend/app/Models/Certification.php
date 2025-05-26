@@ -19,6 +19,7 @@ class Certification extends Model
         'issue_date',
         'expiry_date',
         'status',
+        'type',
     ];
 
     public function guide()
