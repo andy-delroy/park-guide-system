@@ -6,6 +6,7 @@ export default function PlantClassifier() {
   const [image, setImage] = useState(null);
   const [prediction, setPrediction] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState("orchid"); // or "fauna"
 
   // Request permission to access media
   useEffect(() => {
@@ -16,6 +17,12 @@ export default function PlantClassifier() {
       }
     })();
   }, []);
+
+  const clearAll = () => {
+    setImage(null);
+    setPrediction("");
+    Alert.alert("Cleared", "Image and prediction have been reset.");
+  };
 
   const pickImage = async () => {
     try {
@@ -61,9 +68,10 @@ export default function PlantClassifier() {
       const formData = new FormData();
       formData.append("file", {
         uri,
-        name: "orchid.jpg",
+        name: "upload.jpg",
         type: "image/jpeg",
       });
+      formData.append("mode", mode);  // "orchid" or "fauna"
 
       const response = await fetch("https://orchididentity.pythonanywhere.com/predict", {
         method: "POST",
@@ -73,124 +81,181 @@ export default function PlantClassifier() {
         body: formData,
       });
 
-      const result = await response.json();
-      console.log("API Response:", result);
+      const text = await response.text();
+      console.log("Response Text:", text);
+
+      const result = JSON.parse(text);
 
       if (result?.predictions?.length > 0) {
-        const formatted = result.predictions
-          .map(p => `${p.label}: ${p.confidence}`)
-          .join('\n');
-        setPrediction(formatted);
+        const top = result.predictions[0];
+        setPrediction(
+          `This image is most likely a ${top.label}! I am ${top.confidence} confident.`
+        );
       } else {
         setPrediction("Prediction failed or empty response.");
       }
     } catch (error) {
       console.error("Prediction error:", error);
-      setPrediction("Failed to predict.");
+      setPrediction("Prediction failed.");
     } finally {
       setLoading(false);
     }
   };
 
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Orchid Classifier</Text>
-
-      <View style={styles.content}>
-        {image && <Image source={{ uri: image }} style={styles.image} />}
-        {loading && <ActivityIndicator size="large" color="#4f46e5" />}
-        {!loading && prediction !== "" && (
-          <Text style={styles.prediction}>{prediction}</Text>
-        )}
+      <View style={styles.header}>
+        <Text style={styles.title}>Species Classifier</Text>
+        <Text style={styles.subtitle}>Select a category and upload an image</Text>
       </View>
 
-      <View style={styles.bottomBar}>
-        <Pressable style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Gallery</Text>
+      <View style={styles.toggleContainer}>
+        <Pressable
+          style={[styles.toggleButton, mode === "orchid" && styles.toggleButtonActive]}
+          onPress={() => setMode("orchid")}
+        >
+          <Text style={styles.toggleText}>Orchid</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={openCamera}>
-          <Text style={styles.buttonText}>Camera</Text>
+        <Pressable
+          style={[styles.toggleButton, mode === "fauna" && styles.toggleButtonActive]}
+          onPress={() => setMode("fauna")}
+        >
+          <Text style={styles.toggleText}>Fauna</Text>
         </Pressable>
       </View>
+
+      <View style={styles.topActions}>
+  <Pressable style={styles.button} onPress={openCamera}>
+    <Text style={styles.buttonText}>Camera</Text>
+  </Pressable>
+  <Pressable style={styles.button} onPress={pickImage}>
+    <Text style={styles.buttonText}>Gallery</Text>
+  </Pressable>
+</View>
+
+{/* Image, Prediction, etc. */}
+<View style={styles.imageContainer}>
+  {image && <Image source={{ uri: image }} style={styles.image} />}
+  {loading && <ActivityIndicator size="large" color="#4f46e5" />}
+  {!loading && prediction !== "" && (
+    <Text style={styles.prediction}>{prediction}</Text>
+  )}
+</View>
+
+{/* Clear Button at the bottom */}
+<View style={styles.bottomBar}>
+  <Pressable style={[styles.button, styles.clearButton]} onPress={clearAll}>
+    <Text style={styles.buttonText}>Clear</Text>
+  </Pressable>
+</View>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  topActions: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 12,
+    paddingHorizontal: 12,
+  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f8f9fa",
-    justifyContent: "flex-start",
+    paddingTop: 50,
+    paddingHorizontal: 24,
+    backgroundColor: "#f9fafb",
     alignItems: "center",
+    justifyContent: "space-between",
   },
-  content: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  width: "100%",
+  header: {
+    alignItems: "center",
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1f2937",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginTop: 4,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#e5e7eb",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  toggleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: "#6b7280",
+  },
+  toggleButtonActive: {
+    backgroundColor: "#4f46e5",
+  },
+  toggleText: {
+    color: "#ffffffff",
+    fontWeight: "600",
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    paddingBottom: 20,
   },
   image: {
-  width: 250,
-  height: 250,
-  borderRadius: 16,
-  marginTop: 20,
-  borderWidth: 2,
-  borderColor: "#d1d5db", // soft gray
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.1,
-  shadowRadius: 6,
-  elevation: 4,
+    width: 300,
+    height: 285,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    marginBottom: 8,
   },
   prediction: {
-    fontSize: 16,
-    color: "#2c3e50",
-    textAlign: "center",
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
-    marginTop: 10,
+    padding: 16,
+    borderRadius: 12,
     width: "100%",
+    textAlign: "center",
+    fontSize: 16,
+    color: "#1e293b",
+    elevation: 3,
+    fontWeight:"bold",
   },
   bottomBar: {
-  position: "absolute",
-  bottom: 30,
-  left: 0,
-  right: 0,
-  flexDirection: "row",
-  justifyContent: "center",
-  alignItems: "center",
-  gap: 16, // space between buttons (React Native 0.71+)
+    width: "100%",
+    paddingVertical: 16,
+    alignItems: "center",
   },
   button: {
-  backgroundColor: "#4f46e5", // indigo
-  paddingVertical: 12,
-  paddingHorizontal: 24,
-  borderRadius: 8,
-  marginHorizontal: 10,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-  elevation: 3,
+    flex:1,
+    backgroundColor: "#4f46e5",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  buttonText: {
-  color: "#fff",
+clearButton: {
+  backgroundColor: "#6b7280",
+  width: "60%",
+  alignSelf: "center",
+},
+buttonText: {
+  color: "#ffffff",
   fontSize: 16,
   fontWeight: "600",
-  },
+},
 });
-
-
