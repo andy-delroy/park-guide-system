@@ -99,6 +99,12 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                             </>
                         )}
                         <NavLink
+                            href={route('payment.page')}
+                            active={route().current('payment.page')}
+                        >
+                            Payment
+                        </NavLink>
+                        <NavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}
                         >
