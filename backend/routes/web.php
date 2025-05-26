@@ -25,6 +25,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\AdminUploadController;
+use App\Models\PaymentQR;
+use App\Http\Controllers\PaymentController;
+
+
 
 
 
@@ -239,3 +244,34 @@ Route::get('/api/recommendations', [RecommenderController::class, 'getRecommenda
 //IOT web
 // Route::get('')
 // Route::get('/IOT/sensor-data')
+Route::middleware(['auth'])->group(function () {
+    // QR upload (Admin)
+    Route::get('/admin/upload-qr', [AdminUploadController::class, 'show'])->name('admin.uploadqr');
+    Route::post('/admin/upload-qr', [AdminUploadController::class, 'upload'])->name('admin.uploadqr.post');
+
+    // Payment page (for user)
+    Route::get('/payment', function () {
+    return Inertia::render('Payments/Payment', [
+        'qr' => \App\Models\PaymentQR::latest()->first(),
+        'auth' => ['user' => Auth::user()],
+    ]);
+})->middleware('auth')->name('payment.page');
+
+Route::get('/admin/upload-qr', function () {
+    return Inertia::render('Payments/UploadQR', [
+        'qr' => PaymentQR::latest()->first(),
+        'auth' => ['user' => Auth::user()],
+    ]);
+})->middleware('auth')->name('admin.uploadqr');
+
+});
+
+// User submits payment
+Route::middleware(['auth'])->group(function () {
+    Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+});
+
+// Admin views all payments
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/payments', [PaymentController::class, 'index'])->name('payments.index');
+});
