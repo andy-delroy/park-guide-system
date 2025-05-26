@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str; 
 use Illuminate\Support\Facades\Validator;     
+use Carbon\Carbon;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use App\Models\Course;
+use App\Models\User;
 
 class CertificationController extends Controller
 {
@@ -20,11 +25,14 @@ class CertificationController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-    
+
         if ($user->role->role_name === 'guide') {
-            $certifications = Certification::with(['guide', 'issuer'])->where('guide_id', $user->id)->paginate(10);
+            $certifications = Certification::with(['guide', 'issuer'])
+                ->where('guide_id', $user->id)
+                ->get(); // removed pagination
         } else if ($user->role->role_name === 'admin') {
-            $certifications = Certification::with(['guide', 'issuer'])->paginate(10);
+            $certifications = Certification::with(['guide', 'issuer'])
+                ->get(); // removed pagination
         } else {
             abort(403, 'Unauthorized');
         }
@@ -32,12 +40,11 @@ class CertificationController extends Controller
         if ($request->expectsJson()) {
             return CertificationResource::collection($certifications);
         }
-    
+
         return inertia('Certifications/Index', [
             'certifications' => $certifications,
         ]);
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -54,53 +61,55 @@ class CertificationController extends Controller
     {
         $validated = $request->validate([
             'guide_id' => 'required|exists:users,id',
-            'certification_name' => 'required|string|unique:guide_certifications',
+            'course_id' => 'required|exists:courses,id',
             'certificate_number' => 'required|string|unique:guide_certifications',
             'description' => 'required|string',
-            'renewal_requirements' => 'nullable|string',
-            'validity_period_months' => 'nullable|integer',
-            'certificate_file_url' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'issue_date' => 'required|date',
-            'expiry_date' => 'nullable|date|after:issue_date',
+            'expiry_date' => 'required|date|after:issue_date',
             'status' => 'required|string|in:active,inactive',
-            'base_url' => 'required|url', // Require base_url to match API_BASE_URL
+            'base_url' => 'required|url',
         ]);
 
-        // Handle file upload and store the full URL
-        $fileUrl = null;
-        if ($request->hasFile('certificate_file_url') && $request->file('certificate_file_url')->isValid()) {
-            $file = $request->file('certificate_file_url');
-            // Generate a unique filename
-            $filename = time() . '_' . $file->getClientOriginalName();
-            // Store directly in public/certificates
-            $file->storeAs('certificates', $filename, 'public_direct');
-            $fileUrl = $validated['base_url'] . '/certificates/' . $filename; // Constructs full URL, e.g., http://172.20.10.7:8000/certificates/filename.pdf
-        }
+        $course = Course::findOrFail($validated['course_id']);
+        $guide = User::findOrFail($validated['guide_id']);
 
+        // Generate certification name
+        $guideName = strtok($guide->full_name, ' ');
+        $shortCourseName = \Str::limit($course->title, 20, '');
+        $certificationName = "{$guideName} - {$shortCourseName} Cert";
+
+        // First, create the Certification (without image URL yet)
         $certification = Certification::create([
             'guide_id' => $validated['guide_id'],
-            'certification_name' => $validated['certification_name'],
+            'course_id' => $validated['course_id'],
+            'certification_name' => $certificationName,
             'certificate_number' => $validated['certificate_number'],
             'description' => $validated['description'],
-            'renewal_requirements' => $validated['renewal_requirements'],
-            'validity_period_months' => $validated['validity_period_months'],
-            'certificate_file_url' => $fileUrl, // Store the full URL
-            'issued_by' => auth()->id(), // Assuming the user creating the certification is the issuer
+            'certificate_file_url' => null, // temporarily null
+            'issued_by' => auth()->id(),
             'issue_date' => $validated['issue_date'],
-            'expiry_date' => $validated['expiry_date'] ?? null,
+            'expiry_date' => $validated['expiry_date'],
             'status' => $validated['status'],
         ]);
 
-        // Check if the request expects JSON (API call)
+        // Generate the certificate image and get its public URL
+        $imageUrl = $this->generateCertificateImage($certification->fresh(['guide', 'course', 'issuer']), $validated['base_url']);
+
+        // Update the certificate record with the image URL
+        $certification->update([
+            'certificate_file_url' => $imageUrl,
+        ]);
+
+        // Return JSON or redirect
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => "Certification \"{$certification->certification_name}\" created successfully.",
+                'message' => "Certification \"{$certification->certification_name}\" created and image generated successfully.",
                 'certification' => $certification,
             ], 201);
         }
-        
+
         return to_route('certification.index')
-            ->with('success', "Certification \"{$certification->certification_name}\" created successfully.");
+            ->with('success', "Certification \"{$certification->certification_name}\" created and image generated successfully.");
     }
 
     /**
@@ -108,7 +117,7 @@ class CertificationController extends Controller
      */
     public function show($id)
     {
-        $certification = Certification::with(['guide', 'issuer'])->findOrFail($id);
+        $certification = Certification::with(['guide', 'issuer', 'course'])->findOrFail($id);
     
         if (auth()->user()->role->role_name === 'guide' && $certification->guide_id !== auth()->id()) {
             abort(403, 'Unauthorized');
@@ -145,16 +154,13 @@ class CertificationController extends Controller
                 // Mobile API logic (mimicking updateProfile)
                 $validator = Validator::make($request->all(), [
                     'guide_id' => 'nullable|exists:users,id',
+                    'course_id' => 'nullable|exists:courses,id',
                     'certificate_number' => 'nullable|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
                     'certification_name' => 'nullable|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
                     'description' => 'nullable|string',
-                    'renewal_requirements' => 'nullable|string',
-                    'validity_period_months' => 'nullable|integer',
-                    'certificate_file' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
                     'issue_date' => 'nullable|date',
                     'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                     'status' => 'nullable|in:active,inactive',
-                    'program_name' => 'nullable|string|max:255',
                 ]);
 
                 if ($validator->fails()) {
@@ -164,26 +170,16 @@ class CertificationController extends Controller
                     ], 422);
                 }
 
-                // Handle certificate file upload
-                if ($request->hasFile('certificate_file')) {
-                    $file = $request->file('certificate_file');
-                    $filename = uniqid('cert_') . '.' . $file->getClientOriginalExtension();
-                    $file->move(public_path('certificates'), $filename);
-                    $certification->certificate_file_url = url('certificates/' . $filename);
-                }
-
                 // Only update fields that are present in the request
                 $certification->fill($request->only([
                     'guide_id',
+                    'course_id',
                     'certificate_number',
                     'certification_name',
                     'description',
-                    'renewal_requirements',
-                    'validity_period_months',
                     'issue_date',
                     'expiry_date',
                     'status',
-                    'program_name',
                 ]));
 
                 $certification->save();
@@ -196,12 +192,10 @@ class CertificationController extends Controller
                 // Web logic (exactly as provided)
                 $validated = $request->validate([
                     'guide_id' => 'required|exists:users,id',
+                    'course_id' => 'required|exists:courses,id',
                     'certificate_number' => 'required|string|max:255|unique:guide_certifications,certificate_number,' . $certification->id,
                     'certification_name' => 'required|string|max:255|unique:guide_certifications,certification_name,' . $certification->id,
                     'description' => 'nullable|string',
-                    'renewal_requirements' => 'nullable|string',
-                    'validity_period_months' => 'nullable|integer',
-                    'certificate_file_url' => 'nullable', // Allow null or file
                     'issue_date' => 'required|date',
                     'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                     'status' => 'required|in:active,inactive',
@@ -210,31 +204,6 @@ class CertificationController extends Controller
 
                 // Prepare data for update
                 $updateData = $validated;
-
-                if ($request->hasFile('certificate_file_url')) {
-                    // Validate file separately if uploaded
-                    $request->validate([
-                        'certificate_file_url' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
-                    ]);
-
-                    // Delete old file if exists
-                    if ($certification->certificate_file_url) {
-                        $oldFilePath = parse_url($certification->certificate_file_url, PHP_URL_PATH);
-                        $relativePath = ltrim(str_replace('/certificates/', '', $oldFilePath), '/');
-                        if ($relativePath && Storage::disk('public_direct')->exists('certificates/' . $relativePath)) {
-                            Storage::disk('public_direct')->delete('certificates/' . $relativePath);
-                        }
-                    }
-
-                    // Store new file
-                    $file = $request->file('certificate_file_url');
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $file->storeAs('certificates', $filename, 'public_direct');
-                    $updateData['certificate_file_url'] = $request->base_url . '/certificates/' . $filename;
-                } else {
-                    // Preserve existing certificate_file_url, ignoring any string sent
-                    $updateData['certificate_file_url'] = $certification->certificate_file_url;
-                }
 
                 $certification->update($updateData);
 
@@ -292,9 +261,86 @@ class CertificationController extends Controller
     public function renew($id)
     {
         $cert = Certification::findOrFail($id);
-        $cert->validity_period_months += 12;
+
+        // Add 12 months to current expiry date or now
+        $currentExpiry = $cert->expiry_date ? Carbon::parse($cert->expiry_date) : Carbon::now();
+        $newExpiry = $currentExpiry->copy()->addMonths(12);
+
+        // Store only the date part (Y-m-d), no time
+        $cert->expiry_date = $newExpiry->format('Y-m-d');
+
+        // Increment renewal count
+        $cert->renewal_count = $cert->renewal_count + 1;
+
         $cert->save();
 
         return redirect()->back()->with('success', 'Certification renewed successfully.');
+    }
+
+    public function generateCertificateImage($certification, $baseUrl)
+    {
+        // Validate file paths
+        $templatePath = public_path('storage/templates/certificate_template.png');
+        $outputDir = public_path('certificates');
+
+        if (!file_exists($templatePath)) {
+            \Log::error('Certificate template not found at: ' . $templatePath);
+            throw new \Exception('Certificate template not found');
+        }
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        // Create an ImageManager instance with GD driver
+        $manager = new ImageManager(new Driver());
+
+        // Load the base certificate template image
+        $img = $manager->read($templatePath);
+
+        // Set text properties
+        $guideName = $certification->guide->full_name;
+        $programName = $certification->course->title;
+        $issuedBy = $certification->issuer->full_name;
+        $issueDate = Carbon::parse($certification->issue_date)->format('F j, Y');
+
+        $img->text($guideName, 1000, 620, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(90);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($programName, 1000, 800, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(60);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($issuedBy, 1100, 1190, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(35);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $img->text($issueDate, 1100, 1250, function ($font) {
+            $font->filename(public_path('fonts/q.ttf'));
+            $font->size(35);
+            $font->color('#000000');
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        // Save to the same public path as uploaded certificates
+        $filename = time() . '_certificate_' . $certification->id . '.png';
+        $path = public_path('certificates/' . $filename);
+        $img->save($path);
+
+        // Return the full public URL
+        return $baseUrl . '/certificates/' . $filename;
     }
 }

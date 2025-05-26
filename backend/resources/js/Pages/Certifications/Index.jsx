@@ -84,13 +84,13 @@ export default function Index({ auth, certifications }) {
                 </div>
 
                 <DataGridTable
-                    rows={certifications.data.map((cert) => ({
+                    rows={certifications.map((cert) => ({
                         id: cert.id,
                         certification_name: cert.certification_name,
                         issued_to: cert.guide.full_name,
                         issued_by: cert.issuer.full_name,
                         issue_date: cert.issue_date,
-                        validity_period_months: cert.validity_period_months,
+                        expiry_date: cert.expiry_date,
                     }))}
                     columns={[
                         {
@@ -110,10 +110,11 @@ export default function Index({ auth, certifications }) {
                         { field: "issued_to", headerName: "Issued To", flex: 1 },
                         { field: "issued_by", headerName: "Issued By", flex: 1 },
                         { field: "issue_date", headerName: "Issue Date", flex: 1 },
+                        { field: "expiry_date", headerName: "Expiry Date", flex: 1 },
                         {
                             field: "actions",
                             headerName: "Actions",
-                            flex: 0.7,
+                            flex: 1,
                             sortable: false,
                             filterable: false,
                             renderCell: ({ row }) => (
@@ -141,13 +142,19 @@ export default function Index({ auth, certifications }) {
                                                     Delete
                                                 </ButtonThin>
                                             </Link>
-                                            {(row.validity_period_months == 0 || row.validity_period_months == 1) && (
-                                                <button
+                                            {row.expiry_date && (() => {
+                                                const expiry = new Date(row.expiry_date);
+                                                const now = new Date();
+                                                const daysToExpiry = (expiry - now) / (1000 * 60 * 60 * 24); // difference in days
+
+                                                return daysToExpiry <= 30 && daysToExpiry >= 0;
+                                            })() && (
+                                                <ButtonThin
+                                                    type="success"
                                                     onClick={() => handleRenew(row.id)}
-                                                    className="ml-4 rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-700 transition"
                                                 >
                                                     Renew
-                                                </button>
+                                                </ButtonThin>
                                             )}
                                         </>
                                     )}

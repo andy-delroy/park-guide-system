@@ -124,7 +124,7 @@ class MediaController extends Controller
         // Return an Inertia page with the media data and user info
         return Inertia::render('Media/Manage', [
             'media' => $mediaCollection,
-            'auth' => [
+            'meta' => [
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,

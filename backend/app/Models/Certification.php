@@ -10,12 +10,11 @@ class Certification extends Model
 
     protected $fillable = [
         'guide_id',
+        'course_id',
         'certification_name',
         'certificate_number',
         'description',
         'certificate_file_url',
-        'renewal_requirements',
-        'validity_period_months',
         'issued_by',
         'issue_date',
         'expiry_date',
@@ -25,6 +24,11 @@ class Certification extends Model
     public function guide()
     {
         return $this->belongsTo(User::class, 'guide_id');
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
     }
 
     public function tasks()

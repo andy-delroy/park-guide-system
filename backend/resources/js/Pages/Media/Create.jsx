@@ -63,20 +63,6 @@ const Create = ({ auth }) => {
             {errors.caption && <div className="text-red-500 text-sm mt-1">{errors.caption}</div>}
           </div>
 
-          {/* <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
-            <select
-              name="type"
-              value={data.type}
-              onChange={(e) => setData('type', e.target.value)}
-              className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-            >
-              <option value="image">Image</option>
-              <option value="video">Video</option>
-            </select>
-            {errors.type && <div className="text-red-500 text-sm mt-1">{errors.type}</div>}
-          </div> */}
-
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">File</label>
             <input

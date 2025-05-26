@@ -8,18 +8,32 @@ use Inertia\Inertia;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $enrolledIds = $user->courses()->pluck('courses.id')->toArray(); 
+        $courses = Course::withCount('modules')
+            ->select('id', 'title', 'description', 'thumbnail', 'duration', 'created_at') // Only safe fields
+            ->latest()
+            ->get();
+
+        $enrolledIds = $user->courses()->pluck('courses.id')->toArray();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'courses' => $courses,
+                'enrolled' => $enrolledIds,
+            ]);
+        }
+
         return Inertia::render('Courses/Index', [
-            'courses' => Course::withCount('modules')->latest()->get(),
+            'courses' => $courses->toArray(),
             'enrolled' => $enrolledIds,
             'auth' => [
                 'user' => $user,
             ],
         ]);
     }
+
 
     public function create()
     {
@@ -35,17 +49,32 @@ class CourseController extends Controller
             'duration' => 'nullable|string|max:255',
         ]);
 
-        $path = $request->file('thumbnail')?->store('thumbnails', 'public');
+        $url = null;
+
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $mime = $file->getMimeType();
+
+            // Ensure it's an image
+            if (!str_starts_with($mime, 'image/')) {
+                return back()->withErrors(['thumbnail' => 'Unsupported file type.']);
+            }
+
+            $path = $file->store('thumbnails', 'public');
+
+            $url = asset('storage/' . $path); // e.g., /storage/thumbnails/example.jpg
+        }
 
         Course::create([
             'title' => $request->title,
             'description' => $request->description,
-            'thumbnail' => $path ? '/storage/' . $path : null,
+            'thumbnail' => $url,
             'duration' => $request->duration,
         ]);
 
         return redirect()->route('courses.index')->with('success', 'Course created.');
     }
+
 
     public function edit(Course $course)
     {

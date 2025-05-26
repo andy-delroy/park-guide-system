@@ -57,30 +57,34 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                 </NavLink>
                             </>
                         )}
-                        <NavLink
-                            href={route('courses.index')}
-                            active={route().current('courses.index')}
-                        >
-                            Courses
-                        </NavLink>
-                        <NavLink
-                            href={route('quiz.index')}
-                            active={route().current('quiz.index')}
-                        >
-                            Quiz
-                        </NavLink>
-                        <NavLink
-                            href={route('trainings.index')}
-                            active={route().current('trainings.index')}
-                        >
-                            Trainings
-                        </NavLink>
-                        <NavLink
-                            href={route('certification.index')}
-                            active={route().current('certification.index')}
-                        >
-                            Certification
-                        </NavLink>
+                        {(role === 'admin' || role === 'guide') && (
+                            <>
+                                <NavLink
+                                    href={route('courses.index')}
+                                    active={route().current('courses.index')}
+                                >
+                                    Courses
+                                </NavLink>
+                                <NavLink
+                                    href={route('quiz.index')}
+                                    active={route().current('quiz.index')}
+                                >
+                                    Quiz
+                                </NavLink>
+                                <NavLink
+                                    href={route('trainings.index')}
+                                    active={route().current('trainings.index')}
+                                >
+                                    Trainings
+                                </NavLink>
+                                <NavLink
+                                    href={route('certification.index')}
+                                    active={route().current('certification.index')}
+                                >
+                                    Certification
+                                </NavLink>
+                            </>
+                        )}
                         <NavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}
@@ -194,30 +198,34 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                 </ResponsiveNavLink>
                             </>
                         )}
-                        <ResponsiveNavLink
-                            href={route('courses.index')}
-                            active={route().current('courses.index')}
-                        >
-                            Courses
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('quiz.index')}
-                            active={route().current('quiz.index')}
-                        >
-                            Quiz
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('trainings.index')}
-                            active={route().current('trainings.index')}
-                        >
-                            Trainings
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('certification.index')}
-                            active={route().current('certification.index')}
-                        >
-                            Certification
-                        </ResponsiveNavLink>
+                        {(role === 'admin' || role === 'guide') && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('courses.index')}
+                                    active={route().current('courses.index')}
+                                >
+                                    Courses
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('quiz.index')}
+                                    active={route().current('quiz.index')}
+                                >
+                                    Quiz
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('trainings.index')}
+                                    active={route().current('trainings.index')}
+                                >
+                                    Trainings
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('certification.index')}
+                                    active={route().current('certification.index')}
+                                >
+                                    Certification
+                                </ResponsiveNavLink>
+                            </>
+                        )}
                         <ResponsiveNavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}
