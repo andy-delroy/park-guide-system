@@ -16,6 +16,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\RecommenderController;
 use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MentorMenteeController;
 use App\Models\Alert;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
@@ -218,6 +219,9 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
     ]);
 })->name('quizzes.questions.create');
 
+Route::get('/mentor-mentee', [MentorMenteeController::class, 'index'])->name('mentormentee.index');
+Route::post('/mentor-mentee/assign', [MentorMenteeController::class, 'assign'])->name('mentormentee.assign');
+Route::post('/mentor-mentee/question', [MentorMenteeController::class, 'askQuestion'])->name('mentormentee.ask');
 // Route::redirect('/nigga', '/dashboard');
 // Route::redirect('/nigga', '/thehood');
 
