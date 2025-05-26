@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // Trainings
-        $trainings = Trainings::factory()->count(10)->create();
+
 
         // Species
         $speciesList = Species::factory()->count(10)->create();
@@ -212,7 +212,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CourseSeeder::class);
         //quize guide seeder
         $this->call(GuideQuizSeeder::class);
-
+        $this->call(TrainingSeeder::class);
         $this->command->info('All data seeded successfully with relational integrity! 🌱');
         $this->command->info('Test accounts created:');
         $this->command->info('Admins: admin1/adminpass1, admin2/adminpass2');

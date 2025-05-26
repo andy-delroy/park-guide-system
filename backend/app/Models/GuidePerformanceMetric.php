@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class GuidePerformanceMetric extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'guide_id', 'assessment_date', 'assessor_id',
-        'knowledge_score', 'communication_score', 'safety_score',
-        'customer_service_score', 'conservation_awareness_score',
-        'overall_score', 'comments', 'improvement_plan'
+        'guide_id',
+        'assessor_id',
+        'activity_date',
+        'quiz_score',
+        'module_completion_rate',
+        'certified',
     ];
 
     public function guide()
