@@ -74,7 +74,9 @@ def recommend_training():
     # Get training program embeddings
     trainings_data = fetch_trainings()
     training_ids = [str(training[0]) for training in trainings_data]
-    training_emb = training_model(tf.constant(training_ids))
+    training_tensor = tf.constant(training_ids, dtype=tf.string)
+    training_emb = training_model(training_tensor)
+
 
     # Compute similarity scores
     scores = tf.linalg.matmul(guide_emb, training_emb, transpose_b=True)
