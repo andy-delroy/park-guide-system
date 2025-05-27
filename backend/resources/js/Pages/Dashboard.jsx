@@ -18,7 +18,7 @@ export default function Dashboard({ auth }) {
     const notifChannel = window.Echo.channel(`notifications.${role}`);
     console.log(`Subscribing to notifications.${role}...`);
 
-    notifChannel.listen('.test', (event) => {
+    notifChannel.listen('.notifications', (event) => {
       console.log('Notification received:', event.message);
       Toastify({
         text: event.message || "New notification received",

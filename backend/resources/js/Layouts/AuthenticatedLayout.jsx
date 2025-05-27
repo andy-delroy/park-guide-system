@@ -3,6 +3,8 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+//import List from '@/Pages/Notifications/List';
+import NotificationList from '../Pages/Notifications/List';
 
 export default function AuthenticatedLayout({ header, children, showBackButton = false, backHref = '/' }) {
     const user = usePage().props.auth.user;
@@ -12,7 +14,9 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
         useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-
+    const { props } = usePage();
+    const auth = props.auth;
+    
     return (
         <div className="bg-white flex relative h-screen overflow-hidden">
             {/* Sidebar */}
@@ -351,18 +355,11 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     </svg>
 
                                 </button>
-
-                                {/* Notification Dropdown */}
                                 {showNotifications && (
-                                    <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md border border-gray-200 z-50">
+                                    <div className="absolute right-0 mt-2 w-96 bg-white shadow-lg rounded-md border border-gray-200 z-50">
                                         <div className="p-4">
-                                            <h3 className="text-sm font-semibold text-gray-700 mb-2">Notifications</h3>
-                                            <ul className="space-y-2 text-sm text-gray-600">
-                                                <li>No new notifications</li>
-                                                {/* Example static items - replace with real data */}
-                                                {/* <li>Guide John submitted a report.</li> */}
-                                                {/* <li>Certificate for Jane is expiring soon.</li> */}
-                                            </ul>
+                                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Notifications</h3>
+                                        <NotificationList auth={auth} />
                                         </div>
                                     </div>
                                 )}

@@ -3,23 +3,23 @@ import { View, TouchableOpacity, Image, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import styles from '../Styles/styles';
+import { useNotifications } from '../Pages/NotificationContext'
 
 const TopBar = ({ navigation, route, role }) => {
-  // Get the currently focused screen name inside MainStack
+  const { unreadCount } = useNotifications();
+  console.log(' Unread Count from context:', unreadCount);
   const currentScreen = getFocusedRouteNameFromRoute(route) || 'Home';
-  
   const isTabsScreen = currentScreen === 'Tabs';
-  let tabScreen = currentScreen; // Default to current screen
-  
+  let tabScreen = currentScreen;
+
   if (isTabsScreen) {
-    const tabState = route?.state; // Access the tab state
-    const tabIndex = tabState?.index ?? 0; // Get the active tab index
-    tabScreen = tabState?.routes?.[tabIndex]?.name ?? 'Home'; // Get the active tab screen name
+    const tabState = route?.state;
+    const tabIndex = tabState?.index ?? 0;
+    tabScreen = tabState?.routes?.[tabIndex]?.name ?? 'Home';
   }
 
   const isHome = tabScreen === 'Home';
 
-  // Handle back navigation safely
   const handleBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -55,8 +55,25 @@ const TopBar = ({ navigation, route, role }) => {
           navigation.navigate('MainStack', {
             screen: 'Notification',
           })
-        }>
+        }
+        style={{ position: 'relative' }}
+      >
         <Icon name="bell" size={22} color="#fff" />
+        {unreadCount > 0 && (
+          <View style={{
+            position: 'absolute',
+            top: -4,
+            right: -4,
+            backgroundColor: 'red',
+            borderRadius: 6,
+            width: 12,
+            height: 12,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <Text style={{ color: 'white', fontSize: 8, fontWeight: 'bold' }}>{unreadCount < 10 ? unreadCount : '9+'}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
