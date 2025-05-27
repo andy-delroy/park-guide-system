@@ -252,6 +252,7 @@ clearButton: {
   backgroundColor: "#6b7280",
   width: "60%",
   alignSelf: "center",
+  flex: 0,
 },
 buttonText: {
   color: "#ffffff",

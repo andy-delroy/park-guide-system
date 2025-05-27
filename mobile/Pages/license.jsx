@@ -23,6 +23,15 @@ const License = () => {
   const [error, setError] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const role = await SecureStore.getItemAsync('userRole');
+      setUserRole(role);
+    };
+    fetchUserRole();
+  }, []);
 
   const fetchCertifications = async () => {
     try {
@@ -183,12 +192,14 @@ const License = () => {
           <Text style={styles.emptyText}>No licenses found.</Text>
         }
       />
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={handleAddLicense}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      {userRole === 'admin' && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={handleAddLicense}
+        >
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };
