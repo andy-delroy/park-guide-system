@@ -10,6 +10,7 @@ import 'swiper/css';
 import 'swiper/css/parallax';
 import MediaIndex from './Media/Index';
 
+
 export default function Dashboard({ auth, recentImages = [] }) {
   const role = auth?.user?.role_name ?? 'guest';
   const [alert, setAlert] = useState(null); // For inline alert display

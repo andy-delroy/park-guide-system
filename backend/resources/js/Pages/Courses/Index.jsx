@@ -199,16 +199,22 @@ export default function CoursesIndex() {
               )}
             </div>
               {recommended.length > 0 && (
-          <div className="mb-8">
-            <h4 className="text-md font-semibold mt-6 mb-2 text-gray-900">Recommended Course</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommended.map((course) =>
-                renderCourseCard(course, enrolledCourses.includes(course.id))
-              )}
-
-            </div>
-          </div>
+  <div className="mb-8">
+    <h4 className="text-md font-semibold mt-6 mb-2 text-gray-900">Recommended Course</h4>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {recommended
+        .filter((course) => !enrolledCourses.includes(course.id))
+        .map((course) =>
+          renderCourseCard(course, false)
         )}
+      {recommended.filter((course) => !enrolledCourses.includes(course.id)).length === 0 && (
+        <div className="col-span-full text-center text-gray-500">
+          No recommended courses available.
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
             <h4 className="text-md font-semibold mt-6 mb-2 text-gray-900">Other Available Courses</h4>
           </>
@@ -228,3 +234,5 @@ export default function CoursesIndex() {
     </AuthenticatedLayout>
   );
 }
+
+

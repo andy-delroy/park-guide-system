@@ -10,6 +10,11 @@ import {
 import axios from "axios";
 import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+
 
 const containerStyle = {
   width: "100vw",
@@ -19,7 +24,6 @@ const containerStyle = {
 const center = { lat: 1.40164, lng: 110.31443 }; // Default Park Location
 
 const options = {
-  minZoom: 17,
   maxZoom: 18,
   streetViewControl: false,
   mapTypeControl: false,
@@ -37,6 +41,7 @@ const ParkMap = () => {
   const [directions, setDirections] = useState(null); // Store Directions
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state for 360 image viewer
   const [selectedImage, setSelectedImage] = useState(null); // Store the selected image URL for modal
+   const [showGallery, setShowGallery] = useState(false);
   const autocompleteRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -75,23 +80,37 @@ const ParkMap = () => {
     });
   };
 
+  const toggleGalleryModal = () => {
+    setShowGallery(!showGallery);
+  };
+
   const markers = [
     {
       id: 1,
       lat: 1.40180,
       lng: 110.31610,
-      name: "E-Buggy",
-      description: "Description of the E-Buggy.",
+      name: "E-Buggy Return Station",
+      description: "Description of the E-Buggy Return Station.",
       picture: "/Pic/73607c33-b8f5-401f-8938-644eb4ca0ad5.jpg",
+      gallery: [
+        "/Pic/73607c33-b8f5-401f-8938-644eb4ca0ad5.jpg",
+        "/Pic/Ebuggyreturn2.jpg",
+        "/Pic/Ebuggyreturn3.jpg"
+      ]
        // Park Icon for Garden-related places
     },
     {
       id: 7,
       lat: 1.40005,
       lng: 110.32450,
-      name: "Sarawak Forestry Corporation",
-      description: "Description of the Sarawak Forestry Corporation.",
+      name: "Sarawak Forestry Entrance",
+      description: "Description of the Sarawak Forestry Entrance.",
       picture: "/Pic/2b725655-d3fd-40d4-b742-5ce5b2b7e57d.jpg",
+      gallery: [
+        "/Pic/2b725655-d3fd-40d4-b742-5ce5b2b7e57d.jpg",
+        "/Pic/entrance2.jpg",
+        "/Pic/entrance3.jpg"
+      ]
        // Park Icon for Garden-related places
     },
     {
@@ -101,6 +120,37 @@ const ParkMap = () => {
       name: "Wild Orchid Garden",
       description: "Description of the Wild Orchid Garden.",
       picture: "Pic/a15246f0-b630-488e-8367-8b417bdc736f.jpg", // Park Icon for Garden-related places
+      gallery: [
+        "Pic/a15246f0-b630-488e-8367-8b417bdc736f.jpg",
+        "Pic/orchid1.jpg",
+        "Pic/orchid2.jpg"
+      ]
+    },
+    {
+      id: 2,
+      lat: 1.39993,
+      lng: 110.32427,
+      name: "Sarawak Forestry Office",
+      description: "Description of Sarawak forestry Office.",
+      picture: "Pic/office.jpeg", // Park Icon for Garden-related places
+      gallery: [
+        "Pic/office.jpeg",
+        "Pic/office2.jpg",
+        "Pic/office3.jpg"
+      ]
+    },
+    {
+      id: 3,
+      lat: 1.39980,
+      lng: 110.32485,
+      name: "E-Buggy Station",
+      description: "Description of E-Buggy Station.",
+      picture: "Pic/EBuggy.jpeg", // Park Icon for Garden-related places
+      gallery: [
+        "Pic/Ebuggy.jpeg",
+        "Pic/Ebuggy2.jpg",
+        "Pic/Ebuggy5.jpg"
+      ]
     },
     {
       id: 9,
@@ -109,6 +159,11 @@ const ParkMap = () => {
       name: "Nature Reserve",
       description: "Description of the Nature Reserve.",
       picture: "Pic/e908ac3d-e5d4-4d3f-a876-a46dbf73d731.jpg", // Park Icon for Garden-related places
+      gallery: [
+        "Pic/e908ac3d-e5d4-4d3f-a876-a46dbf73d731.jpg",
+        "Pic/NatureReserve2.jpg",
+        "Pic/NatureReserve3.jpg"
+      ]
     },
   ];
   
@@ -295,8 +350,7 @@ const ParkMap = () => {
           />
         </button>
         {/* vacant button */}
-        <button
-          onClick={handleGetDirections}
+        <button onClick={toggleGalleryModal}
           style={{
             width: "50px", // Make the button square
             height: "50px", // Make the button square
@@ -311,7 +365,7 @@ const ParkMap = () => {
           }}
         >
           <img
-            src="https://img.icons8.com/ios/452/forest.png" // URL for route icon (use your own icon if needed)
+            src="https://img.icons8.com/ios/452/image-gallery.png" // URL for route icon (use your own icon if needed)
             alt="Route Icon"
             style={{
               width: "24px", // Size of the route icon inside the button
@@ -465,6 +519,98 @@ const ParkMap = () => {
       <strong>Lat:</strong> {hoverLatLng.lat.toFixed(5)} | <strong>Lng:</strong> {hoverLatLng.lng.toFixed(5)}
     </div>
   )}
+   {showGallery && selectedPark && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(0,0,0,0.85)",
+      zIndex: 9999,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+    }}
+  >
+    {/* Close Button */}
+    <button
+      onClick={toggleGalleryModal}
+      style={{
+        position: "absolute",
+        top: "20px",
+        right: "30px",
+        fontSize: "28px",
+        background: "transparent",
+        border: "none",
+        color: "#fff",
+        cursor: "pointer",
+        zIndex: 10000,
+      }}
+    >
+      ✕
+    </button>
+
+    {/* Gallery Title */}
+    <h2 style={{ color: "white", marginBottom: "20px" }}>{selectedPark.name} Gallery</h2>
+
+    {/* Swiper Gallery */}
+    <div
+      style={{
+        width: "90vw",
+        maxWidth: "800px",
+        height: "400px",
+        position: "relative", // enable absolute positioning of arrows
+        padding: "0 60px", // leave room on left/right for arrows outside the image
+      }}
+    >
+
+      <Swiper
+        modules={[Navigation]}
+        navigation
+        loop={true}
+        spaceBetween={20}
+        className="w-full h-full"
+      >
+        {selectedPark.gallery.map((img, index) => (
+          <SwiperSlide key={index}>
+            <img
+              src={img}
+              alt={`Slide ${index}`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "10px",
+              }}
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+      <style>
+  {`
+    .swiper-button-next, .swiper-button-prev {
+      color: white;
+      width: 40px;
+      height: 40px;
+    }
+
+    .swiper-button-next {
+      right: 0px !important; /* closer to image, increase value to push farther */
+    }
+
+    .swiper-button-prev {
+      left: 0px !important;  /* same here for previous arrow */
+    }
+  `}
+</style>
+    </div>
+  </div>
+)}
+
   {/* Exit Directions Button */}
   {directions && (
     <button
