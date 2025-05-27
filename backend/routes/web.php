@@ -16,6 +16,9 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\RecommenderController;
 use App\Http\Controllers\TrainingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GuidePerformanceMetricController;
+use App\Http\Controllers\TrainingRecommendationController;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IoTDashBoardController;
 use App\Models\Alert;
@@ -236,6 +239,20 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
 //recommender routes
 Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);
 
-//IOT web
-// Route::get('')
-// Route::get('/IOT/sensor-data')
+Route::get('/training-recommendations', [TrainingRecommendationController::class, 'index'])
+    ->name('training.recommendations');
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/analytics', [GuidePerformanceMetricController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/data', [GuidePerformanceMetricController::class, 'fetchData'])->name('analytics.data');
+});
+
+
+Route::get('/api/guides', function () {
+    return \App\Models\User::where('role_id', 2)
+        ->select('id', 'username', 'full_name')
+        ->get();
+});
+
+

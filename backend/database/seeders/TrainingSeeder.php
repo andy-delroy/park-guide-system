@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Trainings;
 use Illuminate\Database\Seeder;
 
 class TrainingSeeder extends Seeder
@@ -12,6 +12,7 @@ class TrainingSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // Use the factory to create 10 realistic training records
+        Trainings::factory()->count(10)->create();
     }
 }

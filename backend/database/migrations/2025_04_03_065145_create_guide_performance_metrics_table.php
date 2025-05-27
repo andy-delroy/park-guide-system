@@ -4,33 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('guide_performance_metrics', function (Blueprint $table) {
             $table->id();
             $table->foreignId('guide_id')->constrained('users');
-            $table->date('assessment_date');
-            $table->foreignId('assessor_id')->constrained('users');
-            $table->decimal('knowledge_score', 4, 2)->nullable();
-            $table->decimal('communication_score', 4, 2)->nullable();
-            $table->decimal('safety_score', 4, 2)->nullable();
-            $table->decimal('customer_service_score', 4, 2)->nullable();
-            $table->decimal('conservation_awareness_score', 4, 2)->nullable();
-            $table->decimal('overall_score', 4, 2)->nullable();
-            $table->text('comments')->nullable();
-            $table->text('improvement_plan')->nullable();
+            $table->date('activity_date'); // renamed for daily tracking
+            $table->foreignId('assessor_id')->nullable()->constrained('users');
+            $table->decimal('quiz_score', 5, 2)->nullable(); // new field for quiz average
+            $table->decimal('module_completion_rate', 5, 2)->nullable(); // % of completed modules
+            $table->boolean('certified')->default(false); // new boolean for certification status
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('guide_performance_metrics');

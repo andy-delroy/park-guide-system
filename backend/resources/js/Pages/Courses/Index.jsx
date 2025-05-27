@@ -20,15 +20,16 @@ export default function CoursesIndex() {
     console.log('Enrolled courses:', enrolledCourses); // Debug enrolled courses
     console.log('Initial enrolled from props:', enrolled); // Debug props
     if (user?.role_name === 'guide') {
-      axios
-        .get(`http://127.0.0.1:5000/recommend?guide_id=${user.id}`)
-        .then((res) => {
-          setRecommended(res.data);
-        })
-        .catch((err) => {
-          console.error('Recommendation fetch failed:', err);
-        });
-    }
+    axios
+      .get(`http://127.0.0.1:5000/recommend?guide_id=${user.id}`)
+      .then((res) => {
+        console.log(res.data.recommended_courses);  // Log the response to check if the data is correct
+        setRecommended(res.data.recommended_courses);  // Make sure the response is an array of course objects
+      })
+      .catch((err) => {
+        console.error("Recommendation fetch failed:", err);
+      });
+  }
   }, [user, enrolledCourses]);
 
   const handleDelete = (id) => {
@@ -183,6 +184,8 @@ export default function CoursesIndex() {
           )}
         </div>
 
+        
+
         {user?.role_name === 'guide' && (
           <>
             <h4 className="text-md font-semibold mb-2 text-gray-900">Your Enrolled Courses</h4>
@@ -195,6 +198,47 @@ export default function CoursesIndex() {
                 </div>
               )}
             </div>
+              {recommended.length > 0 && (
+          <div className="mb-8">
+            <h4 className="text-md font-semibold mt-6 mb-2 text-gray-900">Recommended Course</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recommended.map((course) => (
+                <div
+                  key={course.id}
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition"
+                >
+                  {course.thumbnail && (
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                  )}
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-900">{course.title}</h3>
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">{course.description || 'No description available.'}</p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Modules: {course.modules_count}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      Duration: {course.duration || 'Not specified'}
+                    </p>
+
+                    {/* View Modules Link */}
+                    <div className="mt-4 flex justify-between items-center">
+                      <Link
+                        href={`/courses/${course.id}/modules`}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        View Modules
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
             <h4 className="text-md font-semibold mt-6 mb-2 text-gray-900">Other Available Courses</h4>
           </>
@@ -209,6 +253,7 @@ export default function CoursesIndex() {
             </div>
           )}
         </div>
+        
       </SectionCard>
     </AuthenticatedLayout>
   );
