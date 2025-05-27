@@ -48,8 +48,8 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     IoT Dashboard
                                 </NavLink>
                                 <NavLink
-                                    href={route('guides.analytics')}
-                                    active={route().current('guides.analytics')}
+                                    href={route('analytics.index')}
+                                    active={route().current('analytics.index')}
                                 >
                                     Guide Analytics
                                 </NavLink>
@@ -219,8 +219,8 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     IoT Dashboard
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
-                                    href={route('guides.analytics')}
-                                    active={route().current('guides.analytics')}
+                                    href={route('analytics.index')}
+                                    active={route().current('analytics.index')}
                                 >
                                     Guide Analytics
                                 </ResponsiveNavLink>

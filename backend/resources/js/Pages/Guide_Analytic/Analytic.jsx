@@ -139,7 +139,7 @@ export default function GuideAnalytics({ auth }) {
     };
 
     return (
-        <AuthenticatedLayout auth={auth} header={<h2 className="font-semibold text-xl text-[--forest-green] leading-tight">Guide Performance Analytics</h2>}>
+        <AuthenticatedLayout auth={auth} header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Guide Performance Analytics</h2>}>
             <Head title="Guide Performance Analytics" />
             <div className="py-6 px-4 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between">

@@ -78,7 +78,7 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
     };
 
     return (
-        <AuthenticatedLayout user={pageProps.auth.user} header={<h2>Mentor-Mentee Assignment</h2>}>
+        <AuthenticatedLayout user={pageProps.auth.user} header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Mentor-Mentee Assignment</h2>}>
             <Head title="Mentor-Mentee Assignment" />
             <SectionCard>
                 {/* Admin Assignment Form */}

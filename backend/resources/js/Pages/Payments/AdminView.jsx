@@ -8,7 +8,7 @@ export default function AdminView({ auth }) {
   return (
     <AuthenticatedLayout
       auth={auth}
-      header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">🧾 Payment Transactions</h2>}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Payment Transactions</h2>}
     >
       <div className="p-6 max-w-7xl mx-auto">
         <div className="bg-white shadow rounded-lg overflow-x-auto">
