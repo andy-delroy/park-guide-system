@@ -57,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/home', fn () => Inertia::render('Dashboard'))->name('dashboard');
     //this route displays stuff received from IoT edge
     Route::get('/iot-dashboard', [IoTDashBoardController::class, 'index'])->name('iot.dashboard');
+
+    //iot almost live data route
+    Route::get('/iot-dashboard/data', [IoTDashBoardController::class, 'liveData']);
     Route::resource('certification', CertificationController::class);
     Route::resource('media', MediaController::class)->except(['index']);
     Route::get('/manage-media', [MediaController::class, 'manage'])->name('media.manage');

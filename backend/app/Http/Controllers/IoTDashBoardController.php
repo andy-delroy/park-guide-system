@@ -57,4 +57,23 @@ class IoTDashBoardController extends Controller
             'sensorData' => $sensorData,
         ]);
     }
+
+    public function liveData()
+    {
+        $data = SensorLog::orderByDesc('recorded_at')
+            ->take(50)
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'temperature' => $log->temperature,
+                    'humidity' => $log->humidity,
+                    'soil' => $log->soil_moisture_percent,
+                    'rain' => $log->rain_percent,
+                    'distance' => $log->distance_cm,
+                    'recorded_at' => $log->recorded_at->toIso8601String(),
+                ];
+            });
+
+        return response()->json($data);
+    }
 }

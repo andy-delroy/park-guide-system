@@ -84,3 +84,4 @@ Route::post('/alerts/upload', [IoTAlertController::class, 'upload']);
 //sensors
 Route::post('/sensor-logs', [SensorLogController::class, 'store']);
 
+
