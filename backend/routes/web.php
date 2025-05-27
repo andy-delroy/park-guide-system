@@ -302,3 +302,5 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/payments', [PaymentController::class, 'index'])->name('payments.index');
 });
+
+Route::post('/payments/check', [PaymentController::class, 'check'])->middleware('auth');

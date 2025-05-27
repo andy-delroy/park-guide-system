@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 
 export default function PaymentModal({ onClose }) {
+  const courseId = new URLSearchParams(window.location.search).get('course_id');
   const { qr } = usePage().props;
   const user = usePage().props.auth?.user;
   const isAdmin = user?.role_name === 'admin' || user?.role_name === 'superadmin';
@@ -36,7 +37,8 @@ export default function PaymentModal({ onClose }) {
 
   const handleCardSubmit = () => {
   const form = new FormData();
-  form.append('course_id', 1); // Replace with dynamic course ID if needed
+  //form.append('course_id', 1); // Replace with dynamic course ID if needed
+  form.append('course_id', courseId);
   form.append('method', 'card');
 
   router.post('/payments', form, {
@@ -51,7 +53,8 @@ export default function PaymentModal({ onClose }) {
     if (!receipt) return alert('Please upload a receipt.');
     const form = new FormData();
     form.append('receipt', receipt);
-    form.append('course_id', 1); // Replace with actual course ID
+    //form.append('course_id', 1); // Replace with actual course ID
+    form.append('course_id', courseId);
     form.append('method', 'bank');
     router.post('/payments', form);
   };
