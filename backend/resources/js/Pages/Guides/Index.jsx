@@ -115,6 +115,14 @@ export default function Index({ guides }) {
                                             Delete
                                         </ButtonThin>
                                     </Link>
+                                    <Link
+                                        href={`/mentor-mentee?assign_mentor_id=${params.row.id}`}
+                                        preserveScroll
+                                    >
+                                        <ButtonThin type="assign">
+                                            Assign
+                                        </ButtonThin>
+                                    </Link>
                                 </div>
                             ),
                         },
