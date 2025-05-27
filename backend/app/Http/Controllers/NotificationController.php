@@ -18,48 +18,94 @@ class NotificationController extends Controller
             $user = $request->user();
             if (!$user) {
                 Log::warning('No authenticated user for notification fetch');
-                return response()->json(['error' => 'Unauthorized'], 403);
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'notifications' => [],
+                    'availableRoles' => [],
+                    'filterRole' => '',
+                ], 403);
             }
 
             $role = $user->role_name ?? 'guest';
-            $notifications = Notification::query()
-                ->where(function ($q) use ($role) {
+            $filterRole = $request->query('filter_role', '');
+
+            $query = Notification::query();
+            if ($filterRole && $role === 'admin') {
+                $query->where('target_channel', $filterRole);
+            } elseif ($role !== 'admin') {
+                $query->where(function ($q) use ($role) {
                     $q->where('target_channel', "notifications.{$role}")
-                    ->orWhere('target_channel', 'all_channels');
-                })
-                ->orderBy('created_date', 'desc')
-                ->take(50)
-                ->get();
+                      ->orWhere('target_channel', 'all_channels');
+                });
+            }
 
-            Log::info('Notifications fetched', ['user_id' => $user->id, 'count' => $notifications->count()]);
+            $notifications = $query->orderBy('created_date', 'desc')->take(50)->get();
 
-            return response()->json($notifications, 200);
+            $availableRoles = $role === 'admin' ? [
+                'notifications.admin',
+                'notifications.guide',
+                'notifications.visitor',
+                'all_channels',
+            ] : [];
+
+            Log::info('Notifications fetched', [
+                'user_id' => $user->id,
+                'count' => $notifications->count(),
+                'filter_role' => $filterRole,
+                'available_roles' => $availableRoles,
+            ]);
+
+            return response()->json([
+                'notifications' => $notifications,
+                'filterRole' => $filterRole,
+                'availableRoles' => $availableRoles,
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Notification fetch error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['error' => 'Server error'], 500);
+            return response()->json([
+                'error' => 'Server error',
+                'notifications' => [],
+                'availableRoles' => [],
+                'filterRole' => '',
+            ], 500);
         }
     }
 
-    
-    public function markAsRead(Notification $notification)
+    public function markAsRead(Request $request, Notification $notification)
     {
-        $user = request()->user();
-    
-        if ($notification->user_id !== $user->id && $user->role_name !== 'admin') {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-    
-        $notification->update([
-            'is_read' => true,
-            'read_date' => now(),
-        ]);
-    
-        return response()->json(['status' => 'marked as read']);
-    }
+        try {
+            $user = $request->user();
+            if (!$user) {
+                Log::warning('No authenticated user for mark as read');
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
 
+            if ($notification->user_id !== $user->id && $user->role_name !== 'admin') {
+                Log::warning('Unauthorized mark as read attempt', [
+                    'user_id' => $user->id,
+                    'notification_id' => $notification->id,
+                ]);
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            $notification->update([
+                'is_read' => true,
+                'read_date' => now(),
+            ]);
+
+            Log::info('Notification marked as read', ['notification_id' => $notification->id]);
+            return response()->json(['status' => 'marked as read']);
+        } catch (\Exception $e) {
+            Log::error('Mark as read error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Failed to mark notification as read'], 500);
+        }
+    }
 
     public function store(Request $request)
     {
@@ -102,14 +148,22 @@ class NotificationController extends Controller
             Log::info('Broadcasting to channels', ['channels' => $channelsToSend]);
 
             foreach ($channelsToSend as $targetChannel) {
-                broadcast(new TestEvent($message, $targetChannel, $priority));
-                Log::info('Broadcast sent', ['channel' => $targetChannel]);
+                try {
+                    broadcast(new TestEvent($message, $targetChannel, $priority));
+                    Log::info('Broadcast sent', ['channel' => $targetChannel, 'message' => $message]);
+                } catch (\Exception $e) {
+                    Log::error('Broadcast failed', [
+                        'channel' => $targetChannel,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             Log::info('Sending Expo push notifications', ['channels' => $channelsToSend]);
 
             foreach ($channelsToSend as $targetChannel) {
                 $role = str_replace('notifications.', '', $targetChannel);
+
                 $tokens = ExpoPushToken::whereHas('user.role', function ($q) use ($role) {
                     $q->where('role_name', $role);
                 })->pluck('token');
@@ -117,14 +171,21 @@ class NotificationController extends Controller
                 Log::info('Expo tokens found', ['role' => $role, 'tokens' => $tokens->toArray()]);
 
                 foreach ($tokens as $token) {
-                    $response = Http::post('https://exp.host/--/api/v2/push/send', [
-                        'to' => $token,
-                        'sound' => 'default',
-                        'title' => ucfirst($role) . ' Alert',
-                        'body' => $message,
-                        'data' => ['priority' => $priority],
-                    ]);
-                    Log::info('Expo push sent', ['token' => $token, 'response' => $response->json()]);
+                    try {
+                        $response = Http::post('https://exp.host/--/api/v2/push/send', [
+                            'to' => $token,
+                            'sound' => 'default',
+                            'title' => ucfirst($role) . ' Alert',
+                            'body' => $message,
+                            'data' => ['priority' => $priority],
+                        ]);
+                        Log::info('Expo push sent', ['token' => $token, 'response' => $response->json()]);
+                    } catch (\Exception $e) {
+                        Log::error('Expo push failed', [
+                            'token' => $token,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             }
 
@@ -136,7 +197,7 @@ class NotificationController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return response()->json(['error' => 'Server error'], 500);
+            return response()->json(['error' => 'Server error', 'details' => $e->getMessage()], 500);
         }
     }
 

@@ -75,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
     Route::post('/expo-token', [App\Http\Controllers\NotificationController::class, 'storeExpoToken']);
+    Route::middleware('auth:sanctum')->put('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 });
 
 
