@@ -111,6 +111,14 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                 Payment
                             </NavLink>
                         )}
+                        {(role === 'admin') && (
+                            <NavLink
+                                href={route('notifications.broadcast')}
+                                active={route().current('notifications.broadcast')}
+                            >
+                                Send Notifications
+                            </NavLink>
+                        )}
                         <NavLink
                             href={route('map.parkmap')}
                             active={route().current('map.parkmap')}

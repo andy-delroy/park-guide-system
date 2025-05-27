@@ -208,6 +208,8 @@ class DatabaseSeeder extends Seeder
         //quize guide seeder
         $this->call(GuideQuizSeeder::class);
         $this->call(TrainingSeeder::class);
+        $this->call(GuideFeedbackSeeder::class);
+        $this->call(GuidePerformanceSeeder::class);
         $this->command->info('All data seeded successfully with relational integrity! 🌱');
         $this->command->info('Test accounts created:');
         $this->command->info('Admins: admin1/adminpass1, admin2/adminpass2');

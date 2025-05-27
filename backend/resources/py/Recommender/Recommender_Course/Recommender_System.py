@@ -16,7 +16,7 @@ course_model = tf.keras.models.load_model("course_embedding_model.keras")
 
 # Function to connect to the SQLite database
 def connect_db():
-    conn = sqlite3.connect('C:/Users/Lenovo/Documents/INO_PROJ/park-guide-system/backend/database/database.sqlite')
+    conn = sqlite3.connect('C:/Users/User/Desktop/Y3S2/COS30049 Computing Technology Innovation Project/Park Guide System/park-guide-system/backend/database/database.sqlite')
   # Change this to your actual database path
     cursor = conn.cursor()
     return conn, cursor
