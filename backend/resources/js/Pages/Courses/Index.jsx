@@ -43,6 +43,14 @@ export default function CoursesIndex() {
 
   const enrollInCourse = async (courseId) => {
     try {
+      // Optional: Check if the guide already paid for this course
+      const { data } = await axios.post('/payments/check', { course_id: courseId });
+
+      router.visit('/payment', {
+        data: { course_id: courseId },
+      });
+
+      //proceed with enroll if paid
       const response = await axios.post(`/courses/${courseId}/enroll`);
       setMessage({ success: response.data.message || 'Successfully enrolled in the course!', error: null });
       setEnrolledCourses((prev) => {
