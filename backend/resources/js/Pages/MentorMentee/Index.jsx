@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
+import { useEffect } from "react";
+import { Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
 import Button from "@/Components/Button";
@@ -8,7 +10,11 @@ import Button from "@/Components/Button";
 export default function MentorMenteeIndex({ auth, guides = [], discussions = [], assignment }) {
     const pageProps = usePage().props;
     const flash = pageProps.flash || {};
-    const [selectedMentor, setSelectedMentor] = useState("");
+    const { url } = usePage();
+    const params = new URLSearchParams(window.location.search);
+    const initialMentorId = params.get("assign_mentor_id") || "";
+    const [selectedMentor, setSelectedMentor] = useState(initialMentorId);
+    // const [selectedMentor, setSelectedMentor] = useState("");
     const [selectedMentee, setSelectedMentee] = useState("");
     const [assignProcessing, setAssignProcessing] = useState(false);
     const [success, setSuccess] = useState(flash.success || "");
@@ -18,6 +24,15 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
     const userId = assignment ? (assignment.mentee_id === pageProps.auth.user.id ? assignment.mentee_id : assignment.mentor_id) : null;
     const isMentee = assignment && assignment.mentee_id === pageProps.auth.user.id;
     const isMentor = assignment && assignment.mentor_id === pageProps.auth.user.id;
+
+    useEffect(() => {
+        if (
+            initialMentorId &&
+            guides.some(g => String(g.id) === String(initialMentorId))
+        ) {
+            setSelectedMentor(String(initialMentorId));
+        }
+    }, [guides, initialMentorId]);
 
     const handleAssign = (e) => {
         e.preventDefault();
@@ -36,6 +51,7 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                     setSelectedMentor("");
                     setSelectedMentee("");
                     setAssignProcessing(false);
+                    // Inertia.visit("/guides"); // <-- redirect to guides after assign
                 },
                 onError: (errors) => {
                     setError(
@@ -77,10 +93,11 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                                     value={selectedMentor}
                                     onChange={(e) => setSelectedMentor(e.target.value)}
                                     required
+                                    disabled={!!initialMentorId} // disables if pre-selected
                                 >
                                     <option value="">Select Mentor</option>
                                     {guides.map((g) => (
-                                        <option key={g.id} value={g.id}>
+                                        <option key={g.id} value={String(g.id)}>
                                             {g.full_name}
                                         </option>
                                     ))}
@@ -96,18 +113,23 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                                 >
                                     <option value="">Select Mentee</option>
                                     {guides.map((g) => (
-                                        <option key={g.id} value={g.id}>
-                                            {g.full_name}
-                                        </option>
+                                        <option key={g.id} value={String(g.id)}>
+                                        {g.full_name}
+                                    </option>
                                     ))}
                                 </select>
                             </div>
                         </div>
-                        <Button typeAttr="submit" variant="create" className="w-32 self-end" disabled={assignProcessing}>
-                            {assignProcessing ? "Assigning..." : "Assign"}
-                        </Button>
-                        {success && <div className="text-green-600">{success}</div>}
-                        {error && <div className="text-red-600">{error}</div>}
+                        <div className="flex gap-2 justify-end">
+                            <Button typeAttr="submit" variant="create" className="w-32" disabled={assignProcessing}>
+                                {assignProcessing ? "Assigning..." : "Assign"}
+                            </Button>
+                            <Link href="/guides" className="w-32">
+                                <Button typeAttr="button" variant="secondary" className="w-full">
+                                    Cancel
+                                </Button>
+                            </Link>
+                        </div>
                     </form>
                 )}
 
@@ -135,7 +157,7 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                 )}
 
                 {/* Questions & Answers Section */}
-                {(isMentor || isMentee) && (
+                {(auth.user.role.role_name !== "admin" && (isMentor || isMentee)) && (
                     <div className="mt-8">
                         <h3 className="text-lg font-bold mb-4 text-[--forest-green]">Questions & Answers</h3>
                         {discussions.length === 0 && (

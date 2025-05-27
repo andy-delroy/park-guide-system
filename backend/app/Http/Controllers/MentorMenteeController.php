@@ -58,7 +58,7 @@ class MentorMenteeController extends Controller
             ]
         );
         
-        return redirect()->route('mentormentee.index')->with('success', 'Mentor assigned successfully!');
+        return redirect()->route('guides.index')->with('success', 'Mentor assigned successfully!');
     }
 
     public function askQuestion(Request $request)
