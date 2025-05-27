@@ -23,6 +23,15 @@ const Certificate = () => {
   const [error, setError] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const role = await SecureStore.getItemAsync('userRole');
+      setUserRole(role);
+    };
+    fetchUserRole();
+  }, []);
 
   const fetchCertifications = async () => {
     try {
@@ -183,12 +192,14 @@ const Certificate = () => {
           <Text style={styles.emptyText}>No certifications found.</Text>
         }
       />
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={handleAddCertification}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      {userRole === 'admin' && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={handleAddCertification}
+        >
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };
