@@ -479,6 +479,7 @@ import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNotifications } from './NotificationContext';
+import { API_BASE_URL } from '../api.config';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -529,7 +530,7 @@ const NotificationScreen = () => {
         throw new Error('No authentication token found');
       }
 
-      await axios.put(`http://172.17.9.24:8000/api/notifications/${notificationId}/read`, {}, {
+      await axios.put(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {}, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
 
@@ -559,7 +560,7 @@ const NotificationScreen = () => {
       }
 
       for (const notification of unreadNotifications) {
-        await axios.put(`http://172.17.9.24:8000/api/notifications/${notification.id}/read`, {}, {
+        await axios.put(`${API_BASE_URL}/api/notifications/${notification.id}/read`, {}, {
           headers: { 'Authorization': `Bearer ${authToken}` },
         });
       }
@@ -615,7 +616,7 @@ const NotificationScreen = () => {
   useEffect(() => {
     if (!userRole) return;
 
-    const ws = new WebSocket(`ws://172.17.9.24:8080/app/7dknehkcdsxjflsnpmam?protocol=7&client=js&version=4.6.1`);
+    const ws = new WebSocket(`ws://172.17.2.106:8000/app/7dknehkcdsxjflsnpmam?protocol=7&client=js&version=4.6.1`);
 
     ws.onopen = () => {
       console.log('WebSocket connected');

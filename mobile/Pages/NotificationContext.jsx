@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { API_BASE_URL } from '../api.config';
 
 const NotificationContext = createContext();
 
@@ -18,7 +19,7 @@ export const NotificationProvider = ({ children }) => {
         return;
       }
 
-      const response = await axios.get('http://172.17.9.24:8000/api/notifications', {
+      const response = await axios.get(`${API_BASE_URL}/api/notifications`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
         },

@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { API_BASE_URL } from '../api.config'; // Adjust the import path as needed
 
 export const configurePushNotifications = async () => {
   if (!Device.isDevice) {
@@ -34,7 +35,7 @@ export const configurePushNotifications = async () => {
   const authToken = await SecureStore.getItemAsync('userToken');
   if (authToken) {
     try {
-      const response = await fetch('http://172.17.9.24:8000/api/expo-token', {
+      const response = await fetch(`${API_BASE_URL}/api/expo-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
