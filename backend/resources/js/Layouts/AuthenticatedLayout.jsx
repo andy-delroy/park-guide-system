@@ -224,7 +224,7 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     active={route().current('quiz.index')}
                                 >
                                     Quiz
-                                </ResponsiveNavLink>
+                                </ResponsiveNavLink> */}
                                 <ResponsiveNavLink
                                     href={route('mentormentee.index')}
                                     active={route().current('mentormentee.index')}
