@@ -239,6 +239,7 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
 Route::get('/mentor-mentee', [MentorMenteeController::class, 'index'])->name('mentormentee.index');
 Route::post('/mentor-mentee/assign', [MentorMenteeController::class, 'assign'])->name('mentormentee.assign');
 Route::post('/mentor-mentee/question', [MentorMenteeController::class, 'askQuestion'])->name('mentormentee.ask');
+Route::post('/mentor-mentee/answer/{discussion}', [MentorMenteeController::class, 'answer'])->name('mentormentee.answer');
 // Route::redirect('/nigga', '/dashboard');
 // Route::redirect('/nigga', '/thehood');
 

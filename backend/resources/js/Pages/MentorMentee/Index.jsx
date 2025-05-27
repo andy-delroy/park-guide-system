@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { Head, usePage } from "@inertiajs/react"; // Import usePage for flash messages
+import { Head, usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import SectionCard from "@/Components/SectionCard";
 import Button from "@/Components/Button";
 
 export default function MentorMenteeIndex({ auth, guides = [], discussions = [], assignment }) {
-    const pageProps = usePage().props; // Access flash messages
+    const pageProps = usePage().props;
     const flash = pageProps.flash || {};
     const [selectedMentor, setSelectedMentor] = useState("");
     const [selectedMentee, setSelectedMentee] = useState("");
     const [assignProcessing, setAssignProcessing] = useState(false);
-    const [success, setSuccess] = useState(flash.success || ""); // Use flash messages
+    const [success, setSuccess] = useState(flash.success || "");
     const [error, setError] = useState(flash.error || "");
     const [question, setQuestion] = useState("");
     const [answers, setAnswers] = useState({});
@@ -24,7 +24,6 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
         setAssignProcessing(true);
         setSuccess("");
         setError("");
-
         Inertia.post(
             "/mentor-mentee/assign",
             {
@@ -47,7 +46,7 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                     );
                     setAssignProcessing(false);
                 },
-                preserveState: true, // Preserve form state on error
+                preserveState: true,
             }
         );
     };
@@ -66,47 +65,53 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
         <AuthenticatedLayout user={pageProps.auth.user} header={<h2>Mentor-Mentee Assignment</h2>}>
             <Head title="Mentor-Mentee Assignment" />
             <SectionCard>
+                {/* Admin Assignment Form */}
                 {auth.user.role.role_name === "admin" && (
-                    <form onSubmit={handleAssign} className="flex flex-col gap-4 mb-8">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Mentor:</label>
-                            <select
-                                className="border rounded p-2 w-full"
-                                value={selectedMentor}
-                                onChange={(e) => setSelectedMentor(e.target.value)}
-                                required
-                            >
-                                <option value="">Select Mentor</option>
-                                {guides.map((g) => (
-                                    <option key={g.id} value={g.id}>
-                                        {g.full_name}
-                                    </option>
-                                ))}
-                            </select>
+                    <form onSubmit={handleAssign} className="flex flex-col gap-6 mb-10 bg-white p-6 rounded-lg shadow border border-gray-200">
+                        <h3 className="text-xl font-semibold mb-2 text-[--forest-green]">Assign Mentor & Mentee</h3>
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium mb-1">Mentor:</label>
+                                <select
+                                    className="border rounded p-2 w-full"
+                                    value={selectedMentor}
+                                    onChange={(e) => setSelectedMentor(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select Mentor</option>
+                                    {guides.map((g) => (
+                                        <option key={g.id} value={g.id}>
+                                            {g.full_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium mb-1">Mentee:</label>
+                                <select
+                                    className="border rounded p-2 w-full"
+                                    value={selectedMentee}
+                                    onChange={(e) => setSelectedMentee(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select Mentee</option>
+                                    {guides.map((g) => (
+                                        <option key={g.id} value={g.id}>
+                                            {g.full_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Mentee:</label>
-                            <select
-                                className="border rounded p-2 w-full"
-                                value={selectedMentee}
-                                onChange={(e) => setSelectedMentee(e.target.value)}
-                                required
-                            >
-                                <option value="">Select Mentee</option>
-                                {guides.map((g) => (
-                                    <option key={g.id} value={g.id}>
-                                        {g.full_name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <Button typeAttr="submit" variant="create" className="...">
-                            Assign
+                        <Button typeAttr="submit" variant="create" className="w-32 self-end" disabled={assignProcessing}>
+                            {assignProcessing ? "Assigning..." : "Assign"}
                         </Button>
                         {success && <div className="text-green-600">{success}</div>}
                         {error && <div className="text-red-600">{error}</div>}
                     </form>
                 )}
+
+                {/* Mentee Question Form */}
                 {isMentee && (
                     <form
                         onSubmit={e => {
@@ -115,7 +120,7 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                                 onSuccess: () => setQuestion(""),
                             });
                         }}
-                        className="flex gap-2 mb-8"
+                        className="flex gap-2 mb-8 bg-white p-4 rounded-lg shadow border border-gray-100"
                     >
                         <input
                             type="text"
@@ -129,25 +134,31 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                     </form>
                 )}
 
-                {/* If user is a mentor, show questions and answer input */}
-                {isMentor && (
+                {/* Questions & Answers Section */}
+                {(isMentor || isMentee) && (
                     <div className="mt-8">
-                        <h3 className="text-lg font-bold mb-2">Questions from your mentees:</h3>
-                        {discussions.length === 0 && <div>No questions yet.</div>}
-                        <ul>
+                        <h3 className="text-lg font-bold mb-4 text-[--forest-green]">Questions & Answers</h3>
+                        {discussions.length === 0 && (
+                            <div className="text-gray-500 text-center py-8">No questions yet.</div>
+                        )}
+                        <ul className="space-y-6">
                             {discussions.map(d => (
-                                <li key={d.id} className="mb-4 border-b pb-2">
-                                    <div className="font-semibold">{d.mentee?.full_name || "Mentee"}:</div>
-                                    <div className="mb-2">{d.message}</div>
+                                <li key={d.id} className="bg-gray-50 rounded-lg p-4 shadow border border-gray-100">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="font-semibold text-[--forest-green]">{d.mentee?.full_name || "Mentee"}:</span>
+                                        <span className="text-gray-700">{d.message}</span>
+                                    </div>
                                     {d.answer ? (
-                                        <div className="text-green-700">Your answer: {d.answer}</div>
-                                    ) : (
+                                        <div className="ml-4 mt-2 p-2 bg-green-50 border-l-4 border-green-400 rounded text-green-800">
+                                            <span className="font-semibold">Mentor Answer:</span> {d.answer}
+                                        </div>
+                                    ) : isMentor ? (
                                         <form
                                             onSubmit={e => {
                                                 e.preventDefault();
                                                 handleAnswer(d.id, answers[d.id] || "");
                                             }}
-                                            className="flex gap-2 items-center"
+                                            className="flex gap-2 items-center mt-2 ml-4"
                                         >
                                             <input
                                                 type="text"
@@ -159,6 +170,8 @@ export default function MentorMenteeIndex({ auth, guides = [], discussions = [],
                                             />
                                             <Button typeAttr="submit" variant="create">Answer</Button>
                                         </form>
+                                    ) : (
+                                        <div className="ml-4 text-gray-400 italic">No answer yet.</div>
                                     )}
                                 </li>
                             ))}

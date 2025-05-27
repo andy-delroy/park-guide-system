@@ -17,14 +17,19 @@ class MentorMenteeController extends Controller
         $guides = User::where('role_id', 2)->get(['id', 'full_name']);
 
         // Find assignment for current user (as mentor or mentee)
-        $assignment = \App\Models\MentorMentee::where('mentor_id', $user->id)
+        $assignment = MentorMentee::where('mentor_id', $user->id)
             ->orWhere('mentee_id', $user->id)
             ->first();
 
-        // Only mentors see discussions
+        // Fetch discussions for both mentor and mentee
         $discussions = [];
-        if ($assignment && $assignment->mentor_id == $user->id) {
-            $discussions = \App\Models\Discussion::where('mentor_id', $user->id)->latest()->get();
+        if ($assignment) {
+            $discussions = \App\Models\Discussion::where(function($q) use ($assignment) {
+                    $q->where('mentor_id', $assignment->mentor_id)
+                    ->where('mentee_id', $assignment->mentee_id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
 
         return Inertia::render('MentorMentee/Index', [
@@ -77,5 +82,24 @@ class MentorMenteeController extends Controller
         ]);
 
         return back()->with('success', 'Question sent to your mentor!');
+    }
+
+    public function answer(Request $request, $discussionId)
+    {
+        $request->validate([
+            'answer' => 'required|string|max:2000',
+        ]);
+
+        $discussion = \App\Models\Discussion::findOrFail($discussionId);
+
+        // Optionally, check if the current user is the mentor
+        if ($discussion->mentor_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $discussion->answer = $request->answer;
+        $discussion->save();
+
+        return back()->with('success', 'Answer submitted!');
     }
 }
