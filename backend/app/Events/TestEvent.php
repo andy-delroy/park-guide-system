@@ -5,9 +5,10 @@ namespace App\Events;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class TestEvent implements ShouldBroadcast
+class TestEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets;
 
@@ -29,7 +30,7 @@ class TestEvent implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        return '.test';
+        return 'notifications';
     }
 
     public function broadcastWith()

@@ -17,9 +17,15 @@ const Main = () => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const storedRole = await SecureStore.getItemAsync('userRole');
-      setRole(storedRole || 'guest');
-      setLoading(false);
+      try {
+        const storedRole = await SecureStore.getItemAsync('userRole');
+        setRole(storedRole || 'guest');
+      } catch (error) {
+        console.error('Error loading user role:', error.message);
+        setRole('guest');
+      } finally {
+        setLoading(false);
+      }
     };
     loadUser();
   }, []);
@@ -43,7 +49,7 @@ const Main = () => {
             <SafeAreaView style={{ backgroundColor: colors.primary }}>
               <TopBar navigation={navigation} route={route} role={role} />
             </SafeAreaView>
-            <MainStack role={role} />
+            <MainStack navigation={navigation} role={role} />
           </View>
         )}
       </Drawer.Screen>

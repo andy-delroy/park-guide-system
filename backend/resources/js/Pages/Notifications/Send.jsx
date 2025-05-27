@@ -8,7 +8,7 @@ import axios from 'axios';
 export default function Send({ auth }) {
   const role = auth?.user?.role_name ?? 'guest';
   const [message, setMessage] = useState('');
-  const [channel, setChannel] = useState('notifications.visitor');
+  const [channel, setChannel] = useState('notifications.admin');
   const [priority, setPriority] = useState('normal');
 
   useEffect(() => {

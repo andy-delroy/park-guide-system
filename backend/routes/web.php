@@ -124,18 +124,18 @@ Route::post('/broadcast/test', function (Request $request) {
 })->middleware('auth');
 
 
-Route::get('/notifications', function () {
-    $user = Auth::user();
-    $role = $user?->role_name ?? 'guest'; 
+// Route::get('', function () {
+//     $user = Auth::user();
+//     $role = $user?->role_name ?? 'guest'; 
 
-    return Inertia::render('Notifications/List', [
-        'auth' => ['user' => $user],
-        'notifications' => Notification::where('role', $role)
-            ->latest()
-            ->take(50)
-            ->get(),
-    ]);
-})->middleware('auth');
+//     return Inertia::render('Notifications/List', [
+//         'auth' => ['user' => $user],
+//         'notifications' => Notification::where('role', $role)
+//             ->latest()
+//             ->take(50)
+//             ->get(),
+//     ]);
+// })->middleware('auth');
 
 Route::middleware('auth')->group(function () {
     // Use this as the only entry point for notification listing
@@ -145,11 +145,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
 
     // Show the broadcast test UI
-    Route::get('/notifications/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
+    Route::get('/broadcast', fn () => Inertia::render('Notifications/Send'))->name('notifications.broadcast');
 
-    Route::put('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
+    Route::put('/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
     ->middleware('auth')
     ->name('notifications.markAsRead');
+
+    Route::get('/notifications/list', fn () => Inertia::render('Notifications/List'))->name('notifications.list');
 
     // Alerts for all users
     Route::get('/alerts/list', fn () => Inertia::render('Alerts/AlertList'))->name('alerts.list');
