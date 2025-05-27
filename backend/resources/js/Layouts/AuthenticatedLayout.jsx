@@ -72,6 +72,12 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     Quiz
                                 </NavLink> */}
                                 <NavLink
+                                    href={route('mentormentee.index')}
+                                    active={route().current('mentormentee.index')}
+                                >
+                                    MentorMentee
+                                </NavLink>
+                                <NavLink
                                     href={route('trainings.index')}
                                     active={route().current('trainings.index')}
                                 >
@@ -218,7 +224,13 @@ export default function AuthenticatedLayout({ header, children, showBackButton =
                                     active={route().current('quiz.index')}
                                 >
                                     Quiz
-                                </ResponsiveNavLink> */}
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('mentormentee.index')}
+                                    active={route().current('mentormentee.index')}
+                                >
+                                    MentorMentee
+                                </ResponsiveNavLink>
                                 <ResponsiveNavLink
                                     href={route('trainings.index')}
                                     active={route().current('trainings.index')}

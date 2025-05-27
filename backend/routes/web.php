@@ -21,6 +21,7 @@ use App\Http\Controllers\TrainingRecommendationController;
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IoTDashBoardController;
+use App\Http\Controllers\MentorMenteeController;
 use App\Models\Alert;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
@@ -235,6 +236,11 @@ Route::get('/quizzes/{quiz}/questions/create', function ($quiz) {
     ]);
 })->name('quizzes.questions.create');
 
+Route::get('/mentor-mentee', [MentorMenteeController::class, 'index'])->name('mentormentee.index');
+Route::post('/mentor-mentee/assign', [MentorMenteeController::class, 'assign'])->name('mentormentee.assign');
+Route::post('/mentor-mentee/question', [MentorMenteeController::class, 'askQuestion'])->name('mentormentee.ask');
+// Route::redirect('/nigga', '/dashboard');
+// Route::redirect('/nigga', '/thehood');
 
 //recommender routes
 Route::get('/api/recommendations', [RecommenderController::class, 'getRecommendations']);
