@@ -36,11 +36,13 @@ const CustomDrawerContent = ({ navigation, role }) => {
                 onPress={() => navigation.dispatch(resetToTab('Map'))}
                 labelStyle={styles.drawerLabel}
             />
-            <DrawerItem
+          {(role === 'visitor') && (
+              <DrawerItem
                 label="Camera"
                 onPress={() => navigation.dispatch(resetToTab('Camera'))}
                 labelStyle={styles.drawerLabel}
             />
+          )}
             <DrawerItem
                 label="Training"
                 onPress={() =>

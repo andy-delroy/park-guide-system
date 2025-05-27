@@ -57,10 +57,23 @@ export default function Index({ auth, certifications }) {
         if (!url) return null;
         try {
             const parsedUrl = new URL(url);
-            return '/storage' + parsedUrl.pathname; // add /storage in front
+            let path = parsedUrl.pathname;
+
+            // Remove leading `/storage` if it exists to avoid duplication
+            if (path.startsWith('/storage')) {
+                path = path.replace(/^\/storage/, '');
+            }
+
+            return '/storage' + path;
         } catch (error) {
-            // url might be relative already
-            return url.startsWith('/') ? '/storage' + url : '/storage/' + url;
+            // url might already be relative
+            let path = url.startsWith('/') ? url : '/' + url;
+
+            if (path.startsWith('/storage')) {
+                path = path.replace(/^\/storage/, '');
+            }
+
+            return '/storage' + path;
         }
     };
 
