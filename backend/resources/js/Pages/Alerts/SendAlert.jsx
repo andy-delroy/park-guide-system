@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 export default function SendAlert({ auth }) {
   const [weather, setWeather] = useState(null);
   const [weatherError, setWeatherError] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
-  const [alertSent, setAlertSent] = useState(() => {
-    return localStorage.getItem('alertSent') === 'true';
+  const [alertSent, setAlertSent] = useState(false);
+  const [lastCondition, setLastCondition] = useState(null);
+  const [isAutomatedActive, setIsAutomatedActive] = useState(() => {
+    return localStorage.getItem('isAutomatedActive') === 'true';
   });
 
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -19,108 +22,111 @@ export default function SendAlert({ auth }) {
   });
 
   useEffect(() => {
-    localStorage.setItem('alertSent', alertSent.toString());
-  }, [alertSent]);
+    console.log('Auth user:', auth.user);
+    localStorage.setItem('isAutomatedActive', isAutomatedActive.toString());
+  }, [isAutomatedActive]);
 
-  const checkWeatherConditions = (temperature, condition) => {
+  const checkWeatherConditions = (temperature, description) => {
     if (temperature > 25) {
-      console.log(`Temperature exceeds 25°C: ${temperature}°C - Alert should be triggered`);
-      return true;
-    } else if (condition.toLowerCase().includes('rain')) {
-      console.log(`Rain detected - Alert should be triggered`);
-      return true;
+      console.log(`Temperature exceeds 25°C: ${temperature}°C`);
+      return { trigger: true, message: `Temperature is too hot: ${temperature}°C`, condition: 'hot' };
+    } else if (description.toLowerCase().includes('rain')) {
+      console.log(`Rain detected`);
+      return { trigger: true, message: 'It is raining', condition: 'rain' };
     } else {
       console.log(`Temperature is ${temperature}°C and no rain detected - No alert`);
-      return false;
+      return { trigger: false, message: '', condition: 'none' };
     }
   };
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      if (alertSent) {
-        console.log('Alert already sent, skipping weather fetch.');
-        return;
-      }
+    if (!isAutomatedActive) {
+      console.log('Automated alert system deactivated, skipping weather fetch.');
+      return;
+    }
 
+    const fetchWeather = async () => {
       setWeatherLoading(true);
       try {
-        console.log('Fetching weather from Google Weather API...');
+        console.log('Fetching weather from OpenWeatherMap...');
         const lat = 1.5534;
         const lng = 110.3595;
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_ACTUAL_GOOGLE_API_KEY';
+        const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY || 'YOUR_OPENWEATHER_API_KEY';
 
-        const response = await axios.get('https://weather.googleapis.com/v1/currentConditions:lookup', {
+        if (!apiKey || apiKey === 'YOUR_OPENWEATHER_API_KEY') {
+          throw new Error('Invalid OpenWeather API key');
+        }
+
+        const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
           params: {
-            key: apiKey,
-            'location.latitude': lat,
-            'location.longitude': lng,
+            lat,
+            lon: lng,
+            appid: apiKey,
+            units: 'metric',
           },
         });
 
         const data = response.data;
-        console.log('Google Weather API response:', data);
+        console.log('Weather API response:', JSON.stringify(data, null, 2));
 
-        if (data.error) {
-          throw new Error(data.error.message);
-        }
-
-        const temperature = data.temperature?.degrees ?? data.currentConditions?.temperature ?? data.temperature ?? 0;
-        const description = data.weatherCondition?.description?.text ?? data.currentConditions?.condition ?? 'Unknown';
-        const humidity = data.relativeHumidity ?? data.currentConditions?.humidity ?? 0;
+        const temperature = data.main.temp;
+        const description = data.weather[0].description;
+        const humidity = data.main.humidity;
 
         console.log('Parsed weather:', { temperature, description, humidity });
 
         setWeather({ temperature, description, humidity });
         setWeatherError(null);
 
-        if (checkWeatherConditions(temperature, description) && !alertSent) {
-          console.log('Sending automated alert for temperature or rain:', { temperature, description });
+        const { trigger, message, condition } = checkWeatherConditions(temperature, description);
+        if (trigger && !alertSent) {
+          console.log('Sending automated alert:', { message, temperature, description });
           setData({
-            message: `Weather Alert: ${temperature}°C | Condition: ${description}`,
+            message,
             type: 'emergency',
             park_id: null,
-            expiry: null,
+            expiry: dayjs().add(2, 'hour').toISOString(),
           });
           post('/alerts', {
             preserveScroll: true,
             onSuccess: () => {
-              console.log('Automated alert sent successfully');
+              console.log('Automated alert sent.');
               setAlertSent(true);
+              setLastCondition(condition);
               reset();
             },
             onError: (errors) => {
               console.error('Failed to send automated alert:', errors);
             },
           });
-        } else if (!checkWeatherConditions(temperature, description) && alertSent) {
-          console.log('Weather conditions no longer trigger, resetting alertSent.');
-          setAlertSent(false);
         }
       } catch (err) {
-        console.error('Google Weather API error:', err);
+        console.error('Weather API error:', err.message);
         setWeatherError(`Failed to fetch weather data: ${err.message}`);
         const fallbackWeather = {
-          temperature: 30.2,
+          temperature: 28.0,
           description: 'Cloudy',
           humidity: 74,
         };
-        console.log('Using fallback weather:', fallbackWeather);
+        console.log('Using fallback:', JSON.stringify(fallbackWeather, null, 2));
         setWeather(fallbackWeather);
-        setWeatherError('Using fallback data due to API failure.');
+        setWeatherError('Using fallback data.');
 
-        if (checkWeatherConditions(fallbackWeather.temperature, fallbackWeather.description) && !alertSent) {
-          console.log('Sending automated alert with fallback data:', fallbackWeather);
+        const { trigger, message, condition } = checkWeatherConditions(fallbackWeather.temperature, fallbackWeather.description);
+        if (trigger && !alertSent) {
+          console.log('Sending automated alert with fallback:', { message, ...fallbackWeather });
           setData({
-            message: `Weather Alert: ${fallbackWeather.temperature}°C | Condition: ${fallbackWeather.description}`,
+            message,
             type: 'emergency',
             park_id: null,
-            expiry: null,
+            expiry: dayjs().add(2, 'hour').toISOString(),
           });
           post('/alerts', {
             preserveScroll: true,
             onSuccess: () => {
-              console.log('Automated alert sent successfully with fallback');
+              console.log('Automated alert sent with fallback');
               setAlertSent(true);
+              setLastCondition(condition);
               reset();
             },
             onError: (errors) => {
@@ -134,22 +140,19 @@ export default function SendAlert({ auth }) {
     };
 
     fetchWeather();
-    const intervalId = setInterval(fetchWeather, 900000);
-
-    return () => clearInterval(intervalId);
-  }, [post, setData, reset, alertSent]);
+  }, [isAutomatedActive]);
 
   const submitAlert = (e) => {
     e.preventDefault();
-    console.log('Submitting alert:', data);
+    console.log('Submitting manual alert:', data);
     post('/alerts', {
       preserveScroll: true,
       onSuccess: () => {
-        console.log('Alert sent successfully');
+        console.log('Manual alert sent successfully');
         reset();
       },
       onError: (errors) => {
-        console.error('Failed to send alert:', errors);
+        console.error('Failed to send manual alert:', errors);
       },
     });
   };
@@ -157,6 +160,14 @@ export default function SendAlert({ auth }) {
   const clearForm = () => {
     reset();
     console.log('Form cleared');
+  };
+
+  const toggleAutomation = () => {
+    setIsAutomatedActive(!isAutomatedActive);
+    setAlertSent(false);
+    setLastCondition(null);
+    localStorage.setItem('isAutomatedActive', (!isAutomatedActive).toString());
+    console.log(`Automated alert system ${!isAutomatedActive ? 'activated' : 'deactivated'}`);
   };
 
   return (
@@ -177,19 +188,15 @@ export default function SendAlert({ auth }) {
               <p>Temperature: {weather.temperature}°C</p>
               <p>Condition: {weather.description}</p>
               <p>Humidity: {weather.humidity}%</p>
-              {alertSent && <p className="text-green-600">Alert sent for current conditions.</p>}
-              <button
-                onClick={() => {
-                  setAlertSent(false);
-                  localStorage.setItem('alertSent', 'false');
-                  console.log('Alert sent status reset.');
-                }}
-                className="mt-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-              >
-                Reset Alert Status (Testing)
-              </button>
+              {alertSent && isAutomatedActive && <p className="text-green-600">Alert sent for current conditions.</p>}
             </div>
           )}
+          <button
+            onClick={toggleAutomation}
+            className={`mt-2 px-4 py-2 rounded text-white ${isAutomatedActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+          >
+            {isAutomatedActive ? 'Deactivate Automated Alerts' : 'Activate Automated Alerts'}
+          </button>
         </div>
 
         {/* Send Alert Form */}

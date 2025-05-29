@@ -152,7 +152,7 @@ class NotificationController extends Controller
                     broadcast(new TestEvent($message, $targetChannel, $priority));
                     Log::info('Broadcast sent', ['channel' => $targetChannel, 'message' => $message]);
                 } catch (\Exception $e) {
-                    Log::error('Broadcast failed', [
+                    Log::error('Broadcast failed', [    
                         'channel' => $targetChannel,
                         'error' => $e->getMessage(),
                     ]);
