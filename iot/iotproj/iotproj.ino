@@ -1,6 +1,9 @@
 #include "DHT.h"
 #include <HCSR04.h>
 #include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+
 
 // Pin Definitions
 #define DHTPIN 4
@@ -9,6 +12,14 @@
 #define BUTTON_PIN 23
 #define rainPin 33
 #define soilPin 32
+
+// Wi-Fi + MQTT Config
+const char* ssid = "Adrian";
+const char* password = "andyhotspot";
+const char* mqtt_server = "172.20.10.3";  //VM IP
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 // Constants
 #define DHTTYPE DHT11
@@ -38,12 +49,38 @@ void setup() {
   delay(2000); // Allow DHT11 to stabilize
 
   lcd.init();
-  lcd.backlight();      
+  lcd.backlight();    
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected");
+
+  // Setup MQTT
+  client.setServer(mqtt_server, 1883);
+    
 
   Serial.println("Ready!");              
 }
 
 void loop() {
+  if (!client.connected()) {
+    while (!client.connected()) {
+      Serial.print("Attempting MQTT connection...");
+      if (client.connect("ESP32SensorClient")) {
+        Serial.println("connected");
+      } else {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        delay(2000);
+      }
+    }
+  }
+  client.loop();
+
   // --- Non-blocking button press detection ---
   currentButtonState = digitalRead(BUTTON_PIN);
   if (lastButtonState == HIGH && currentButtonState == LOW) {
@@ -123,6 +160,18 @@ void loop() {
     Serial.print(moisturePercent);
     Serial.println("%");
 
+    // Prepare sensor payload string
+    String payload = 
+      String(t) + "," + 
+      String(h) + "," + 
+      String(moisturePercent) + "," + 
+      String(rainPercent) + "," + 
+      String(distance);
+
+    // Publish to sensor data topic
+    client.publish("sensor/data", payload.c_str());
+    Serial.println("MQTT: Published sensor data → " + payload);
+    
     // Optional: Display short soil status in LCD if room
     if (moisturePercent > 60) {
       Serial.println("Soil: Wet");
@@ -159,7 +208,8 @@ void loop() {
       lcd.clear();
       lcd.setCursor(2, 0);  // Center "ALERT" horizontally
       lcd.print("!! ALERT !!");
-
+      client.publish("camera/trigger", "TRIGGER");
+      Serial.println("MQTT: Published TRIGGER");
       delay(2000); // Show for 2 seconds (non-blocking alternative possible)
       showT = false;
       return; // Skip rest of loop to avoid sensor display overwrite
