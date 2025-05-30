@@ -929,15 +929,12 @@ import React, { useEffect, useState } from 'react';
 // });
 
 // export default NotificationScreen;  
-import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   Alert,
-  TouchableOpacity,
-  Modal,
   TouchableOpacity,
   Modal,
   Button,
@@ -971,71 +968,6 @@ const NotificationScreen = () => {
     { label: 'All Channels', value: 'all_channels' },
   ];
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let hasFetched = false;
-  
-      const fetchOnce = () => {
-        if (!hasFetched) {
-          console.log('Screen focused, fetching notifications ONCE');
-          fetchNotifications();
-          hasFetched = true;
-        }
-      };
-  
-      fetchOnce();
-  
-      return () => {
-        hasFetched = false;
-      };
-    }, [])
-  );
-
-  const markAsRead = async (notificationId) => {
-    try {
-      const authToken = await SecureStore.getItemAsync('userToken');
-      if (!authToken) {
-        throw new Error('No authentication token found');
-      }
-
-      await axios.put(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {}, {
-        headers: { 'Authorization': `Bearer ${authToken}` },
-      });
-
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, is_read: true } : n
-        )
-      );
-      console.log(`Notification ${notificationId} marked as read`);
-    } catch (error) {
-      console.error('Mark as read error:', error.message);
-      Alert.alert('Error', error.response?.data?.error || `Mark as read failed: ${error.message}`);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      const authToken = await SecureStore.getItemAsync('userToken');
-      if (!authToken) {
-        throw new Error('No authentication token found');
-      }
-
-      const unreadNotifications = notifications.filter(n => !n.is_read);
-      if (unreadNotifications.length === 0) {
-        Alert.alert('Info', 'No unread notifications');
-        return;
-      }
-
-      for (const notification of unreadNotifications) {
-        await axios.put(`${API_BASE_URL}/api/notifications/${notification.id}/read`, {}, {
-          headers: { 'Authorization': `Bearer ${authToken}` },
-        });
-      }
-
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, is_read: true }))
-      );
       Alert.alert('Success', 'All notifications marked as read');
     } catch (error) {
       console.error('Mark all as read error:', error.message);
@@ -1056,23 +988,88 @@ const NotificationScreen = () => {
         setUserRole('visitor');
       }
     };
-
     fetchRole();
+  }, []);
 
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
-    const fetchRole = async () => {
+  // Fetch notifications on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Screen focused, fetching notifications');
+      fetchNotifications();
+    }, [fetchNotifications])
+  );
+
+  // WebSocket setup with pusher-js
+  useEffect(() => {
+    if (!userRole) return;
+
+    const pusher = new Pusher('7dknehkcdsxjflsnpmam', {
+      wsHost: '172.17.9.24',
+      wsPort: 8080,
+      forceTLS: false,
+      enabledTransports: ['ws'],
+      authEndpoint: `${API_BASE_URL}/api/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${SecureStore.getItemAsync('userToken')}`,
+        },
+      },
+    });
+
+    const channelName = `notifications.${userRole}`;
+    const channel = pusher.subscribe(channelName);
+    console.log('Subscribed to channel:', channelName);
+
+    channel.bind('App\\Events\\NotificationEvent', async (data) => {
+      console.log('WebSocket Notification:', data);
       try {
-        const storedRole = await SecureStore.getItemAsync('userRole');
-        console.log('Retrieved userRole:', storedRole);
-        setUserRole(storedRole || 'visitor');
-      } catch (error) {
-        console.error('Error reading user role:', error.message);
-        setUserRole('visitor');
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Alert`,
+            body: data.message || 'New notification',
+            data: { priority: data.priority || 'normal', channel: data.target_channel || channelName },
+            sound: 'default',
+          },
+          trigger: null,
+        });
+
+        setNotifications((prev) => {
+          const exists = prev.some(n => n.message === data.message && n.priority === data.priority);
+          if (exists) return prev;
+          return [
+            {
+              id: Date.now().toString(),
+              message: data.message || 'New notification',
+              priority: data.priority || 'normal',
+              created_date: new Date().toISOString(),
+              is_read: 0, // Match backend tinyint
+              target_channel: data.target_channel || channelName,
+            },
+            ...prev,
+          ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        });
+      } catch (err) {
+        console.error('Notification scheduling error:', err.message);
       }
+    });
+
+    channel.bind('pusher:subscription_succeeded', () => {
+      console.log('Pusher subscription succeeded for:', channelName);
+    });
+
+    channel.bind('pusher:subscription_error', (err) => {
+      console.error('Pusher subscription error:', err);
+    });
+
+    return () => {
+      pusher.unsubscribe(channelName);
+      pusher.disconnect();
+      console.log('Pusher disconnected');
     };
+  }, [userRole, setNotifications]);
 
-    fetchRole();
-
+  // Handle push notifications
+  useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener(notification => {
       if (!notification?.request?.content) return;
       const { title, body, data } = notification.request.content;
@@ -1085,11 +1082,9 @@ const NotificationScreen = () => {
             id: Date.now().toString(),
             message: `${title ? `${title}: ` : ''}${body}`,
             priority,
-            created_date: new Date(),
-            is_read: false,
-            target_channel: data?.channel || 'notifications.visitor',
-            is_read: false,
-            target_channel: data?.channel || 'notifications.visitor',
+            created_date: new Date().toISOString(),
+            is_read: 0, // Match backend
+            target_channel: data?.channel || `notifications.${userRole}`,
           },
           ...prev,
         ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
@@ -1097,98 +1092,55 @@ const NotificationScreen = () => {
     });
 
     return () => subscription.remove();
-  }, [setNotifications]);
-    return () => subscription.remove();
-  }, [setNotifications]);
+  }, [setNotifications, userRole]);
 
-  useEffect(() => {
-    if (!userRole) return;
+  const markAsRead = async (notificationId) => {
+    try {
+      const authToken = await SecureStore.getItemAsync('userToken');
+      if (!authToken) throw new Error('No authentication token found');
 
-    const ws = new WebSocket(`ws://172.17.2.106:8000/app/7dknehkcdsxjflsnpmam?protocol=7&client=js&version=4.6.1`);
+      await axios.put(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {}, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      ws.send(JSON.stringify({
-        event: 'pusher:subscribe',
-        data: { channel: `notifications.${userRole}` },
-      }));
-    };
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, is_read: 1 } : n
+        )
+      );
+      console.log(`Notification ${notificationId} marked as read`);
+    } catch (error) {
+      console.error('Mark as read error:', error.message);
+      Alert.alert('Error', error.response?.data?.error || `Mark as read failed: ${error.message}`);
+    }
+  };
 
-    ws.onmessage = async (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        console.log('WebSocket Message:', message);
+  const markAllAsRead = async () => {
+    try {
+      const authToken = await SecureStore.getItemAsync('userToken');
+      if (!authToken) throw new Error('No authentication token found');
 
-        if (message.event === '.notifications' && message.channel === `notifications.${userRole}`) {
-          const data = JSON.parse(message.data);
-          console.log('Notification received:', data);
-
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Alert`,
-              body: data.message || 'New notification',
-              data: { priority: data.priority || 'normal', channel: data.channel || `notifications.${userRole}` },
-              sound: 'default',
-            },
-            trigger: null,
-          });
-
-          setNotifications((prev) => {
-            const exists = prev.some(n => n.message === data.message && n.priority === data.priority);
-            if (exists) return prev;
-            return [
-              {
-                id: Date.now().toString(),
-                message: data.message || 'New notification',
-                priority: data.priority || 'normal',
-                created_date: new Date(),
-                is_read: false,
-                target_channel: data.channel || `notifications.${userRole}`,
-              },
-              ...prev,
-            ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-          });
-        }
-      } catch (err) {
-        console.error('WebSocket parse error:', err.message);
-          setNotifications((prev) => {
-            const exists = prev.some(n => n.message === data.message && n.priority === data.priority);
-            if (exists) return prev;
-            return [
-              {
-                id: Date.now().toString(),
-                message: data.message || 'New notification',
-                priority: data.priority || 'normal',
-                created_date: new Date(),
-                is_read: false,
-                target_channel: data.channel || `notifications.${userRole}`,
-              },
-              ...prev,
-            ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-          });
-        }
-      } catch (err) {
-        console.error('WebSocket parse error:', err.message);
+      const unreadNotifications = notifications.filter(n => n.is_read === 0 || n.is_read === false);
+      if (unreadNotifications.length === 0) {
+        Alert.alert('Info', 'No unread notifications');
+        return;
       }
-    };
 
-    ws.onerror = (err) => console.error('WebSocket error:', err.message);
-    ws.onclose = () => console.log('WebSocket disconnected');
+      for (const notification of unreadNotifications) {
+        await axios.put(`${API_BASE_URL}/api/notifications/${notification.id}/read`, {}, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      }
 
-    return () => ws.close();
-  }, [userRole, setNotifications]);
-
-  const handleChannelChange = (value) => {
-    setSelectedChannel(value);
-    setFilterRole(value);
-    setModalVisible(false);
-    };
-
-    ws.onerror = (err) => console.error('WebSocket error:', err.message);
-    ws.onclose = () => console.log('WebSocket disconnected');
-
-    return () => ws.close();
-  }, [userRole, setNotifications]);
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: 1 }))
+      );
+      Alert.alert('Success', 'All notifications marked as read');
+    } catch (error) {
+      console.error('Mark all as read error:', error.message);
+      Alert.alert('Error', error.response?.data?.error || `Failed to mark all as read: ${error.message}`);
+    }
+  };
 
   const handleChannelChange = (value) => {
     setSelectedChannel(value);
@@ -1198,20 +1150,13 @@ const NotificationScreen = () => {
 
   const renderNotification = ({ item }) => (
     <TouchableOpacity
-      style={[styles.notificationItem, item.is_read ? styles.read : styles.sent]}
-      onPress={() => !item.is_read && markAsRead(item.id)}
-    >
-    <TouchableOpacity
-      style={[styles.notificationItem, item.is_read ? styles.read : styles.sent]}
-      onPress={() => !item.is_read && markAsRead(item.id)}
+      style={[styles.notificationItem, (item.is_read === 1 || item.is_read === true) ? styles.read : styles.sent]}
+      onPress={() => (item.is_read === 0 || item.is_read === false) && markAsRead(item.id)}
     >
       <Text style={styles.notificationText}>{item.message}</Text>
       <Text style={styles.priorityText}>Priority: {item.priority}</Text>
       <Text style={styles.dateText}>{new Date(item.created_date).toLocaleString()}</Text>
-      <Text style={styles.readStatus}>Status: {item.is_read ? 'Read' : 'Unread'}</Text>
-      <Text style={styles.channelText}>Channel: {item.target_channel.replace('notifications.', '')}</Text>
-    </TouchableOpacity>
-      <Text style={styles.readStatus}>Status: {item.is_read ? 'Read' : 'Unread'}</Text>
+      <Text style={styles.readStatus}>Status: {(item.is_read === 1 || item.is_read === true) ? 'Read' : 'Unread'}</Text>
       <Text style={styles.channelText}>Channel: {item.target_channel.replace('notifications.', '')}</Text>
     </TouchableOpacity>
   );
@@ -1219,46 +1164,10 @@ const NotificationScreen = () => {
   console.log('Notifications:', notifications);
   console.log('UserRole:', userRole);
   console.log('Selected channel:', selectedChannel);
-  console.log('UserRole:', userRole);
-  console.log('Selected channel:', selectedChannel);
 
   return (
-    <View style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.text}>Notification manager</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.markAllButton} onPress={markAllAsRead}>
-          <Text style={styles.buttonText}>Mark All as Read</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setModalVisible(true)}>
-          <Text style={styles.buttonText}>
-            Filter: {selectedChannel ? selectedChannel.replace('notifications.', '') : 'All Roles'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Channel</Text>
-            {availableChannels.map((channel) => (
-              <TouchableOpacity
-                key={channel.value}
-                style={styles.modalButton}
-                onPress={() => handleChannelChange(channel.value)}
-              >
-                <Text style={styles.modalButtonText}>{channel.label}</Text>
-              </TouchableOpacity>
-            ))}
-            <Button title="Cancel" onPress={() => setModalVisible(false)} color="#2196F3" />
-          </View>
-        </View>
-      </Modal>
-    <View style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.text}>Notification manager</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>Notification Manager</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.markAllButton} onPress={markAllAsRead}>
           <Text style={styles.buttonText}>Mark All as Read</Text>
@@ -1297,8 +1206,7 @@ const NotificationScreen = () => {
         keyExtractor={item => item.id}
         ListEmptyComponent={() => <Text style={styles.emptyText}>No notifications</Text>}
         style={styles.flatList}
-        ListEmptyComponent={() => <Text style={styles.emptyText}>No notifications</Text>}
-        style={styles.flatList}
+        contentContainerStyle={styles.contentContainer}
       />
     </View>
   );
@@ -1320,30 +1228,12 @@ const styles = StyleSheet.create({
   notificationItem: { padding: 14, borderRadius: 8, marginVertical: 6, elevation: 2 },
   read: { backgroundColor: '#e0e0e0' },
   sent: { backgroundColor: '#fff' },
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
-  contentContainer: { padding: 16 },
-  text: { fontSize: 20, fontWeight: '600', marginBottom: 12, color: '#2f3640' },
-  buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  markAllButton: { backgroundColor: '#2196F3', padding: 10, borderRadius: 5, flex: 1, marginRight: 8 },
-  filterButton: { backgroundColor: '#2196F3', padding: 10, borderRadius: 5, flex: 1 },
-  buttonText: { color: '#fff', textAlign: 'center', fontSize: 16 },
-  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContent: { backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '80%' },
-  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 10, textAlign: 'center' },
-  modalButton: { padding: 10, marginVertical: 5, backgroundColor: '#f5f5f5', borderRadius: 5 },
-  modalButtonText: { fontSize: 16, textAlign: 'center', color: '#2f3640' },
-  notificationItem: { padding: 14, borderRadius: 8, marginVertical: 6, elevation: 2 },
-  read: { backgroundColor: '#e0e0e0' },
-  sent: { backgroundColor: '#fff' },
   notificationText: { fontSize: 16, color: '#2f3640' },
   priorityText: { fontSize: 14, color: '#718093', marginTop: 4 },
   dateText: { fontSize: 12, color: '#718093', marginTop: 2 },
   readStatus: { fontSize: 12, color: '#718093', marginTop: 2 },
   channelText: { fontSize: 12, color: '#718093', marginTop: 2 },
-  readStatus: { fontSize: 12, color: '#718093', marginTop: 2 },
-  channelText: { fontSize: 12, color: '#718093', marginTop: 2 },
   emptyText: { textAlign: 'center', marginTop: 20, color: '#7f8c8d' },
-  flatList: { flexGrow: 1 },
   flatList: { flexGrow: 1 },
 });
 

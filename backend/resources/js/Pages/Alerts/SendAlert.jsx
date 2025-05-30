@@ -51,9 +51,7 @@ export default function SendAlert({ auth }) {
         console.log('Fetching weather from OpenWeatherMap...');
         const lat = 1.5534;
         const lng = 110.3595;
-        const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY || 'YOUR_OPENWEATHER_API_KEY';
 
-        if (!apiKey || apiKey === 'YOUR_OPENWEATHER_API_KEY') {
           throw new Error('Invalid OpenWeather API key');
         }
 
@@ -69,7 +67,6 @@ export default function SendAlert({ auth }) {
         const data = response.data;
         console.log('Weather API response:', JSON.stringify(data, null, 2));
 
-        const temperature = data.main.temp;
         const description = data.weather[0].description;
         const humidity = data.main.humidity;
 
@@ -110,7 +107,6 @@ export default function SendAlert({ auth }) {
         };
         console.log('Using fallback:', JSON.stringify(fallbackWeather, null, 2));
         setWeather(fallbackWeather);
-        setWeatherError('Using fallback data.');
 
         const { trigger, message, condition } = checkWeatherConditions(fallbackWeather.temperature, fallbackWeather.description);
         if (trigger && !alertSent) {
